@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Conditions et boucles </title>
+    </head>
+    <body>
+        <script>
+            //Conditions
+            //1re différence : == et != castent la valeur des opérandes avant d'effectuer la comparaison
+            var nombre = 2;
+            var nombre2 = '2';
+            var result = nombre2 == nombre;
+            alert(result);
+            result = nombre != nombre2;
+            alert(result);
+            
+            // Opérateurs === et !== comparent le contenu ET le type de variable
+            result = nombre === nombre2;
+            var nb = 2;
+            alert(result);
+            alert('and now : ' + (nombre === nb));
+            //Fonction confirm()
+            result = confirm("Est-ce OK ou pas OK ?"); // renvoie vrai si je choisis OK, et faux si je choisis Annuler
+            alert(result);
+            
+            // le OU LOGIQUE renvoie la première valeur vraie ==>
+            var chaine_vide = '', chaine = "une chaine", nb = 2;
+            alert(chaine_vide || chaine);
+            
+            // Et le ET LOGIQUE renvoie la dernière valeur vraie (si toutes les valeurs sont vraies)
+            alert(chaine && nb && 'dernière chaine');
+            
+            //La valeur undefined est aussi évaluée à false (en plus de 0 et chaîne de caractère vide)
+            //Sinon, le switch et les terniaires fonctionnent comme d'hab
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Boucles
+            //Les incrémentations marchent comme en C++
+            //break permet de sortir d'emblée de la boucle, et continue permet de mettre fin à une itération et recommencer une nouvelle boucle
+            
+            //Plusiers variables peuvent être initialisées dans for :
+            for(var i = 0, mots = '', prenom; true; i++) {
+                prenom = prompt("Entrez un prénom");
+                if(prenom)
+                    mots += prenom + ' ';
+                else
+                    break;
+            }
+            alert('Il y a ' + i + ' prénoms dans : \n' + mots);
+            //Eh oui, la portée des variables déclarée dans une boucle s'étend au-delà de cette boucle !!!
+            
+            //Apparemment, JavaScript est une langue très permissive
+            //Sinon, Il y a une autre boucle for in à découvrir plus tard
+        </script>
+    </body>
+</html>

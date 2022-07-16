@@ -1,0 +1,189 @@
+<!--
+														Les images
+
+L'objet Image permet de faire des manipulations assez sommaires sur une image et permet surtout de savoir si elle a été
+entièrement téléchargée, c'est généralement pour cela que l'on va se servir de cet objet. 
+
+Attention : Il existe bon nombre de documentations sur le Web, mais aucune d'entre elles n'a jamais été capable de définir
+correctement quels sont les propriétés ou événement standards de l'objet Image. Le but de ce chapitre est de fournir des 
+informations fiables, on n'abordera donc que les propriétés ou événements qui fonctionnent parfaitement bien et ne causent
+aucun problème majeur, quelque soit le navigateur utilisé.
+
+I./ L'objet Image
+
+1.) Propriétés
+
+Voici une liste non exhaustive des propriétés de l'objet Image : 
+
+	-	width : contient la larageur originale de l'image. On peut redéfinir cette propriété pour modifier la taille de 
+					l'image
+	-	height : contient la hauteur originale de l'image. On peut redéfinir cette propriété pour modifier la taille de 
+					l'image
+	-	src : cette propriété sert à spécifier l'adresse (absolue ou relative) de l'image. Une fois que cette propriété
+					est spécifiée , l'image commence immédiatement à être chargée.
+
+Note : il existe une propriété nommée complete qui permet de savoir si l'image a été entièrement chargée. Cependant, 
+cette propriété n'est pas standard (sauf en HTML5) et son implémentation est assez hasardeuse, parfois cette propriété
+fonctionne, mais la plupart du temps on obient une valeur erronée. Son utilisation est donc déconseillée.
+
+2.) Les événements
+
+L'objet Image ne possède qu'un seul événement nommé 'load', il est très utile, notamment lorsque l'on souhaite créer
+un script de type Lightbox, car il me permet de savoir quand une image est chargée. 
+
+Son utilisation se fait de cette manière :
+
+var img = new Image();
+
+img.src = 'adresse_de_mon_image';
+
+img.addEventListener('load', function(){
+	// (...)
+});
+
+
+Cependant, ce code risque de poser un problème majeur : mon événement pourrait ne jamais se déclencher, parce que j'ai 
+spécifié l'adresse de mon image avant même d'avoir spécifié mon événement, ce qui fait que si l'image a été trop rapidement 
+chargée, l'événement load se sera déclenché avant même qu'on n'ait eu le temps de le modifier.
+
+Donc, le plus simple, c'est de spécifier l'adresse de mon image après avoir modifié mon événement.
+
+3.) Particularités
+
+L'objet Image est un peu spécial, dans le sens où l'on peut l'ajouter à l'arbre DOM comme on le ferait avec la valeur
+retournée par la méthode document.createElement(). Ce comportement est spécial et ne peut se révéler utile que dans de très 
+rares cas d'application. Illustration :
+
+var img = new Image();
+
+img.src = 'adresse_de_img';
+
+document.body.appendChild(img);		// l'image est ajoutée au DOM
+
+II./ Mise en pratique
+
+Réalisons une Lightbox très simple. 
+
+Commençons par un code HTML simple pour lister mes miniatures et les liens vers les images originales : réf html
+
+Mon but ici est de bloquer la redirection vers les liens et d'afficher les images d'origine directement dans la 
+page Web, plutôt que dans une nouvelle page. Pour cela, on va devoir parcourir tous les liens de la page, bloquer
+leurs redirections et afficher l'image d'origine une fois que celle-ci aura fini d'être chargée (car une Lightbox est
+aussi conçue pour embellir la navigation). 
+
+Note : normalement, de nombreux autres paramètres entrent en compte pour la réalisation d'une Lightbox. Ici, on fait
+abstraction de ces vérifications ennuyeuses et allons à l'essentiel. Du coup, il serait difficile d'utiliser le présent
+script sur un quelconque site Web.
+
+Commençons par parcourir les liens pour bloquer leur navigation : 
+
+Réf script
+
+En effet, on a appelé une fonction displayImg() qu'il va maintenant falloir créer. Celle-ci devra, pour commencer,
+charger l'image originale avant de l'afficher.
+
+Réf script
+
+Avant de commencer à implémenter l'affichage de l'image, il me faut tout d'abord mettre en place un overlay. En 
+développement web, un overlay est une surcouche sur la page Web, permettant de différencier deux couches de contenu. 
+Pour l'overlay, j'aurai besoin d'une balise supplémentaire dans mon code HTML : 
+
+<div id="overlay"></div>
+
+Et on lui donne un style CSS afin qu'il puisse couvrir toute la page Web
+
+Réf style
+
+Maintenant, le principe va être d'afficher l'overlay quand on cliquera sur une miniature. Il faudra aussi mettre un petit
+message pour faire patienter le visiteur pendant le chargement de l'image. Une fois l'image chargée, il ne restera plus
+qu'à supprimer le texte et ajouter l'image originale à la place.
+
+Réf script (displayImg())
+
+Voilà, mon image se charge et s'affiche. Mais il faut aussi pouvoir fermer l'overlay pour choisir une autre image. La
+solution est simple, il suffit de quitter l'overlay lorsque l'on clique quelque part dessus :
+
+Réf script
+
+Voilà, quelque retouches du CSS pour embellir le tout, et c'est fini !
+
+Quelques pistes d'améliorations : 
+
+	-	Eviter d'appliquer l'événement click à tous les liens de la page. Ajouter un élément différenciateur aux liens
+			de la Lightbox, tel qu'une classe ou un attribut name
+	-	Redimensionner dynamiquement les images originales afin d'éviter qu'elles ne débordent de la page. Utiliser soit
+			un redimensionnement fixe (très simple à faire), soit un redimensionnement variant selon la taille de l'écran
+			(des recherches sur le Web nécessaires (ou pas))
+	-	Implémenter l'utilisation des touches fléchées : pour basculer d'une image à l'autre
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les images</title>
+		<style>
+			#overlay {
+				display:none; /* Par défaut, on cache l'overlay */
+				position: absolute;
+				top: 0; left: 0;
+				width: 100%; height: 100%;
+				text-align: center; /* Pour centrer l'image que l'overlay contiendra */
+				/*Ci-dessous, on applique un backround de couleur noire et d'opacité 0.6. Il s'agit d'une propriété CSS3 */
+				background-color: rgba(0,0,0,0.6);
+			}
+			#overlay img {
+    			margin-top: 100px;
+			}
+
+			p {
+				margin-top: 300px;
+				text-align: center;
+			}
+			
+		</style>
+    </head>
+    <body>
+		<p>
+			<a href="imgs/1.jpg" title="Afficher l'image originale"><img src="imgs/1_min.jpg" alt="Miniature" /></a>
+			<a href="imgs/2.jpg" title="Afficher l'image originale"><img src="imgs/2_min.jpg" alt="Miniature" /></a>
+			<a href="imgs/3.jpg" title="Afficher l'image originale"><img src="imgs/3_min.jpg" alt="Miniature" /></a>
+			<a href="imgs/4.jpg" title="Afficher l'image originale"><img src="imgs/4_min.jpg" alt="Miniature" /></a>
+		</p>
+		<div id="overlay"></div>
+		<script>			
+			var liens = document.getElementsByTagName('a'),
+				liensLength = liens.length;
+			
+			for(var i = 0; i < liensLength; ++i)
+				liens[i].addEventListener('click', function(e){
+					e.preventDefault(); //On bloque la redirection
+					
+					//On appelle la fonction pour afficher les images
+					//currentTarget est utilisé pour cibler le lien et non l'image
+					displayImg(e.currentTarget);
+				});
+			
+			function displayImg(link){
+				var img = new Image(),
+					overlay = document.getElementById('overlay');
+				
+				img.addEventListener('load', function(e){
+					overlay.innerHTML = '';
+					
+					overlay.appendChild(img);
+					
+				});
+				
+				img.src = link.href;
+				overlay.style.display = 'block';
+				overlay.innerHTML = '<span>Chargement en cours...</span>';
+			}
+			
+			document.getElementById('overlay').addEventListener('click', function(e){
+				//currentTarget est utilisé pour cibler l'overplay et non l'image
+				e.currentTarget.style.display = 'none';
+			});
+		</script>
+	</body>
+</html>

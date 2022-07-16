@@ -1,0 +1,306 @@
+<!--
+														Upload via une iframe
+
+AJAX ne se limite pas à l'utilisation de l'objet XMLHttpRequest, il existe d'autres manières de communiquer avec un
+serveur. La balise <iframe> fait partie des diverses solution possibles. Généralement, on pense, et à raison d'ailleurs, que
+c'est une balise à éviter,mais il existe certains cas où elle devient rudement efficace, notamment pour l'upload des
+fichiers. 
+
+I./ Manipulation des iframes
+1.) Les iframes
+	
+	La balise <iframe></iframe> est un élément qui permet d'insérer une page Web dans une autre. Voici un petit rappel
+	 de la syntaxe :
+	<iframe src="file.html" name="myFrame" id="myFrame"></iframe>
+	
+2.) Accéder au contenu
+	
+	Pour accéder au contenu de l'iframe, il faut d'abord accéder à l'iframe elle-même et ensuite passer par la propriété
+	contentDocument :
+	
+var frame = document.getElementById('myFram').contentDocument;
+	
+	Une fois que l'on a accédé au contenu de l'iframe, ie son document, on peut naviguer dans le DOM comme s'il s'agissait
+	d'un document "normal" : 
+	
+var frame_links = frame.getElementsByTagName('a').length;
+	
+	Attention : la règle de la same origin policy s'applique aussi aux frames ! Cela veut dire que si je suis sur une
+	page d'un domaine A et que j'appelle une page d'un domaine B par le biais d'une iframe, alors je ne pourrai pas 
+	accéder au contenu de la page B depuis A. 
+	
+II./ Chargement de contenu
+	
+	Il y a deux techniques pour charger une page dans une iframe. La première est de tout simplement changer l'attribut
+	src de l'iframe via le JavaScript, la 2e est d'ouvrir un lien dans l'iframe. Cette action est rendue possible via
+	l'attribut target (standradisé en HTML5) que l'on peut utiliser sur un lien ou sur un formulaire. C'est cette
+	dernière technique que j'utiliserai pour la réalisation du système d'upload.
+	
+1.) Charger une iframe
+a./ En changeant l'URL
+	
+	Ici, rien de compliqué, on change simplement l'URL de l'iframe en changeant sa propriété src. Cette technique est
+	simple et permet de transmettre des paramètres directement dans l'URL. 
+	
+	Exemple :
+	
+document.getElementById('myFrame').src = 'request.php?nick=Thunderseb';
+	
+b./ Avec target et un formulaire
+	
+	L'intérêt d'utiliser un formulaire est que je vais pouvoir envoyer des données via la méthode POST. L'utilisation
+	de POST va me permettre d'envoyer des fichiers, ce qui me sera utile pour un upload de fichiers ! 
+	
+	En fait, pour cette technique, il n'y a pas vraiment besoin du JavaScript, c'est du HTML pur :
+	
+<form id="myForm" method="post" action="request.php" target="myFrame">
+	<div>
+		// formulaire
+		<input type="sumbit" value="Envoyer" />
+	</div>
+</form>
+	
+<iframe src="#" name="myFrame" id="myFrame"></iframe>
+	
+L'attribut target indique indique au formulaire que son contenu doit être envoyé au sein de l'iframe dont l'attribut
+name est myFrame (l'attribut name est obligatoire ici). De cette manière, le contenu du formulaire y sera envoyé, 
+et la page courante ne sera pas réchargée. 
+	
+Le JavaScript pourra être utilisé comme méthode alternative pour envoyer le formulaire. Pour rappel, pour envoyer un
+formulaire, il faut utiliser la méthode submit() : 
+	
+document.getElementById('myForm').submit();
+	
+2.) Détecter le chargement
+a./ Avec l'événement load
+	
+	Les iframes possèdent un événement load, déclenché une fois que le contenu de l'iframe est chargé. A chaque contenu
+	chargé, load est déclenché. C'est un moyen efficace pour savoir si le document est chargé, et ainsi pouvoir le 
+	récupérer. Voici un petit exemple :
+	
+<iframe src="file.html" name=myFrame id="myFrame" onload="trigger();"></iframe>
+	
+<script>
+	function trigger(){
+		var frame = document.getElementById('myFrame').contentDocument;
+		
+		alert(frame.body.textContent);
+	}
+</script>
+	
+b./ Avec une fonction de callback
+	
+	Quand une page Web est chargée dans l'iframe, son contenu est affiché et les scripts sont exécutés. Il est également
+	possible, depuis l'iframe, d'appeler une fonction présente dans la page "mère", c'est-à-dire la page qui contient
+	l'iframe.
+	
+	Pour appeler une fonction depuis l'iframe, il suffit d'utiliser :
+	
+window.top.window.nomDeLaFonction();
+	
+	L'objet window.top pointe vers la fenêtre "mère", ce qui permet ici d'atteindre la page qui contient l'iframe.
+	
+	Voici un petit exemple qui illustre ce mécanisme : 
+	
+<iframe src="file.html" name="myFrame" id="myFrame"></iframe>
+	
+<script>
+	function trigger(){
+		var frame = document.getElementById('myFrame').contentDocument;
+		
+		alert('Page chargée !');
+	}
+</script>
+	
+	Et le contenu de la page "file.html" :
+	
+<script>
+	window.top.window.trigger();
+</script>
+	
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Suspendisse molestie suscipit arcu.</p>
+	
+III./ Récupérer du contenu 
+	
+	Le chargement de données via une iframe a un gros avantage : il est possible de charger n'importe quoi comme données. 
+	Ca peut être une page Web complète, du texte brut ou même du JavaScript, comme le format JSON.
+	
+1.) Récupérer des données JavaScript
+	
+	Si on reprend l'exemple vu précédemment, avec le callback, il est possible de récupérer facilement des données JavaScript,
+	comme un objet. Dans ce cas, il suffit d'utiliser du PHP pour construire un objet qui sera transmis en paramètre 
+	de la fonction callback, comme ceci :
+	
+<?php
+	$fakearray = array('Sébastien', 'Laurent', 'Alex');
+?>
+<scrpt>
+	window.top.window.trigger(['<?php echo implode("','",$fakearray); ?>']);
+</scrpt>
+	
+	Ici, un tableau JavaScript est construit via le PHP et envoyé à la fonction trigger() en tant que paramètre.
+	
+	Exemple complet :
+	
+<form id="myForm" method="post" action="request.php" target="myFrame">
+	<div>
+		<label for="nick">Votre pseudo : </label>
+		<input type="text" id="nick" name="nick" />
+		
+		<input type="button" value="Envoyer" onclick="sendForm();" />
+	</div>
+</form>
+	
+<iframe src="#" name="myFrame" id="myFrame"></iframe>
+	
+<scritp>
+	function sendForm() {
+		var nick = document.getElementById('nick').value;
+	
+		if(nick) //Si c'est OK
+			document.getElementById('myForm').submit();	//On envoie le formulaire
+	}
+	
+	function receiveData(data) {
+		alert('Votre pseudo est : "' + data + '"');
+	}
+</scritp>
+	
+	Et maintenant la page PHP :
+	
+<script>
+	window.top.window.receiveData("<?php echo htmlentities($_POST['nick']); ?>");
+</script>
+	
+	Ce script ne fait que récupérer la variable $_POST['nick'], pour ensuite appeler la fonction reveiveData() en lui
+	passant le pseudo en paramètre. La fonction PHP htmlentities() permet d'éviter que l'utilisateur insère d'éventuelles
+	balises HTML potentiellement dangereuses telles que la balise <script>. Alors, certes, ici l'insertion ne balises
+	ne pose pas de problème puisqu'on affiche le pseudo dans une fenêtre alert(), mais mieux vaut prévenir que guérir.
+	
+IV./ Le système d'upload
+
+1.) Le code côté client 
+
+	Par le biais d'un formulaire et d'une iframe, créer un système d'upload n'est absolument pas compliqué. C'est même 
+	relativement simple ! Les éléments <form> possèdent un attribut <enctype> qui doit absolument contenir la valeur 
+	multipart/form-data. Pour faire simple, cette valeur indique que le formulaire est prévu pour envoyer de grandes 
+	quantités de données (les fichiers sont des données volumineuses). 
+	
+	Mon formulaire d'upload peut donc être écrit comme ceci :
+	
+<form id="uploadForm" enctype="multipart/form-data" action="upload.php" target="myFrame" method="post">
+	<label for="uploadFile">Image : </label>
+	<input id="uploadFile" name="uploadFile" type="file" />
+	
+	<input type="submit" id="uploadSubmit" value="Upload !" />
+</form>
+
+Ensuite, on place l'iframe, ainsi qu'un autre petit <div> que j'utiliserai pour afficher le résultat de l'upload :
+
+<div id="uploadInfos">
+	<div id="uploadStatus">Aucun upload en cours</div>
+	<iframe id="uploadFrame" name="uploadFrame"></iframe>
+</div>
+
+	Et pour finir, une dose de JavaScript : 
+	
+<script>
+	function uploadEnd(error, path) {
+		if(error === 'OK')
+			document.getElementById('uploadStatus').innerHTML = '<a href="' + path + '">Upload done ! </a><br /> <br />' 
+						+ '<a href="' + path + '"><img src="' + path'" /></a>';
+		else
+			document.getElementById('uploadStatus').innerHTML = error;
+	}
+	document.getElementById('uploadForm').addEventListener('submit', function() {
+		document.getElementById('uploadStatus').innerHTML = 'Loading...';
+	});
+</script>
+	
+	Quelques explications s'imposent. Dès que le formulaire est envoyé, la fonction anonyme de l'événement submit  est
+	exécutée. Celle-ci va remplacer le texte du <div>#uploadStatus pour indiquer le chargement en cours. Car, en fonction
+	de la taille du fichier à envoyer, l'attente peut être longue. L'argument error contiendra soit "OK" soit une 
+	explication sur une erreur éventuelle. L'argument path contiendra l'URL du fichier devant être uploadé. L'appel
+	vers la fonction uploadEnd() sera fait via l'iframe, comme on le verra ci-après.
+	
+2.) Le code côté serveur : upload.php
+	
+	Le JavaScript étant mis en place, il ne reste plus qu'à m'occuper de la page upload.php qui va réceptionner le fichier
+	uploadé. Il s'agit d'un simple script d'upload : 
+	
+<?php 
+
+	$error = NULL;
+	$filename = NULL;
+
+	if(isset($_FILES['uploadFile']) && $_FILES['uploadFile']['error'] === 0) {
+		$filename = $_FILES['uploadFile']['name'];
+		$targetpath = getcwd() .'/'. $filename; 	//On stocke le chemin où enregistrer le fichier
+
+		//On déplace le fichier depuis le répertoire temporaire vers $targetpath
+		if(@move_uploaded_file($_FILES['upload_file']['tmp_name'], $targetpath))
+			$error = 'OK';
+		else 		// Si ça ne fonctionne pas
+			$error = 'Echec de l'enregistrement !';
+	} else {
+		$error = 'Aucun fichier réceptionné !';
+	}
+?>
+	//Et pour finir, on écrit l'appel vers la fonction uploadEnd
+	
+<script>
+	window.top.window.uploadEnd("<?php echo $error; ?>", "<?php echo $filename; ?>");
+</script>
+	
+	Note : avec ce code, le fichier uploadé est analysé puis enregistré sur le serveur. Lien utile pour se renseigner 
+	un peu plus sur le système d'upload => https://openclassrooms.com/courses/upload-de-fichiers-par-formulaire
+	
+	Avec ce script tout simple, il est donc possible de mettre en place un upload de fichier sans "rechargement". Il
+	ne reste plus qu'à améliorer le système, notamment en sécurisant le script PHP (détecter le type MIME du fichier,
+	pour n'autoriser que les images), ou en arrangeant le code JavaScript pour afficher à la suite les fichiers 
+	uploadés s'il y en a plusieurs...
+	
+	
+En résumé : L'utilisation d'une iframe est une technique AJAX très répandue et facile à mettre en oeuvre pour réaliser 
+	un upload de fichiers compatible avec tous les navigateurs.
+	Il suffit d'utiliser l'événement load sur une iframe pour savoir si la page qu'elle contient vient d'être chargée. Il
+	ne reste plus qu'à accéder à cette page et à récupérer ce que l'on juge intéressant.
+	Depuis une iframe, il faut utiliser window.top pour accéder à la page qui contient l'iframe. C'est utile dans le cas
+	d'un callback.
+	
+Remarque : l'upload n'a pas marché pour moi...
+-->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Upload via une iframe</title>
+    </head>
+    <body>
+	<form method="post" action="iframe.php" enctype="multipart/form-data" target="myFrame" id="myForm">
+		<input type="file" id="uploadFile" name="uploadFile" /><br />
+		<input type="submit" value="Send" />
+	</form>
+	<div>
+		<div id="uploadStatus">Aucun upload en cours</div>
+		<iframe name="myFrame" id="myFrame"></iframe>
+	</div>
+
+	<script>
+		function checkUpload(error, path) {
+		    if(error === 'OK') {
+		        document.querySelector('#uploadStatus').innerHTML = "<a href=" + path + ">Image uploadée</a><br />"
+					+ "<a href=" + path + "><img src=" + path+" /></a>";
+			} else
+			    document.querySelector('#uploadStatus').innerHTML = error;
+		}
+
+		document.querySelector('#myForm').addEventListener('submit', function() {
+		    document.querySelector('#uploadStatus').innerHTML = "<span>Upload en cours</span>";
+		});
+
+
+	</script>
+	</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TP upload avec API File et drag'n'drop</title>
+</head>
+<body>
+<form method="post" action="do_upload.php" id="myForm">
+<input type="file" id="inputFile" multiple /><br />
+<progress id="progressBar"></progress><br />
+<input type="submit" value="Send" />
+</form>
+<div id="toUpload" class="dropper"></div>
+<div class="dropper">
+<div class="draggable"></div>
+<img src="em.jpg" alt="elle" class="draggable"/>
+</div>
+
+<script>
+(function(){
+	function createThumbnail(file) {
+		var reader = new FileReader();
+		reader.addEventListener('load', function() {
+			var img = document.createElement('img');
+			img.style.maxWidth = '150px';
+			img.style.maxHeight = '150px';
+			img.src = reader.result;
+			img.className = 'draggable';
+			document.querySelector('#toUpload').appendChild(img);
+		});
+		reader.readAsDataURL(file);
+	}
+
+	var	bar = document.querySelector('#progressBar'),
+		index = 0;
+	
+	inputFile.addEventListener('change', function(e) {
+		var inputFile = document.querySelector('#inputFile'),
+		files = inputFile.files,
+		filesLen = files.length;
+		bar.value = 0;
+		bar.max = 0;
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', "do_upload.php");
+		xhr.upload.addEventListener('progress', function(e) {
+			bar.value = e.loaded;
+			bar.max = e.total;			
+		});
+		xhr.addEventListener('load', function(e) {
+			alert(xhr.responseText);
+		});
+		var form = new FormData();
+		form.append(('file ' + index++), files[0]);
+		xhr.send(form);
+		for(var i = 0; i < filesLen; i++) {
+			var allowedTypes = ['jpg', 'png', 'jpeg', 'gif'],
+				extension = files[i].name.split('.');
+				extension = extension[extension.length - 1].toLowerCase();
+				if(~allowedTypes.indexOf(extension))
+					createThumbnail(files[i]);
+				else
+					console.log(extension);
+			
+		}
+	});
+	
+	
+	
+})();
+</script>
+</body>
+</html>

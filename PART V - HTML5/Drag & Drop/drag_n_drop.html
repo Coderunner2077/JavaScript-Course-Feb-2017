@@ -1,0 +1,496 @@
+<!--
+                                                           Le Drag & Drop
+
+Bien que le drag & drop ait longtemps existé sur les sites Web grâce au JavaScript, jamais un vrai système standard
+n'avait encore vu le jour jusqu'à ce que le HTML5 n'arrive. Grâce au HTML5, il est maintenant possible de permettre
+un déplacement de texte, de fichier ou d'autres éléments depuis n'importe quelle application jusqu'à mon navigateur.
+
+I./ Aperçu de l'API
+
+Note : ce cours ne fait que survoler le fonctionnement de Drag& Drop, il s'agit d'une simple initiation. Toutefois,
+l'essentiel sera au rendez-vous.
+
+1.) Rendre un élément déplaçable
+
+En temps normal, un élément d'une page Web ne peut pas être déplacé. Je peux toujours essayer, je ne ferai qu'une sélection
+du contenu. Certains éléments, comme les liens et les images, peuvent être déplacés nativement, mais je ne peux pas
+interagir avec ce mécanisme en JavaScript sans passer par la nouvelle API disponible dans la spécification HTML5.
+
+Afin de rendre un élément déplaçable, il me suffit d'utiliser son attribut draggable et de le mettre à true (que
+ce soit en HTML ou en JavaScript). A partir de là, je peux essayer de déplacer l'élément sans problème.
+
+Attention:  je risque probablement d'avoir des problèmes avec Firefox. En effet, ce navigateur nécessite une information
+complémentaire à découvrir plus loin. Quant aux autres navigateurs, il se peut que certains d'entre eux ne supportent
+pas le drag & drop.
+
+Parmi les huit événements que l'API drag & drop fournit, l'élément déplaçable peut en utiliser deux : dragstart et
+dragend.
+
+L'événement dragstart se déclenche lorsque l'élément ciblé commence à être déplacé. Cet événement est particulièrement utile
+pour initialiser certains détails utilisés tout au long du processus de déplacement. Pour cela, il me faudra utiliser
+l'objet dataTransfer (cf en bas).
+
+Quant à l'événement dragend, celui-ci permet de signaler à l'objet déplacé que son déplacement est terminé, que le résultat
+soit un succès ou non.
+
+2.) Initialiser un déplacement avec l'objet dataTransfer
+
+L'objet dataTransfer est généralement utilisé au travers des deux événements : dragstart et drop. Il peut toutefois être
+utilisé avec d'autres événements spécifiques au drag & drop.
+Cet objet permet de définir et de récupérer les informations relatives au déplacement en cours d'exécution. Ici, je ne vais
+aborder l'objet dataTransfer que dans le cadre de l'initialisation d'un déplacement, son utilisation pour la fin d'un processus
+de drag & drop sera étudiée juste après.
+
+L'objet dataTransfer permet de réaliser trois actions (toutes facultatives) :
+
+    -   setData() : sauvegarde une chaîne de caractères qui sera transmise à l'élément HTML qui accueillera l'élément déplacé.
+    -   setDragImage() : définit une image utilisée lors du déplacement
+    -   effectAllowed : propriété spécifiant le type de déplacement. A documenter par moi-meme. Idem pour sa propriété cousine
+                droptEffect
+
+La méthode setData() prend deux arguments en paramètres. Le premier est le type MIME des données (sous forme de chaîne de
+caractères) que je vais spécifier dans le second paramètre. Précisons que le 2nd argument est obligatoirement une chaîne
+de caractères, ce qui signifie que le type MIME qui sera spécifié n'aura que peu d'intérêt. J'utilisera généralement le
+type text/plain pour des raisons de simplicité :
+
+draggableElement.addEventListener('dragstart', function(e) {
+    e.dataTrasnfer.setData('text/plain', 'Ce texte sera transmis à l'élément HTML de réception');
+});
+
+On peut penser que cette méthode est inutile, puisqu'il suffirait de stocker les données dans une variable plutôt que par
+le biais de setData(). Eh bien, ce cerait le cas seulement en travaillant sur la même page. Cependant, le Drag & Drop en
+HTML5 possède la faculté de s'étendre bien au-delà de ma page Web actuelle et donc de faire un glisser-déposer d'une page
+à une autre, que ce soit d'un onglet à un autre ou bien même d'un navigeur à un autre. Le transfert des données entre les
+pages Web n'étant pas possible (tout du moins pas sans "tricher"), il est utile d'utiliser la méthode setData().
+
+Attention : l'utilisation de la méthode setData est obligatoire avec Firefox ! Cela est stupide, car on n'a pas forcément
+quelque chose à y stocker, mais on n'a pas le choix. Il faut donc utiliser le type MIME de mon choix et lui passer
+une chaîne de caractère vide, comme ceci :
+
+setData('text/plain', '');
+
+La méthode setDragImage() est exrêmement utile pour qui souhaite personnaliser l'affichage de sa page Web ! Elle permet
+de définir une image qui se placera sous le curseur pendant le déplacmeent de l'élément concerné. La méthode prend
+trois arguments en paramètres. Le premier est un élément <img> (ou objet Image) contenant l'image souhaitée. le deuxième
+est la position horizontale de l'image et le 3e est est la position verticale :
+
+var dragImg = new Image();   // il est conseillé de précharger l'image, sinon elle risque de ne pas s'afficher pendant
+                            // le déplacement.
+drag.src = 'drag_img.png';
+
+document.querySelector('*[draggable=true]').addEventListener('dragstart', function(e) {
+    e.dataTransfer.setDragImage(dragImg, 40, 40); // une position 40x40 centrera une image 80x80
+});
+
+3.) Définir une zone de "drop"
+
+Un élément en cours de déplacement ne peut pas être déposé n'importe où. Il faut pour cela définir une zone de "drop"
+(zone qui va permettre d'y déposer des éléments) qui ne sera, au final, qu'un simple élément HTML.
+
+Les zones de drop prennent généralement en charge quatre événements :
+
+    -   dragenter : qui se déclenche lorsqu'un élément en cours de déplacement entre dans la zone de drop
+    -   dragover : se déclenche lorsqu'un élément en cours de déplacement se déplace dans la zone de drop
+    -   dragleave : se déclenche lorsqu'un élément en cours de déplacement quitte la zone de drop
+    -   drop : qui se déclenche lorsqu'un élément en cours de déplacement est déposé dans la zone de drop
+
+Par défaut, le navigateur interdit le drop à un quelconque élément où que ce soit dans la page Web. Mon but est donc d'annuler cette
+action par défaut, et qui dit "annulation d'une action par défaut" dit preventDefault() ! Cette méthode va devoir être
+utilisée au travers de l'événement dragover.
+
+Prenons un exemple simple :
+
+<div id="draggable" draggable="true">Je peux être déplacé</div>
+<div id="dropper">Je n'accepte pas les éléments déplacés !</div>
+
+En effet, par défaut, impossible de déposer l'élément draggable dans l'élément "#dropper", le navigateur affichant un curseur
+montrant une interdiction lorsque je survole le 2e <div>. Afin d'autoriser cette action, il va me falloir ajouter un code
+JavaScript très simple :
+
+document.querySelector('#dropper').addEventListener('dragover', function(e) {
+    e.preventDefault();     // Annule l'interdiction de drop
+});
+
+Avec ce code, le curseur n'affiche plus d'interdiction en suvolant la zone de drop, cependant, il ne se passe rien si je
+relâche mon élément sur la zone de drop. Cela est parfaitement normal, car c'est à moi de définir la manière dont la zone de
+drop doit gérer les éléments qu'elle reçoit.
+
+Avant toute chose, pour agir suite à un drop d'élément, il me faut détecter ce fameux drop, je vais donc devoir utiliser
+l'événemet drop. Illustration :
+
+document.querySelector('#dropper').addEventListener('drop', function(e) {
+    e.preventDefault();     // cette méthode est toujours nécessaire pour éviter une éventuelle redirection inattendue
+    alert('L'objet a été déposé avec succès');
+});
+
+Tant qu'on y est, essayons aussi les événements dragenter et dragleave et un petit oublié qui se nomme dragend :
+
+var dropper = document.querySelector('#dropper');
+
+dropper.addEventListener('dragenter', function() {
+    dropper.style.borderStyle = 'dashed';
+});
+
+dropper.addEventListener('dragleave', function() {
+    dropper.style.borderStyle = 'solid';
+});
+
+//Cet événement détecte n'importe quel drag & drop qui se termine, autant le mettre sur "document"
+document.addEventListener('dragend', function() {
+    alert('Un Drag & Drop vient de se terminer, mais l'événement dragend n'a aucune idée si c'est un succès ou non');
+});
+
+
+Juste une petite manip, et c'est bon (appliquer un style en cas de drop ) ;
+
+dropper.addEventListener('drop', function(e) {
+    e.preventDefault();
+    alert('Blablabla');
+    dropper.style.borderStyle = 'solid';
+});
+
+4.) Terminer un déplacement avec l'objet dataTransfer
+
+L'objet dataTransfer a deux rôles importants lors de la fin d'un drag & drop. Le premier consiste à récupérer, grâce à la
+méthode getData(), le texte sauvegardé avec setData() lors de l'initialisation du drag & drop.
+
+Ici, donc, rien de compliqué :
+
+dropZone.addEventListener('drop',function(e) {
+alert(e.dataTransfer.getData('text/plain');  // affiche le contenu du type MIME text/plain
+});
+
+Quand au 2e rôle, celui-ci consiste à récupérer les éventuels fichiers qui ont été déposés par l'utilisateur, car oui, le
+drag & drop de fichiers est maintenant possible en HTML5 ! Cela fonctionne plus ou moins de la même manière qu'avec une
+balise <input type="file" />, il me faut toujours accéder à la propriété files, sauf que celle-ci est accessible depuis
+l'objet dataTransfer dans le cadre du drag & drop. Exemple :
+
+dropZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+
+    var files = e.dataTransfer.files,
+        filesLen = files.length,
+        filesnames = '';
+
+    for(var i = 0; i < filesLen; i++)
+        filesnames += files[i].name + '\n';
+
+    alert(files.length + ' fichier(s) : \n' + filesnames);
+});
+
+Avec tout ce que j'ai appris, je peux très bien créer un hébergeur de fichiers avec support du drag & drop, prévisualisation
+d'images, upload de fichiers avec une barre de progression, etc. Les possibilités deviennent maintenant très nombreuses et ne sont
+pas forcément bien compliqués à mettre en place !
+
+II./ Mise en pratique
+
+Mon but ici est de créer une page Web avec deux zones de drop et quelques éléments que l'on peut déplacer d'une zone à l'autre.
+
+Réf html
+
+Ce code html est extrêmement simple, et la seul chose à comprendre au niveau du CSS est que la classe .drop_hover sera appliquée
+à une zone de drop lorsque celle-ci sera survolée par un élément HTML déplaçable.
+
+Alors, par où commencer ? Il me faut, avant toute chose, une structure pour mon code. On va donc partir sur un code basé
+sur cette forme :
+
+(function(){
+
+    var dndHandler = {
+
+        // cet objet est conçu pour être un namespace et va contenir les méthodes que l'on va créer pour le système
+        //drag & drop
+
+    };
+
+    //ici on trouvera le code qui utilisera les méthodes du namespce dndHandler
+
+})():
+
+Pour commencer à exploiter ma structure, il me faut une méthode capable de donner la possibilité aux éléments concernés
+d'être déplacés. Les éléments concernés sont ceux qui possèdent une class .draggable. Afin de les paramétrer, je vais
+créer une méthode applyDragEvents() dans mon objet dndHandler :
+
+var dndHandler = {
+
+    applyDragEvents: function(element) {
+
+        element.draggable = true;
+
+    }
+
+};
+
+Ici, ma méthode s'occupe de rendre déplaçables tous les objets qui seront passés en paramètres. Cependant, cela ne suffit
+pas pour deux raisons :
+
+    -   Mes zones de drop devront savoir quel est l'élément qui sera déposé, je vais utiliser une propriété
+            draggedElement pour sauvegarder ça
+    -   Firefox nécessite l'envoi des données avec setData() pour autoriser le déplacement d'éléments
+
+Ces deux ajouts ne sont pas bien compliqués à mettre en place :
+
+var dndHandler = {
+
+    draggedElement = null;  // Propriété pointant vers l'élément en cours de déplacement
+
+    applyDragEvents: function(element) {
+
+        element.draggable = true;
+
+        var dndHandler = this;  // Cette variable est nécessaire pour que l'événement "dragstart' accède facilement au
+                                // namespace "dndHandler"
+
+        element.addEventListener('dragstart', function(e) {
+            dndHandler.draggedElement = e.target;   // on sauvegarde l'élément en cours de déplacement
+
+            e.dataTransfer.setData('text/plain', '');   // nécessaire pour Firefox
+        });
+    }
+});
+
+Ainsi, mes zones de drop n'auront qu'à lire la propriété draggedElement pour savoir quel est l'élément qui a été déposé.
+
+Passons maintenant à la création de la méthode applyDropEvents() qui, comme son nom l'indique, va se charger de gérer les
+événements des deux zones de drop. Je vais commencer par gérer les deux événements les plus simples : dragover et dragleave
+
+var dndhandler = {
+
+    // [...]
+
+    applayDropEvents: function(element) {
+
+        dropper.addEventListener('dragover', function(e) {
+            e.preventDefault();     // On autorise le drop d'éléments
+            this.className = 'dropper drop_hover';  // Et on applique le style adéquat à la zone de drop quand l'élément la suvole
+
+        });
+
+        dropper.addEventListener('dragleave', function(e) {
+
+            this.className = 'dropper'; // On revient au style de base lorsque l'élément quitte la zone de drop
+
+        });
+
+    }
+});
+
+Mon but maintenant est de gérer le drop d'éléments. Mon système doit fonctionner de la manière suivante :
+
+    -   Un élément est "droppé"
+    -   Mon événément drop va alors récupérer l'élément concerné grâce à la propriété draggedElement
+    -   L'élément déplacé est cloné
+    -   Le clone est alors ajouté à la zone de drop concerné
+    -   L'élément d'origine est supprimé
+    -   Et pour terminer, le clone se voir réattribuer les événements qu'il n'aura pas reçu du fait que la méthode
+                cloneNode() ne transmet pas événements.
+
+En soi, ce système n'est pas bien compliqué à réaliser :
+
+dropper.addEventListener('drop', function(e) {
+    var target = e.target,
+        draggedElement = dndHandler.draggedElement,   // Récupération de l'élément concerné
+        clonedElement = draggedElement.cloneNode(true);     // On crée le clone de cet élément
+
+    target.className = 'dropper';   // Application du style par défaut
+
+    clonedElement = target.appendChild(clonedElement);  // Ajout de l'élément cloné à la zone de drop actuelle
+    dndHandler.applyDragEvents(clonedElement);  // Nouvelle application des événements qui ont été perdu en route
+    draggedElement.parentNode.removeChild(draggedElement);  // Suppression de l'élément d'origine
+
+});
+
+Mes deux méthodes sont maintenant terminées, il ne me reste plus qu'à les appliquer aux éléments concernés :
+
+(function() {
+    var dndHandler = {
+        // [...]
+    };
+
+    var elements = document.querySelectorAll('.draggable'),
+        elemLen = elements.length;
+
+    for(var i = 0; i < elemLen; i++)
+        dndHandler.addDragEvents(elements[i]);  // Application des paramètres nécessaires aux éléments déplaçables
+
+    var droppers = document.querySelectorAll('.dropper'),
+        dropLen = droppers.length;
+
+    for(var i = 0; i < dropLen; i++)
+        dndHandler.addDropEvents(droppers[i]);  // Application des évéments nécessaires aux zones de drop
+
+})();
+
+Mon code est terminé, cependant, il a un bug majeur qui s'explique par le simple fait que l'événement drop est hérité par
+les éléments enfants, ce qui signifie que les éléments possédant la class .draggable se comportent alors comme des zones
+de drop.
+
+Une solution serait d'appliquer un événement drop aux éléments déplaçables refusant tout élément HTML déposé :
+
+applyDragEvents: function(element) {
+
+    //[...]
+
+    element.addEventListener('drop', function(e) {
+        e.stopPropagation();    // On stoppe la propagation de l'événement pour empêcher la zone de drop d'agir
+
+    });
+
+},
+
+...mais cela obligerait alors l'utilisateur à déposer son élément en faisant bien attention de ne pas se retrouver au-dessus d'un
+élément déplaçable. Du coup, ce n'est pas une bonne solution.
+
+Note : la méthode stopPropagation() sert à stopper la propagation des événements. Dans une phase de bouillonnement, si
+un élément enfant possède un événement du même type qu'un de ses éléments parents, alors son événement se déclenchera en
+premier, puis viendra celui de l'élément parent. La méthode stopPropagation() sert à brider ce fonctionnement. Dans le cadre
+d'une phase de bouillonnement, en utilisant cette méthode dans l'événement de l'élément enfant, j'empêcherai alors l'élément
+parent d'exécuter sont événement. Dans le cadre d'une phase de capture, en utilisant cette méthode sur l'élément parent,
+j'empêcherai alors l'élément enfant de déclencher son événement.
+
+La solution la plus pratique pour l'utilisateur serait donc de faire en sorte de "remonter" les éléments parents jusqu'à tomber
+sur une zone de drop. Cela est très simple et se fait en trois lignes de code
+
+dropper.addEventListener('drop', function(e) {
+    var target = e.target,
+        draggedElement = dndHandler.draggedElement,
+        clonedElement = draggedElement.cloneNode(true);
+
+    while(target.className.indexOf('dropper') == -1)    // on remonte jusqu'à la zone de drop parente
+        target = target.parentNode;
+
+    target.className = 'dropper';
+    clonedElement = target.appendChild(clonedElement);
+    dndHandler.applyDragEvents(clonedElement);
+    draggedElement.parentNode.removeChild(draggedElement);
+});
+
+Si target (qui représente l'élément ayant reçu un élément déplaçable) ne possède pas la classe .dropper, alors la boucle
+va passer l'élément à l'élément parent et va continuer comme cela jusqu'à tomber sur une zone de drop. Et cela fonctionne
+à merveille !
+
+Réf script
+
+En résumé :
+
+Le Drag & Drop est une technologie conçue pour permettre un déplacement natif d'éléments en tous genres (texte, fichiers, etc.).
+Une action de drag & drop nécessite généralement un transfert de données entre l'élément émetteur et l'élément récepteur,
+cela se fait généralement par le biais de l'objet dataTransfer.
+Il est parfaitement possible de déplacer un élément depuis n'importe quel logiciel de mon système d'exploitation (par
+exemple, l'explorateur de fichiers) jusqu'à une zone d'une page Web prévue à cet effet.
+
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Le Drag & Drop</title>
+    <style>
+        .dropper {
+            margin: 50px 10px 10px 50px;
+            width: 400px;
+            height: 250px;
+            background-color: #555;
+            border: 1px solid #111;
+            border-radius: 10px;
+            transition: all 200ms linear;
+        }
+
+        .drop_hover {
+            background-color: blue;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8) inset;
+            transition-duration: 1s;
+        }
+
+        .draggable {
+            display:inline-block;
+            margin: 20px 10px 10px 20px;
+            padding-top: 20px;
+            width:80px;
+            height: 60px;
+            color: #3D110F;
+            background-color: #822520;
+            border: 4px solid #3D110F;
+            text-align: center;
+            font-size: 2em;
+            cursor: move;
+
+            transition: all 200ms linear;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+<div class="dropper">
+
+    <div class="draggable">#1</div>
+    <div class="draggable">#2</div>
+
+</div>
+
+<div class="dropper">
+
+    <div class="draggable">#3</div>
+    <div class="draggable">#4</div>
+
+</div>
+<script>
+    (function(){
+
+        var dndHandler = {
+            draggedElement: null,   // propriété pointant vers l'élément en cours de déplacement
+
+            applyDragEvents: function(element) {
+                var dndHandler = this;   // pour pouvoir accéder au namespace "dndHandler"
+                element.draggable = true;
+                element.addEventListener('dragstart', function(e) {
+                    dndHandler.draggedElement = e.target;   // on sauvegarde l'élément en cours de déplacement
+                    e.dataTransfer.setData('text/plain', ''); // Nécessaire pour Firefox
+                    element.className = 'draggable';
+                });
+            },
+
+            applyDropEvents: function(dropper) {
+                var dndHandler = this;  // pour pouvoir accéder au namespace "dndHandler"
+
+                dropper.addEventListener('dragover', function(e) {
+                    e.preventDefault();  // on autorise le drop d'éléments
+                    this.className = 'dropper drop_hover';  // on applique le style adéquat
+                });
+
+                dropper.addEventListener('dragleave', function(e) {
+                    this.className = 'dropper';  // on revient au style de base
+                });
+
+                dropper.addEventListener('drop', function(e) {
+                    var target = e.target,
+                        draggedElement = dndHandler.draggedElement,
+                        clonedElement = draggedElement.cloneNode(true);
+
+                    while(target.className.indexOf('dropper') == - 1)  // on remonte jusqu'à la zone de drop parente
+                        target = target.parentNode;
+
+                    target.className = 'dropper';  // application du style par défaut
+                    clonedElement = target.appendChild(clonedElement);  // ajout de l'élément cloné à la zone de drop actuelle
+                    dndHandler.applyDragEvents(clonedElement);  // réattribution d'événements perdus lors du clonage
+                    draggedElement.parentNode.removeChild(draggedElement);  // suppression de l'élément d'origine
+                });
+            }
+        };
+
+        var elements = document.querySelectorAll('.draggable'),
+            elemLen = elements.length;
+
+        for(var i = 0; i < elemLen; i++)
+            dndHandler.applyDragEvents(elements[i]); // application des paramètres nécessaires aux éléments déplaçables
+
+        var droppers = document.querySelectorAll('.dropper'),
+            dropLen = droppers.length;
+
+        for(i = 0; i < dropLen; i++)   // application des paramètres nécessaires aux zones de drop
+            dndHandler.applyDropEvents(droppers[i]);
+    })();
+</script>
+</body>
+</html>

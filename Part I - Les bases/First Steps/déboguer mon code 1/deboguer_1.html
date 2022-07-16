@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Les objets et tableaux </title>
+    </head>
+    <body>
+        <script src="fichier_js.js">
+            /*
+                                                        Déboguer mon code
+                                                        
+Pour vérifier les valeurs de mes variables, calculs, etc., il existe une méthode spécialement adaptée à ce case de figure, il
+s'agit de console.log(). 
+
+I./ Les kits de développement et leur console
+
+Attention, il est très important de bien externaliser le code JavaScript (ie le même dans un fichier .js), car l'affichage des
+erreurs peut être erroné avec Chrome lorsque le code JS est directement intégré au sein du code HTML.
+
+A chaque fois, l'interpréteur JS s'arrête sur la première erreur rencontrée (même s'il y a en plus).
+
+II./ Aller plus loin avec la console
+
+La fonction console.log() permet d'afficher la valeur de la variable sans bloquer l'exécution de mon code, contrairement à la
+fonction alert(). Mais l'intérêt de cette fonction va bcp plus loin, car elle permet de visualiser le contenu des objets de
+manière relativement pratique.
+
+En plus de la méthode log(), l'objet console en propose d'autres qui permettent de modifier la manière dont on affiche les 
+valeurs. Je peux ainsi choisir d'émettre des alertes ou des erreurs avec les méthodes warn() et error(), je peux grouper 
+des lignes de résultats avec group() et groupEnd() (c'est parfois extrêmement pratique). 
+
+Cependant, il faut garder à l'esprit que toutes ces méthodes sont faites pour déboguer mon code et n'ont rien à faire dans
+mon code une fois mon site mis en ligne. 
+
+Dans le kit de développement, je peux écrire du code dans la console (créer des variables, appeler des fonctions, etc.).
+==> Je peux donc, grâce à la console, agir sur mon code pendant son exécution ! Cependant, la console ne peut agir que sur les 
+variables qui sont globales. 
+
+III./ Utiliser les points d'arrêt
+
+Lorsqu'on développe, il arrive parfois que l'on rencontre un bug qui ne se produit que pendant une fraction de seconde, ce
+qui pose généralement problème pour cerner la source du problème. Pour cela, les développeurs utilisent généralement ce qu'on
+appelle "les points d'arrêt", aussi nommés "breakpoints" en anglais. 
+
+Les points d'arrêt permettent de mettre en pause le script à un point précis dans le code, et d'analyse l'état du scope courant,
+ainsi que de l'espace global.
+
+Grâce aux points d'arrêt, on peut étudier la pile d'exécution, appelée "Call Stack" en anglais. 
+==> Dans le kit de développement, il faut cliquer sur Source (ou "Debogueur" sur Firefox).
+
+Le scope global (et les instructions qui vont avec) est affiché en tant que "anonymous" dans Chrome (dans le Call Stack), alors
+que dans Firefox, il est affiché en tant que "global".
+
+Sinon, en ce qui concerne les fonctions anonymes à proprement parler, il est possible de leur donner un nom dans la pile d'exécution afin de mieux les repérer.
+
+
+
+            */
+        
+            
+        </script>
+    </body>
+</html>

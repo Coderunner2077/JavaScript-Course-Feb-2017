@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Introduction à l'AJAX</title>
+    <style>
+        .hover {
+            background-color: rgba(0, 0, 250, 0.1);
+        }
+
+        #myDiv {
+            width: 400px;
+            height: 80px;
+            max-height: 80px;
+            background-color: rgb(240, 240, 240);
+            padding: 15px;
+        }
+        #ville {
+            border: 1px solid blue;
+            width: 70%;
+            height: 30px;
+            max-height: 30px;
+            margin-right: 7px;
+        }
+
+        #envoi {
+            margin-left: 8px;
+            position:relative;
+            top: 10px;
+        }
+
+        #results {
+            box-shadow: 0 0 7px rgb(200, 200, 200);
+            background-color: white;
+            position: absolute;
+            top: 67px;
+            left: 23px;
+            width: 280px;
+        }
+        #results p {
+            display: none;
+        }
+
+        #results p a {
+            font-size: 70%;
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" action="request.php" id="myForm">
+        <div id="myDiv">
+            <input type="search" id="ville" name="ville" autocomplete="off" />
+            <input type="image" src="loupe.jpg" id="envoi"/>
+            <div id="results">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <p></p>
+            </div>
+        </div>
+
+    </form>
+    <script>
+
+        function autocomplete(words){
+            if(words.length) words = words.split('|');
+            else return;
+
+            var divs = document.querySelectorAll('#results div'),
+                length = divs.length,
+                p = document.querySelector('#results p');
+
+            var wordsLen = words.length;
+
+            for(var i = 0; i < length; i++) {
+                if(i < wordsLen)
+                    divs[i].textContent = words[i];
+                else
+                    divs[i].innerHTML = '';
+            }
+            if(wordsLen) {
+                p.style.display = 'block';
+                p.innerHTML = '<a href="#">En savoir plus</a>';
+            }
+            else {
+                p.innerHTML = '';
+                p.style.innerHTML = 'none';
+            }
+
+        }
+
+        function doHover(key) {
+            var hover = document.querySelector('.hover');
+            switch(key) {
+                case 16:
+                    break;
+                case 38:
+                    if(hover && hover.previousElementSibling)
+                        hover.previousElementSibling.className = 'hover';
+                    else {
+                        var lastDiv = document.querySelector('#results div');
+                        while(lastDiv.nextElementSibling.innerHTML != '' && lastDiv.nextElementSibling.nodeName.toUpperCase() != 'P')
+                            lastDiv = lastDiv.nextElementSibling;
+                        lastDiv.className = 'hover';
+                    }
+                    break;
+                case 40:
+                    if(hover && hover.nextElementSibling && hover.nextElementSibling.nodeName.toUpperCase() != 'P')
+                        hover.nextElementSibling.className = 'hover';
+                    else {
+                        if(document.querySelector('#results div').innerHTML)
+                            document.querySelector('#results div').className = 'hover';
+                    }
+                    break;
+                case 13:
+                    if(hover)
+                        document.querySelector('#ville').value = hover.textContent;
+                    deleteAll();
+                    break;
+            }
+            if(hover)
+                hover.className = '';
+        }
+
+        function deleteAll() {
+            var divs = document.querySelectorAll('#results div'),
+                len = divs.length;
+            for(var i = 0; i < len; i++) {
+                divs[i].innerHTML = '';
+                divs[i].className = '';
+            }
+            var p = document.querySelector('#results p');
+            p.innerHTML = '';
+            p.style.display = 'none';
+        }
+        (function(){
+            var inputVille = document.getElementById('ville'),
+                xhr = new XMLHttpRequest(),
+                form = new FormData(document.getElementById('myForm'));
+
+            xhr.open('POST', 'request.php');
+            //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.addEventListener('readystatechange', function(){
+                if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    if(xhr.responseText != '')
+                        autocomplete(xhr.responseText);
+                    else
+                        deleteAll();
+                }
+                else if(xhr.readyState === XMLHttpRequest.DONE && xhr.status != 200)
+                    alert(xhr.statusText);
+
+            });
+
+            inputVille.addEventListener('keyup', function(e){
+                if(!inputVille.value)
+                    deleteAll();
+                else {
+                    var key = e.keyCode;
+                    if(key === 16 || key === 38 || key === 40 || key === 13)
+                        doHover(key);
+                    else {
+                        if(xhr.readyState === XMLHttpRequest.HEADERS_RECEIVED || xhr.readyState === XMLHttpRequest.LOADING)
+                            xhr.abort();
+                        if(inputVille.value != '') {
+                            xhr.open('POST', 'request.php');
+                            form = new FormData(document.getElementById('myForm'));
+                            xhr.send(form);
+                        }
+                    }
+                }
+            });
+
+            document.querySelector('#myForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+            });
+
+            var divs = document.querySelectorAll('#results div'),
+                length = divs.length;
+            for(var i = 0; i < length; i++) {
+                divs[i].addEventListener('mouseover', function(e) {
+                    if(document.querySelector('.hover') && document.querySelector('.hover') != e.currentTarget)
+                        document.querySelector('.hover').className = '';
+                    e.currentTarget.className = 'hover';
+                    if(e.relatedTarget.className == 'hover')
+                        e.relatedTarget.className = '';
+                });
+                divs[i].addEventListener('mouseout', function(e) { // inutile ?
+                    e.currentTarget.className = '';
+                });
+
+                divs[i].addEventListener('click', function(e) {
+                    document.querySelector('#ville').value = e.target.textContent;
+                    deleteAll();
+                });
+            }
+
+            document.querySelector('#ville').addEventListener('blur', function() {
+                setTimeout(deleteAll, 100);
+            });
+        })();
+
+
+        /*
+        function request(xhr, chaine, results, tabVilles) {
+            if(xhr.readyState != XMLHttpRequest.UNSENT && xhr.readyState != XMLHttpRequest.DONE)
+                xhr.abort();
+            xhr = new XMLHttpRequest();
+            xhr.open('POST', 'request.php');
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.addEventListener('readystatechange', function() {
+                if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    if(!xhr.responseText)
+                        deleteResults(results);
+                    else {
+                        console.log('xhr.responseText : ' + xhr.responseText);
+                        tabVilles = [];
+                        tabVilles = xhr.responseText.split('|');
+                        writeResults(results, tabVilles);
+                    }
+                }
+                else if(xhr.readyState === XMLHttpRequest.DONE && xhr.status !== 200)
+                    alert('erreur');
+            });
+            xhr.send('ville=' + encodeURIComponent(chaine));
+        }
+        function deleteResults(results) {
+            var length = results.length;
+            for(var i = 0; i < length; i++) {
+                results[i].className = '';
+                results[i].textContent = '';
+            }
+            document.querySelector('#results p').style.display = 'none';
+            results[i - 1].nextElementSibling.innerHTML = '';
+        }
+
+        function doHover(results, tabVilles, key) {
+            var hover = document.querySelector('.hover'), pos = results.length - 1,
+                lien = results[results.length - 1].nextElementSibling;
+            while(!results[pos].textContent)
+                pos--;
+
+            switch(key) {
+                case 16:
+                    break;
+                case 38:
+                    if(!hover) {
+                        hover = results[pos];
+                    }
+                    else {
+                        hover.className = '';
+                        if (!hover.previousElementSibling)
+                            hover = results[pos];
+                        else
+                            hover = hover.previousElementSibling;
+                    }
+                    hover.className = 'hover';
+                    break;
+                case 40:
+                    if(!hover) {
+                        hover = results[0];
+                    }
+                    else {
+                        hover.className = '';
+                        if(hover.nextElementSibling === lien)
+                            hover = results[0];
+                        else
+                            hover = hover.nextElementSibling;
+                    }
+                    hover.className = 'hover';
+                    break;
+                case 13:
+                    if(hover)
+                        document.getElementById('ville').value = hover.textContent;
+                    deleteResults(results);
+                    break;
+            }
+        }
+
+        function writeResults(results, tabVilles) {
+            var resLen = results.length;
+            for(var i = 0; i < resLen; i++) {
+                if(tabVilles[i])
+                    results[i].textContent = tabVilles[i];
+                else
+                    results[i].textContent = '';
+            }
+            if(!results[i - 1].nextElementSibling.innerHTML) {
+                document.querySelector('#results p').style.display = 'block';
+                results[i - 1].nextElementSibling.innerHTML = '<a href="#">En savoir plus</a>';
+            }
+
+
+        }
+        (function(){
+            var bVille = document.getElementById('ville'),
+                bEnvoi = document.getElementById('envoi'),
+                form = document.getElementById('myForm'),
+                results = document.querySelectorAll('#results div'),
+                resLen = results.length;
+
+            var word = '', tabVilles = [];
+            var xhr = new XMLHttpRequest();
+            var hover = {};
+            bVille.addEventListener('keyup', function(e){
+                var key = e.keyCode;
+                if(key === 16 || key === 38 || key === 40 || key === 13)
+                    doHover(results, tabVilles, key);
+                else {
+                    hover = {};
+                    word = bVille.value;
+                    request(xhr, word, results, tabVilles);
+                }
+            });
+
+            bEnvoi.addEventListener('click', function(e){
+                e.preventDefault();
+            });
+
+            for(var i = 0; i < resLen; i++) {
+                results[i].addEventListener('mouseover', function(e) {
+                    if(this.textContent) {
+                        hover.target = e.currentTarget;
+                        hover.target.className = 'hover';
+                    }
+                });
+                results[i].addEventListener('mouseout', function(e) {
+                    if(e.currentTarget.textContent && e.currentTarget === hover.target) {
+                        e.currentTarget.className = '';
+                        hover = {};
+                    }
+                });
+
+                results[i].addEventListener('click', function(e) {
+                    document.getElementById('ville').value = hover.target.textContent;
+                    deleteResults(results);
+                    hover = {};
+                });
+            }
+        })();
+        */
+    </script>
+</body>
+</html>

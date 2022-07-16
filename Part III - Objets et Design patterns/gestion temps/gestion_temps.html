@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>La gestion du temps</title>
+    </head>
+    <body>
+		<button  id="myButton">Annuler le compte à rebours </button> 
+		<button id="bouton">Annuler le compte à rebours (5s)</button>
+		<p>
+			<img src="elephant.jpg" id="myImg" style="opacity: 1" />	
+		</p>
+        <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Le système de datation
+			/*timestamp : en JavaScript, c'est le nombre de millisecondes écoulées depuis le 1er janvier 1970 à minuit. C'est
+			le système de datation de tout ordi */
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//L'objet Date
+			/* 4 constructeurs : */
+			new Date(); // date et heure fixée à l'instant de l'instanciation
+			
+			var timestamp = 1301412748510;
+			new Date(timestamp); // en spécifiant un timestamp
+			
+			var dateString = 'Sat, 04 May 1991 20:00:00 GMT+02:00';
+			new Date(dateString); // avec une chaîne de caractères qui doit être interprétable par la méthode parse()
+			
+			var annee = 1991, mois = 5, jour = 4, heure = 20, minutes = 0, secondes = 0, millisecondes = 0;
+			new Date(annee, mois, jour, heure, minutes, secondes, millisecondes); // seuls les 3 premiers param sont obligatoires
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les méthodes statiques
+			/* 	parse() : prend en unique paramètre une chaîne de caractères représentant une date et renvoie le timestamp
+			associé. Cependant, cette chaîne doit respecter une certaine syntaxe qui se présente de cette manière :
+			
+			'Sat, 04 May 1991 20:00:00 GMT+02:00'
+			
+			Bien sûr, il existe de nombreuses dérives. Mais ça, c'est le format standardisé (y en a-t-il d'autres ?).
+			
+			Exemple d'utilisation de la fonction parse : 		*/
+			
+			timestamp = Date.parse('Mon, 20 January 2017 22:17:00 GMT+02:00');
+			//alert(timestamp);
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les méthodes d'instance de l'objet Date
+			/* L'objet Date ne possède aucune propriété standard. On va donc dresser une liste non-exaustive de ses méthodes : */
+			var date = new Date();
+			
+			date.getFullYear(); 	// renvoie l'année sur 4 chiffres
+			date.getMonth(); 		// renvoie le mois (0 à 11)
+			date.getDate(); 		// renvoie le jour du mois (1 à 31)
+			date.getDay();			// renvoie le jour de la semaine (0 à 6, la semaine commence le dimanche)
+			date.getHours(); 		// renvoie l'heure (0 à 23)
+			date.getMinutes();		// renvoie les minutes (0 à 59)
+			date.getSeconds();		// renvoie les secondes (0 à 59)
+			date.getMilliseconds();	// renvoie les millisecondes (0 à 999)
+			
+			/* Note : ces huit méthodes possèdent chacune une méthode homologue de type "set". */
+			
+			//Deux autres méthode pourront aussi m'être utiles : 
+			
+			date.getTime(); 	// renvoie le timestamp de la date de mon objet
+			date.setTime(timestamp);	// permet de modifier la date de mon objet en lui passant un timestamp en param
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Mise en pratique : calculer le temps d'exécution d'un script
+			
+			var start = new Date().getTime();
+			
+			for(var i = 0, c = 0; i < 100000000; ++i)
+				c += i * i;
+			
+			var end = new Date().getTime();
+			//alert('Le temps d\'exécution est : ' + (end - start));
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les fonctions temporelles
+			/*
+			setTimeout() : permet de déclencher un code au bout d'un certain temps donné
+			setInterval() : permet de déclencher un code à intervalle régulier (une sorte de timer)
+			*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Utiliser setTimeout() et setInterval()...
+			//...Avec un simple appel de fonction
+			/* Ces deux fonctions ont exactement les mêmes params : le 1er est la fonction à exécuter, le 2e est le temps en
+			millisecondes.
+			Concernant le 1er paramètre, il y a trois manières de le spécifier : */
+			
+			function myFunction() {
+				//alert('Appel de fonction !');
+			}
+			
+			//En passant la fonction en référence : 
+			setTimeout(myFunction, 2000); //myFunction sera exécutée au bout de 2 secondes
+			
+			//En définissant une fonction anonyme :
+			
+			setTimeout(function(){
+				//alert('Appel de fonction anonyme');
+			}, 4000);
+			
+			//En utilisant une sale méthode qui n'est, alors là, pas du tout recommandée :
+			setTimeout('myFunction()', 6000);
+			
+			/* Pourquoi bannir cette dernière manière : Tout simplement parce que cela appelle implicitement la fonction
+			eval() qui va se charger d'analyser et exécuter ma chaîne de caractères. 
+			Pour plus d'info : https://openclassrooms.com/courses/bonnes-pratiques-javascript */
+			
+			/* Sinon, pour le 2nd paramètre, ça ne sert à rien de passer une valeur inférieur à 10 (millisecondes), car
+			c'est le temps minimal qu'il faudra au navigateur pour exécuter la fonction. */
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//...Avec une fonction nécessitant des paramètres
+			/* Si l'on veut passer à setTimeout() ou setInterval() une fonction possèdant elle-même des paramètres, c'est très
+			simple : on passe les arguments réquis directement aux fonctions temporelles qui peuvent prendre autant de 
+			paramètres supplémentairs qu'on le souhaite. Exemple : */
+			var param1, param2;
+			setTimeout(myFunction, 8000, param1, param2); //appellera la fonction de cette manière : myFunction(param1, param2);
+			
+			//Cependant, cette technique ne fonctionne pas pour IE avant IE 10
+			//Il faut donc ruser :
+			setTimeout(function(){
+				myFunction(param1, param2);
+			}, 8000);
+			
+			//On a donc créé une fonction anonyme qui va se charger d'appeler la fonction finale avec les bons paramètres
+		
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Annuler une action temporelle
+			/* clearTimeout() et clearInterval() annulent respectivement l'action de setTimeout() et celle de setInterval(). 
+			Il faut juste passer en paramètre à chacune de ces fonctions l'identifiant de l'action temporelle à annuler.
+			Cet identifiant (un simple nombre entier) est retourné par les fonctions setTimeout() et setInterval().
+			Exemple : 			*/
+			(function(){
+				var butt = document.getElementById('myButton');
+				
+				var timer = setTimeout(function(){
+					alert('Vous avez un train de retard');
+				}, 10000);
+				butt.addEventListener('click', function(){
+					clearTimeout(timer);
+					butt.innerHTML = 'Trop fort';
+				});
+			})();
+			
+			//Autre exemple plus complexe :
+			(function(){
+				var bouton = document.getElementById('bouton'),
+					timeLeft = 5, intervalID;
+				
+				var timerID = setTimeout(function(){
+					clearInterval(intervalID);
+					bouton.innerHTML = 'Annuler le compte à rebours (0s)';
+				}, 5000);
+				intervalID = setInterval(function(){
+					bouton.innerHTML = 'Annuler le compte à rebours (' + (--timeLeft) + 's)';
+				}, 1000);
+				bouton.addEventListener('click', function(){
+					clearTimeout(timerID);
+					clearInterval(intervalID);
+					bouton.innerHTML = 'Annulé au bout de ' + (5 - timeLeft) + ' secondes';
+				});
+				
+			})();
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Mise en pratique : les animations
+			(function(){
+				var imgStyle = document.getElementById('myImg').style;
+			
+				function anim(){
+					var opacity = imgStyle.opacity = parseFloat(imgStyle.opacity) - 0.1;					
+					
+					if(opacity > 0.2)
+						setTimeout(anim, 100); //La fonction anim() fait appel à elle-même si l'opacité > 0.2
+				}
+				anim(); //Et on lance la 1re phase de l'animation
+			})();
+
+			
+			/* Note : On a utilisé la fonction setTimeout() au lieu de setInterval() pour réaliser l'animation, parce qu'en
+			fait, setTimeout() est bien plus "stable" que setInterval(), ce qui fait que l'on obtient des animations bien
+			plus fluides. Dans l'ensemble, mieux vaut se passer de setInterval() et utiliser setTimeout() en boucle,
+			quelque soit le cas d'application */
+		</script>
+	</body>
+</html>

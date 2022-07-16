@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>TP Formulaire dynamique JavaScript</title>
+		<style>
+			body {
+				padding: 20px;
+			}
+			.champ_box {
+				display: flex;
+				justify-content: flex-start;
+				margin-bottom: 30px;
+			}
+
+			.champ_box:last-child {
+				margin-bottom: 5px;
+			}
+
+			.champ_box label, .champ_box .radio_box, .champ, .change {
+				width: 200px;
+			}
+
+			.button { margin: 10px; }
+
+			input {
+				padding: 2px;
+				border: 1px solid #CCC;
+				border-radius: 2px;
+				outline: none;
+			}
+
+			input:focus {
+				border-color: rgba(82, 168, 236, 0.75);
+				box-shadow: 0 0 8px rgba(82, 168, 236, 0.5);
+			}
+
+			.valid {
+				border-color: rgba(68, 191, 68, 0.75);
+			}
+
+			.valid:focus {
+				border-color: rgba(68, 191, 68, 0.75);
+				box-shadow: 0 0 8px rgba(68, 191, 68, 0.5);
+			}
+
+			.invalid {
+				border-color: rgba(191, 68, 68, 0.75);
+			}
+
+			.invalid:focus {
+				border-color: rgba(191, 68, 68, 0.75);
+				box-shadow: 0 0 8px rgba(191, 68, 68, 0.5);
+			}
+
+			.tooltip {
+				display: inline-block;
+				margin-left: 20px;
+				padding: 2px 4px;
+				background-color: #CCC;
+				border: 1px solid #555;
+				border-radius: 4px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Formulaire dynamique</h1>
+		<form method="post" action="traitement.php" id="form">
+			<fieldset>
+				<legend>Etat civil</legend>
+				<div class="champ_box">
+					<label for="sexe">Sexe</label>
+					<div class="radio_box" id="sexe">
+						<input type="radio" name="sexe" id="masculin" class="champ_change" value="Masculin">
+						<label for="masculin">Masculin</label>
+						<input type="radio" name="sexe" id="feminin" class="champ_change" value="Féminin">
+						<label for="feminin">Féminin</label>
+					</div>
+					<span class="tooltip">Vous devez sélectionnez votre sexe</span>
+				</div>
+				<div class="champ_box">
+					<label for="nom">Nom</label>
+					<input type="text" name="nom" id="nom" class="champ">
+					<span class="tooltip">Un nom ne peut pas faire moins de 2 caractères</span>
+				</div>
+				<div class="champ_box">
+					<label for="prenom">Prénom</label>
+					<input type="text" name="prenom" id="prenom" class="champ">
+					<span class="tooltip">Un prénom ne peut pas faire moins de 2 caractères</span>
+				</div>
+				<div class="champ_box">
+					<label for="age">Âge</label>
+					<input type="text" name="age" id="age" class="champ">
+					<span class="tooltip">L'âge doit être compris entre 5 et 140</span>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Identifiants d'accès</legend>
+				<div class="champ_box">
+					<label for="pseudo">Pseudo</label>
+					<input type="text" name="pseudo" id="pseudo" class="champ">
+					<span class="tooltip">Un pseudo ne peut pas faire moins de 4 caractères</span>
+				</div>
+				<div class="champ_box">
+					<label for="pass">Mot de passe</label>
+					<input type="password" name="pass" id="pass" class="champ">
+					<span class="tooltip">Un mot de passe ne peut pas faire moins de 6 caractères</span>
+				</div>
+				<div class="champ_box">
+					<label for="pass_confirm">Mot de passe (confirmation)</label>
+					<input type="password" name="pass_confirm" id="pass_confirm" class="champ">
+					<span class="tooltip">Le mot de passe de confirmation doit être identique à celui d'origine</span>
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Informations complémentaires</legend>
+				<div class="champ_box">
+					<label for="pays">Pays</label>
+					<select id="pays" class="champ_change" name="pays">
+						<option>Choisissez votre pays de résidence</option>
+						<option>Allemagne</option>
+						<option>Belgique</option>
+						<option>France</option>
+						<option>Royaume-Uni</option>
+						<option>Japon</option>
+					</select>
+					<span class="tooltip">Vous devez sélectionner votre pays de résidence</span>
+				</div>
+				<div class="checkbox">
+					<input type="checkbox" id="promo" name="promo">
+					<label for="promo">J'accepte de recevoir des emails</label>
+				</div>
+			</fieldset>
+			<input type="submit" value="M'inscrire" id="submit" class="button">
+			<input type="reset" value="Réinitialiser le formuliare" class="button">
+		</form> 
+
+		<script>
+			function deactivateTooltips() {
+				var tooltips = document.querySelectorAll('.tooltip'),
+					length = tooltips.length;
+				for(var i = 0; i < length; i++) 
+					tooltips[i].style.display = 'none';
+			}
+
+			function getTooltip(element) {
+				var parent = element.parentNode;
+				if(parent.className === 'radio_box') 
+					element = parent;
+				
+				while(element = element.nextSibling)
+					if(element.className === 'tooltip')
+						return element;
+				return false;
+			}
+
+			function activateTooltip(elem) {
+				var classList = elem.classList;
+				if(classList.contains('invalid'));
+					//return true;
+				if(classList.contains('valid'))
+					classList.replace('valid', 'invalid');
+				else
+					classList.add('invalid');
+				var tooltip = getTooltip(elem);
+				tooltip.style.display = "inline-block";
+				return false;
+			}
+
+			function validate(elem) {
+				var classList = elem.classList;
+				if(classList.contains('valid'));
+					//return true;
+				if(classList.contains('invalid'))
+					classList.replace('invalid', 'valid');
+				else
+					classList.add('valid');
+				var tooltip = getTooltip(elem);
+				tooltip.style.display = "none";
+				return true;
+			}
+
+			var check = {};
+
+			check["sexe"] = function () {
+				var sexElems = document.getElementsByName('sexe');
+				for(var i = 0; i < sexElems.length; i++) {
+					if(sexElems[i].checked) {
+						return validate(sexElems[i]);
+					}
+				}
+				return activateTooltip(sexElems[0]);
+			};
+
+			check["nom"] = function (id, length) {
+				var nom = document.getElementById(id),
+					value = nom.value;
+				if(value.length < length) {
+					return activateTooltip(nom);
+				}
+				return validate(nom);
+			};
+
+			check["prenom"] = check["nom"];
+
+			check["age"] = function () {
+				var age = document.getElementById("age"),
+					value = parseInt(age.value, 10);
+				if(!isNaN(value) && value >= 5 && value <= 140) {
+					return validate(age);
+				} else
+					return activateTooltip(age);
+			}
+
+			check["pseudo"] = check["nom"];
+			check["pass"] = check["nom"];
+
+			check["pass_confirm"] = function () {
+				var confirm = document.getElementById("pass_confirm"),
+					pass = document.getElementById("pass");
+				if(confirm.value == '')
+					return null;
+				if(confirm.value == pass.value)
+					return validate(confirm);
+				else 
+					return activateTooltip(confirm);
+			}
+
+			check["pays"] = function () {
+				var select = document.getElementById("pays");
+				if(select.selectedIndex)
+					return validate(select);
+				return activateTooltip(select);
+			};
+
+			(function() {
+				var input = document.querySelectorAll(".champ"),
+					changeElems = document.querySelectorAll(".champ_change"),
+					length = input.length,
+					argument = {sexe: null, nom: 2, prenom: 2, age: null, pseudo: 4, pass: 6, pass_confirm: null, pays: null};
+				for(var i = 0; i < length; i++) {
+					input[i].addEventListener('keyup', function(e) {
+						var id = e.target.id;
+						check[id](id, argument[id]);
+					});
+				}
+				for(var i = 0; i < changeElems.length; i++)
+					changeElems[i].addEventListener('change', function(e) {
+						var id = e.target.id == 'pays' ? 'pays' : 'sexe';
+						check[id]();
+					});
+
+				var form = document.getElementById('form');
+				form.addEventListener('submit', function(e) {
+					e.preventDefault();
+					for(var id in argument) {
+						check[id](id, argument[id]);
+					}
+				});
+				form.addEventListener('reset', function(e) {
+					var champs = document.querySelectorAll('.valid, .invalid');
+					for(var i = 0; i < champs.length; i++){
+						champs[i].classList.remove('valid');
+						champs[i].classList.remove('invalid');
+					}
+					deactivateTooltips();
+				});
+			})();
+
+			deactivateTooltips();
+		</script>
+	</body>
+</html>

@@ -1,0 +1,461 @@
+<!--                                                   Manipuler le code HTML (partie 1/2)
+
+I./ Le Document Object Model
+
+Le Document Object Model (abrégé DOM) est une interface de programmation pour les documents XML et HTML.
+
+Note : Une interface de programmation, qu'on appelle aussi une API (Application Programming Interface), est un
+ensemble d'outils permettant de faire communiquer entre eux plusieurs programmes ou, dans le cas présent,
+différents langages. Le terme API reviendra souvent, quelque soit le langage de programmation que j'apprends. 
+
+Le DOM est donc une API qui s'utilise avec les documents XML et HTML, et qui va me permettre, via JavaScript,
+d'accéder au code XML et/ou HTML d'un document. C'est grâce au DOM que je vais pouvoir modifier des éléments HTML
+(afficher ou masquer un div par exemple), en ajouter, en déplacer ou même en supprimer.
+
+Note : En HTML, on parle de balises HTML (balise ouvrante + balise fermante), alors qu'en JavaScript, on parle
+d'éléments HTML tout court, pour la simple raison que la paire de balises est vue comme un objet en JavaScript.
+
+1.) L'objet window
+
+Avant de parler véritablement du document, c'est-à-dire de la paga Web, penchons-nous sur l'objet window. 
+L'objet window est ce qu'on appelle un objet global qui représente le fenêtre du navigateur. C'est à partir
+de cet objet que JavaScript estexécuté.
+
+En fait, alert() n'est pas vraiment une fonction. Il s'agit en réalité d'une méthode appartenant à l'objet window.
+Mais l'objet window est dit implicite, ie il n'y a généralement pas besoin de le spécifier. Ainsi, ces deux
+instructions sont équivalentes :
+
+alert('Hello el mundo');
+window.alert('Hello el mundo');
+
+On spécifie très rarement l'objet window, sauf quand on manipule des frames.
+
+Attention : pour autant, les fonctions comme isNaN(), parseInt() ou encore parseFloat() sont bien des fonctions,
+et ce sont d'ailleurs des fonctions globales (qui ne sont pas si nombreuses soit dit en passant).
+
+Lorsqu'on déclare une variable, cette variable devient automatiquement une propriété de l'objet window. 
+D'ailleurs, voici comment on accède à une variable globale, quand une variable locale cache cette dernière :
+Réf script
+
+Une dernière chose importante : toute variable non déclarée (donc utilisée sans jamais écrire le mot-clé var)
+deviendra immédiatement une propriété de l'objet window, et ce, quelque soit l'endroit où l'on utilise cette
+variable la 1re fois ! 
+
+==> Réf script : cela est dû au fait que, JavaScript n'ayant trouvé aucune déclaration de variable préalable, 
+le code a été interprété comme si on avait écrit :
+
+window.texto = 'variable non déclarée explicitement';
+
+Attention : il ne faut pas recourir à cette manière de procéder, car un grand risque de confusion ET de 
+nombreux bugs !! 
+A la rigueur, il faut au moins expliciter l'objet window (i.e. comme ci-dessus).
+
+2.) Le document
+
+L'objet document est un sous-objet de window, et c'est même l'un des plus utilisés. Et pour cause, il 
+représente la page Web et plus précisément la balise <html>. C'est grâce à cet élément-là que l'on va pouvoir
+accéder aux éléments HTML et les modifier.
+Voyons donc, dans la sous-partie suivante, comment naviguer dans le document. 
+
+II./ Naviguer dans le document
+
+1.) La structure DOM
+
+Le DOM pose comme concept que la page Web est vue comme un arbre, comme une hiérarchie des éléments. 
+Et cette schématisation est assez simple : l'élément <html> contient deux éléments, appelés enfants : <head>
+et <body>. Pour ces deux enfants, <html> est l'élément parent. Chaque élément est appelé noeud (node en
+anglais).L'élément <head> contient lui aussi deux éléments (voire plus) : <meta> et <title>. <meta> ne
+contient pas d'enfants, tandis que <title> en contient un, qui s'appelle #text. Comme son nom l'indique, 
+#text est un élément qui contient du texte. Et ainsi de suite.
+
+En effet, le texte présent dans une page Web est vu par le DOM comme un noeud de type #text. 
+
+2.) Accéder aux éléments
+
+L'accès aux éléments HTML via le DOM est assez simple mais demeure actuellement plutôt limité. L'objet document
+possède trois méthode principales : getElementById(), getElementsByTagName() et getElementsByName().
+
+3.) getElementById()
+
+Cette méthode permet d'accéder à un élément en connaissant son ID qui est simplement l'attribut id de l'élément. 
+
+Réf html et script
+
+==> la méthode alert() affiche [objectHTMLDivElement], ie on me dit que l'objet renvoyé par la méthode
+getElementById est, en l'occurence, un objet de type HTMLDivElement. Ce qui montre que le script fonctionne
+impeccablement.
+
+4.) getElementsByTagName()
+
+ATTENTION : il y a un "s" à Elements. C'est une source d'erreurs fréquente.
+
+Cette méthode permet de récupérer, sous la forme d'un tableau, tous les éléments de la famille. Si dans une page,
+on veut récupérer tous les div, il suffit de faire comme ceci :
+
+var divs = document.getElementsByTagName('div');
+
+for(var i = 0, c = divs.length; i < c; ++i)
+    alert('Element N°' + (i+1) +' : ' + divs[i]);
+
+La méthode retourne une collection d'éléments (utilisable de la même manière qu'un tableau). Pour accéder à
+chaque élément, il est nécessaire de parcourir le tableau avec une petite boucle. 
+
+Deux petites astuces :
+
+    -   Cette méthode est accessible sur n'importe quel élément HTML, et pas seuelement sur l'objet document
+    -   En paramètre de cette  méthode, je peux mettre une chaîne de caractères contenant un astérisque * qui
+			récupérera tous éléments HTML contenus dans l'élément ciblé. 
+
+5.) getElementsByName()
+
+Cette méthode est semblable à getElementsByTagName() et permet de ne récupérer que les éléments qui possèdent un
+attribut name que je spécifie. L'attribut name n'est utilisé qu'au sein des formulaires, et est déprécié depuis
+la spécification HTML5 dans tout autre élément que celui d'un formulaire. Par exemple, je peux m'en servir pour 
+un élément <input> mais pas pour un élément <map>. 
+
+Note : cette méthode est dépréciée en XHTML, mais standardisée en HTML5.
+
+6.) Accéder aux éléments grâce aux technologies récentes
+
+Ces dernières années, le JavaScript a beaucoup évolué pour faciliter le développement Web. Les deux méthodes qui
+suivent ne sont pas supportées par les très vieilles versions de navigateurs (antérieures à la verion 8 d'IE).
+
+Ces deux méthodes sont querySelector() et querySelectorAll() et ont la particularité de grandement simplifier la
+sélection d'éléments dans l'arbre DOM grâce à leur mode de fonctionnement. Ces deux méthodes prennent pour
+paramètre un seul argument : une chaîne de caractères ! 
+
+Cette chaîne de caractères doit être un sélecteur CSS comme ceux que j'utilise dans mes feuilles de style. 
+
+Ces méthodes supportent aussi les sélecteurs CSS3, bien plus complets ! 
+
+Attention, toutefois : IE 8 ne supporte pas l'usage de sélecteurs CSS 3 avec ces méthodes. 
+
+Voyons maintenant la particularité de ces deux méthodes. La 1re, querySelector(), renvoie le 1er élement trouvé
+correspondant au sélecteur CSS, tandis que querySelectorAll() va renvoyer tous les éléments  (sous forme de
+tableau) correspodant au sélecteur CSS fourni. Prenons un simple exemple : Réf html
+
+Maintenant, essayons le sélecteur CSS suivant :
+#menu .item span
+
+Note : dans le code qui suit, j'utilise une nouvelle propriété nommée innerHTML qui permet d'accéder au contenu 
+d'un élément HTML ==> Réf script
+
+Ces deux méthodes : il faut les connaître absolument car de plus en plus en vogue...
+
+7.) L'héritage des propriétés et des méthodes
+
+Tous les élements HTML sont d'un même type (ou du moins ont le même supertype ==> ) : le type Node.
+
+Réf heritage_html.png
+
+L'objet Node apporte un certain nombre de propriétés et de méthodes  qui pourront être utilisés depuis un de ses
+sous-objets. 
+
+Un élément HTML est un objet qui appartient à plusieurs objets, et de ce fait, qui hérite de propriétés et 
+méthodes de ses objets parents.
+
+Le bon vieux concept d'héritage quoi.
+
+III./ Editer les éléments HTML
+
+1.) Les attributs : via l'objet Element
+
+Pour intéragir avec les attributs, l'objet Element me fournit deux méthodes : getAttribute() et setAttribute()
+permettant respectivement de récupérer et d'éditer un attribut. getAttribute() prend un paramètre (le nom de
+l'attribut) et setAttribute() prend deux paramètres : le nom de l'attribut et la nouvelle valeur à donner à cet
+attribut. 
+
+Réf script
+
+==> J'ai donc changé dynamiquement l'attribut href d'un lien grâce aux méthodes getElementById() (pour récupérer
+l'élément <a>) et setAttribute() !
+
+2.) Les attributs accessibles
+
+En fait, pour la plupart des élémens courants comme <a>, il est possible d'accéder à un attribut via une propriété.
+Ainsi, pour modifier la destination d'un lien, on peut utiliser la propriété href, comme ceci :
+
+Réf script
+
+C'est cette façon de faire que l'on utilisera majoritairement pour les formulaires : pour récupérer ou modifier 
+la valeur d'un champ, on utilisera la propriété value.
+
+Attention, cependant : un attribut auquel on accède par le biais de la méthode getAttribute() renverra la valeur
+exacte de ce qui est écrit dans le code HTML (sauf après une éventuelle modification) tandis que l'accès par le
+biais de sa propriété peut entraîner quelques changements. Prenons l'exemple suivant :
+
+<a href="/">Retour à la ligne</a>
+
+L'accès à l'attribut href avec la méthode getAttribute() renverra bien un simple slash, alors que l'accès à la propriété 
+renverra une URL absolue (avec "http://" devant par exemple).
+
+3.) La classe
+
+On peut penser que pour modifier l'attribut class d'un élément HTML, il suffit d'utiliser element.class. Il n'en
+est rien, car le mot-clé class est réservé en HTML, bien qu'il n'ait aucune utilité. A la place de class, il 
+faudra utiliser className.
+
+Réf script
+
+Note : toujours dans le même cas, le nom for est réservé lui aussi en JavaScript (pour les boucles). Je ne peux
+donc pas modifier l'attribut HTML for d'un <label> en écrivant element.for, il faudra utiliser element.htmlFor 
+à la place.
+
+Attention, si mon élément comporte plusieurs classes (exemple : <a class="external red u">), et que je veux
+récupérer la classe avec className, cette propriété ne retournera pas un tableau avec les différentes classes,
+mais bien la chaîne "external red u", ce qui n'est pas vraiment le comportement souhaité. Il me faudra couper
+cette chaîne avec la méthode split() poue obtenir un tableau.
+
+Réf script
+
+Si le support d'IE avant sa version 10 m'importe peu, je peux aussi me tourner vers la propriété classList, qui
+permet de consulter les classes sous forme d'un tableau et les manipuler aisément. 
+
+4.) Le contenu : innerHTML
+
+La propriété innerHTML est spéciale et demande une petite introduction. Elle a été créée par Microsoft pour les
+besoins d'IE et a été normalisée au sein du HTML5. Bien que non normalisée pendant des années, elle est devenue 
+un standard parce que tous les navigateurs la supportaient déjà, et non l'inverse comme c'est généralement le cas. 
+
+a./ Récupérer du HTML
+
+innerHTML permet de récupérer le code HTML enfant d'un élément sous forme de texte. Ainsi, si des balises sont
+présentes, innerHTML les retournera aussi sous forme de texte : Réf script.
+
+J'ai donc bien une boîte de dialogue qui affiche le contenu de myDiv, sous forme de texte :
+"<p>Un peut de texte <a>et un lien</a></p>"
+
+b/ Ajouter ou éditer du HTML
+
+Pour éditer du HTML, il suffit de faire l'inverse, c'est-à-dire de définir un nouveau contenu :
+
+document.getElementById('myDiv').innerHTML = '<blockquote>Je mets une citation à la place du
+paragraphe</blockquote>';
+
+Et pour ajouter du contenu HTML sans modifier le contenu déjà en place, il suffit d'utiliser += à la place de
+l'opérateur d'affectation : 
+document.getElementById('myDiv').innerHTML += 'et <strong>une portion mise en emphase</strong>';
+
+Toutefois, une mise en garde, il ne faut pas utiliser innerHTML ET le += dans une boucle ! En effet, innerHTML
+ralentit considérablement l'exécution du code si l'on opère de cette manière, il vaut donc mieux concaténer son 
+texte dans une variable pour ensuite ajouter le tout via innerHTML.  Exemple :
+
+var text = '';
+
+while(/*condition*/)
+    text += 'mon_texte';
+
+element.innerHTML += text;
+
+
+Attention : il n'est pas possible d'ajouter une balise <script> à ma page par le biais de la propriété 
+innerHTML ! Il est toutefois possible de créer cette balise via la méthode createElement() (à étudier
+prochainement)
+
+IV./ innerText et textContent
+
+Penchons-nous maintenant sur deux propriétés analogues à innerHTML : innerText pour IE et textContent pour 
+les autres navigateurs.
+
+1.) innerText
+
+La propriété innerText a aussi été introduite dans IE, mais à la différence de sa propriété soeur innerHTML, elle
+n'a jamais été standardisée et n'est pas supportée par tous les navigateurs. IE (pour toute version antérieure 
+à la neuvième) ne supporte que cette propriété et non pas la version standardisée que je verrai par la suite.
+
+Le fonctionnement d'innerText est le même celui d'innerHTML excepté le fait que seul le texte est récupéré, et 
+non les balises.
+C'est pratique, pour récupérer du contenu sans le balisage. Réf script
+
+2.) textContent
+
+La propriété textContent est la version standardisée d'innerText; elle est reconnue par tous les navigateurs à
+l'exception des versions IE antérieures à la 9e. Le fonctionnement est évidemment le même. 
+
+Maintenant, une question se pose : comment faire un script qui fonctionne à la fois pour IE et les autres
+navigateurs ? 
+Voyons cela avec ceci...
+
+3.) Tester le navigateur
+
+Il est possible via une simple condition de tester si le navigateur prend en charge telle ou telle méthode ou
+propriété :
+
+Réf script
+
+Il suffit donc de tester par le biais d'une condition si l'instruction fonctionne. Si textContent ne fonctionne
+pas, pas de souci, on prend innerText.
+
+Cela dit, ce code est quand même très long et redondant. Il est possible de le raccoursir de manière considérable :
+
+texte = guetta.textContent || guetta.innerText || '';
+
+Note : ce cours ne traitera pas vraiment la prise en charge des versions IE antérieures à la version 9. On a fait
+une exception ici afin de montrer de quelle manière on peut gérer les problèmes de compatibilité. Afin de vérifier
+si un navigateur supporte une certaine technologie HTML, CSS ou JS, on peut consulter : https://developer.mozilla.org/fr/  ou encore : http://caniuse.com/
+
+
+
+
+-->
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <title>Manipuler le code HTML (partie 1/2)</title>
+        <style>
+            .blue
+            {
+                background-color: blue;
+                color: white;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="myDiv">
+            <p>Un peu de texte <a>et un lien</a></p>
+        </div>
+        
+        <div id="menu">
+
+            <div class="item">
+                <span>Élément 1</span>
+                <span>Élément 2</span>
+            </div>
+
+            <div class="publicite">
+                <span>Élément 3</span>
+                <span>Élément 4</span>
+            </div>
+
+        </div>
+
+        <div id="contenu">
+            <span>Introduction au contenu de la page...</span>
+            <a id="myLink" href="http://www.un_lien_quelconque.fr" class="external red u">Un lien modifié dynamiquement</a>
+        </div>
+        
+        <script>
+            var text = 'variable globale';
+            (function(){
+                var text = 'variable locale';
+                alert(text); // variable locale
+                alert(window.text); // variable globale
+             })();
+            alert(text); //variable globale
+            
+            (function(){
+                texto = 'variable non déclarée explicitement'; // et pourtant accessible et possédant une valeur
+            })();
+            
+            alert(texto);
+            
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //getElementById()
+            var div = document.getElementById('myDiv');
+            alert(div);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//querySelector() et querySelectorAll()
+            var query = document.querySelector('#menu .item span'),
+                queryAll = document.querySelectorAll('#menu .item span');
+            
+            alert(query.innerHTML); // affiche "Element 1"
+            
+            alert(queryAll.length); // affiche 2
+            
+            alert(queryAll[0].innerHTML + ' - ' + queryAll[1].innerHTML) // affiche "Element 1 - Element 2"
+            
+        
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les attributs via l'objet Element
+            var lien = document.getElementById('myLink');
+            var href = lien.getAttribute('href'); //On récupère l'attribut "href"
+            
+            alert(href);
+            
+            lien.setAttribute('href', 'http://www.cnrtl.fr'); // ON édite l'attribut "href"
+            
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les attributs accessibles
+            var link = document.getElementById('myLink');
+            var href2 = link.href;
+            
+            alert(href2);
+            
+            link.href = 'http://www.youtube.com';
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //La classe
+            document.getElementById('myDiv').className = 'blue';
+            
+            //volet 2
+            var classes = document.getElementById('myLink').className;
+            var classesNew = [];
+            
+            classes = classes.split(' ');
+            
+            for(var i = 0, c = classes.length; i < c; ++i)
+                if(classes[i]) //car il se peut que plusieurs espaces aient été présents entre chaque nom de classe
+                    classesNew.push(classes[i]); //contient les noms de classes, sans "parasites"
+            
+            alert(classesNew);
+            
+            //classList
+            var div2 = document.querySelector('div');
+            
+            div2.classList.add('new-class'); //ajoute une nouvelle class
+            div2.classList.toggle('bidule');
+            
+            // div2.classList.remove('new-class'); //supprime une classe
+            
+            div2.classList.toggle('toggled-class'); //retire une classe si elle est présente, ou bien l'ajoute si absente
+            
+            if(div2.classList.contains('old-class')) //indique si une classe est présente ou non
+                alert('La classe .old-class est présente ! ');
+            
+            var result = '';
+            for(var i = 0; i < div2.classList.length; ++i) // /!\ PAS div2.length !
+                result += '.' + div2.classList[i] + '\n';
+            
+            alert(result); 
+            
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //innerHTML
+            
+            var divan = document.getElementById('myDiv');
+            alert(divan.innerHTML);
+            
+            divan.innerHTML = '<blockquote>Une citation qui remplace le contenu HTML en place</blockquote>';
+            
+            divan.innerHTML += ' et <strong>du contenu mis en emphase qui vient s\'ajouter</strong>';
+            var navid = document.querySelector('#myDiv');
+            alert('navid.innerHTML : ' + navid.innerHTML);
+            
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //innerText
+            var david = document.getElementById('myDiv');
+            alert(david.innerText); //FONCTIONNE MEME SOUS CHROME !! 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Tester le navigateur
+            
+            var guetta = document.getElementById('myDiv');
+            var texte = '';
+            if(guetta.textContent) //textContent existe ? Alors on s'en sort
+                texte = guetta.textContent;
+            else if(guetta.innerText) //innerText existe ? Alors on doit être sous IE
+                texte = guetta.innerText + '[via Internet Explorer/Chrome]';
+            else        //si aucun des deux n'existe, cela est sûrement dû au fait qu'il n'y a pas de texte.
+                texte = '';
+            
+            //OU PLUS SIMPLE : texte = guetta.textContent || guerra.innerText || '';
+            alert(texte);
+                
+            guetta.textContent += ". Et ça, c'est du texte brut. ";
+            alert(guetta.textContent);
+            
+         
+        </script>
+    </body>
+</html>

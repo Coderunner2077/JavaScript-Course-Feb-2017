@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>TP Formulaire</title>
+        <style type="text/css">
+            body
+            {
+                padding: 20px;
+            }
+            
+            label
+            {
+                width: 350px;
+                display:flex;
+                justify-content: space-between;
+            }
+            
+           label[for="masculin"], label[for="feminin"]
+            {
+                display: inline;
+                width: auto;
+            }
+            
+            #first
+            {
+                display: inline;
+                width: auto;
+                margin-right: 130px;
+            }
+            
+            label[for="prospect"]
+            {
+                display: inline;
+                width: auto;
+            }
+            
+            #pass_confirm
+            {
+                height: 15px;
+            }
+            
+            .warning 
+            {
+                color: orange;
+                font-style: italic;
+                font-weight: bold;
+            }
+            
+            .correct
+            {
+                border: 2px solid green;
+                box-shadow: 5px 5px 5px green;
+            }
+            
+            .incorrect
+            {
+                border: 2px ridge red;
+                box-shadow: 2px 2px 3px red;
+            }
+           
+        </style>
+    </head>
+    <body>
+        <h1>FORMULAIRE DYNAMIQUE</h1>
+        <form method="post" action="traitement.php">
+            <fieldset>
+                <legend>Etat civil</legend>
+                <label id="first">Sexe : </label><input type="radio" name="sexe" id="masculin" value="masclin" /><label for="masculin">
+                    Masculin</label>
+                <input type="radio" name="sexe" id="feminin" value="feminin" /><label for="feminin">Féminin</label>
+                <br /><br />
+                <label for="nom">Nom : <input type="text" name="nom" id="nom"/ ></label>
+                <br /><br />
+                <label for="prenom">Prénom : <input type="text" name="prenom" id="prenom" /></label>
+                <br /><br />
+                <label for="age">Âge : <input type="text" name="age" id="age" /></label>
+            </fieldset>
+            <fieldset>
+                <legend>Identifiants d'accès</legend>
+                <label for="pseudo">Pseudo : <input type="text" name="pseudo" id="pseudo" /></label>
+                <br /><br />
+                <label for="pass">Mot de passe : <input type="password" name="pass" id="pass" /></label>
+                <br /><br />
+                <label for="pass_confirm">Mot de passe(confirmation) :<input type="password" id="pass_confirm" /></label>
+            </fieldset>
+            <fieldset>
+                <legend>Informations complémentaires</legend>
+                <label for="pays">Pays : 
+                    <select id="pays" name="pays">
+                        <option>Choisissez votre pays</option>
+                        <option>Allemagne</option>
+                        <option>Belgique</option>
+                        <option>France</option>
+                        <option>Royaume-Uni</option>
+                        <option>Japon</option>
+                    </select>
+                </label>    
+                <br /><br />
+                <input type="checkbox" name="prospect" id="prospect" /><label for="prospect">J'accepte de recevoir des mails</label>
+            </fieldset>
+           <input type="submit" value="M'inscrire" /> <input type="reset" value="Réinitialiser le formulaire" />
+        </form>
+        <script>
+            (function(){
+                function offset(element){
+                    var top = 0,
+                        left = element.offsetWidth;
+                    do{
+                        top += element.offsetTop;
+                        left += element.offsetLeft;
+        
+                    }while(element = element.offsetParent);
+                    
+                    
+                    return {
+                        top: top,
+                        left: left
+                    };
+                }
+                
+                function warning(texte, element){
+                    if(typeof texte !== String && element.nodeType !== Node.ELEMENT_NODE)
+                        return;
+                    var parentNode = element.parentNode;
+                    while(parentNode.nodeName != 'FIELDSET')
+                        parentNode = parentNode.parentNode;
+                    
+                    var span = document.createElement('span');
+                    span.appendChild(document.createTextNode(texte));
+                    span.classList.add('c-' + element.id);
+                    span.style.color = 'red';
+                    span.style.fontStyle = 'italic';
+                    span.style.fontWeight = 'bold';
+                    span.style.position = 'absolute';
+                    span.style.left = offset(element).left + 'px';
+                    span.style.top = offset(element).top + 'px';
+                    parentNode.appendChild(span);
+                    return span;
+                }
+                
+                function offsetS(element){
+                    var top = 0,
+                        left = element.offsetWidth + element.nextSibling.offsetWidth + 30;
+                    do{
+                        top += element.offsetTop;
+                        left += element.offsetLeft;
+        
+                    }while(element = element.offsetParent);
+                    
+                    
+                    return {
+                        top: top,
+                        left: left
+                    };
+                }
+                
+                function warningS(texte, element){
+                     if(typeof texte !== String && element.nodeType !== Node.ELEMENT_NODE)
+                        return;
+                    var parentNode = element.parentNode;
+                    while(parentNode.nodeName != 'FIELDSET')
+                        parentNode = parentNode.parentNode;
+                    
+                    var span = document.createElement('span');
+                    span.appendChild(document.createTextNode(texte));
+                    span.classList.add('c-' + element.id);
+                    span.style.color = 'red';
+                    span.style.fontStyle = 'italic';
+                    span.style.fontWeight = 'bold';
+                    span.style.position = 'absolute';
+                    span.style.left = offsetS(element).left + 'px';
+                    span.style.top = offsetS(element).top + 'px';
+                    parentNode.appendChild(span);
+                    return span;
+                }
+                    
+                function correct(element){
+                    var span = document.querySelector('.c-' + element.id);
+                    if(span && span.nodeName === 'SPAN'){
+                        span.parentNode.removeChild(span);
+                        span = {};
+                    }
+                    if(element.classList.contains('incorrect'))
+                        element.classList.remove('incorrect');
+                    element.classList.add('correct');
+                }
+                
+                function test(texte, element, number){
+                    var span = document.querySelector('.c-'+element.id);
+                    if(!span && element.value.length < number){
+                        warning(texte, element);
+                        element.className = 'incorrect';
+                        return false;
+                   } else if(element.value.length >= number){
+                       correct(element);
+                       return true;
+                   }
+                }
+                
+                var check = {};
+                check['sexe'] = function(){
+                    var sexe = document.getElementsByName('sexe'),
+                        bool = false,
+                        span = document.querySelector('.c-' + sexe[1].id);
+                    if(!sexe[0].checked && !sexe[1].checked){
+                        sexe[0].addEventListener('change', function(e){
+                            check['sexe']();
+                            
+                        });
+                        sexe[1].addEventListener('change', function(e){
+                            check['sexe']();
+                        });
+                    
+                    }
+                    
+                    if(sexe[0].checked || sexe[1].checked){
+                        if(span && span.nodeName === 'SPAN'){
+                            span.parentNode.removeChild(span);
+                            span = {};
+                        }
+                        bool = true;
+                    }
+                    else{
+                        warningS('Veuiller indiquer votre sexe', sexe[1]);
+                        bool = false;
+                    }
+                        
+                    return bool;
+                };
+                
+                check['nom'] = function(){
+                    var nom = document.getElementById('nom');
+                    return test('Veuillez entrer un nom comportant au moins deux lettres', nom, 2);
+                };
+    
+                check['prenom'] = function(){
+                    var prenom = document.getElementById('prenom');
+                    return test('Veuillez entrer un prénom comportant au moins 2 lettres', prenom, 2);
+                };
+                
+                check['age'] = function(){
+                    var age = document.getElementById('age'),
+                        span = document.querySelector('.c-age');
+                   
+                    if(!isNaN(parseInt(age.value, 10)) && parseInt(age.value, 10) >= 5 && parseInt(age.value, 10) <= 140){
+                        correct(age);
+						span.parentNode.removeChild(span);
+                        return true;
+                    }    
+                    else{
+                        warning('Veuiller entrer un age compris entre 5 et 140', age);
+                        age.className = 'incorrect';
+                        return false;
+                    }
+                };
+                
+                check['pseudo'] = function(){
+                    var pseudo = document.getElementById('pseudo');
+                    return test('Veuiller entrer un pseudo comportant au moins 4 caractères', pseudo, 4);
+                };
+                
+                check['pass'] = function(){
+                    var pass = document.getElementById('pass');
+                    return test('Veuillez entrer un mot de passe comportant au moins 6 caractères', pass, 6);
+                };
+                
+                check['pass_confirm'] = function(){
+                    var passCon = document.getElementById('pass_confirm'),
+                        pass = document.getElementById('pass'),
+                        span = document.querySelector('.c-' + passCon.id);
+                    
+                    if(pass.classList.contains('correct') && !span && passCon.value !== pass.value){
+                        warning('Les mots de passe diffèrent !', passCon);
+                        passCon.className = 'incorrect';
+                        return false;
+                    }
+                    else if(!pass.classList.contains('incorrect') && passCon.value === pass.value){
+                         correct(passCon);
+                        return true;
+                    }
+                       
+                };
+               
+                check['pays'] = function(){
+                    var pays = document.getElementById('pays'),
+                        span = document.querySelector('.c-pays');
+                    if(!pays.selectedIndex){
+                        pays.addEventListener('change', function(e){
+                            check['pays']();
+                        });
+                    }
+                    if(!span && !pays.selectedIndex){
+                        warning('Veuillez choisir votre pays', pays);
+                        pays.className = 'incorrect';
+                        return false;
+                    }else if(pays.selectedIndex){
+                        correct(pays);
+                        return true;
+                    }
+                        
+                    
+                };
+                
+                document.body.addEventListener('keyup', function(e){
+					if(e.target.id)
+						check[e.target.id]();
+                });
+                var submit = document.querySelector('input[type=submit]'),
+                    reset = document.querySelector('input[type=reset]');
+                
+                submit.addEventListener('click', function(e){
+                    var bools = 0;
+                    for(var id in check)
+                       if(check[id]())
+                           bools++;
+                    if(bools < 8)
+                        e.preventDefault();           
+                });
+                
+                reset.addEventListener('click', function(e){
+                    var corrects = document.querySelectorAll('.correct'),
+                        incorrects = document.querySelectorAll('.incorrect'),
+                        spans = document.getElementsByTagName('span');
+                    
+                    for(var i = 0, c = corrects.length; i < c; ++i)
+                        corrects[i].classList.remove('correct');
+                    for(i = 0, c = incorrects.length; i < c; ++i)
+                        incorrects[i].classList.remove('incorrect');
+                    
+                    while(spans.length){
+                        for(i = 0, c = spans.length; i < c; ++i){
+                            if(spans[i])
+                                spans[i].parentNode.removeChild(spans[i]);
+                        }
+                    }
+                    
+                        
+                });
+                
+            })();
+           
+            
+            
+        </script>
+    </body>
+</html>

@@ -1,0 +1,48 @@
+<!--
+                                                Déboguer mon code (2/3)
+
+I./ Inspecteur Web
+
+L'usage de l'inspecteur Web n'a que peu de rapport avec le JavaScript, il me permettra cependant de résoudre un nombre
+important de mes bugs liés à la modification du DOM.
+
+Pour le trouver : dans le kit de développement, il faut aller dans Elements (ou "Inspecteur" sous Firefox).
+
+Je peux maintenant visualiser mon code HTML sous forme d'arbre, je peux en modifier le contenu en double-cliquant sur
+un élément, un attribut, une propriété CSS, etc... Il est aussi possible d'ajouter de nouveaux éléments ou bien d'en supprimer
+(clique droit, Delete...), et tout ça sans passer par le JavaScript, ce qui me fait gagner du temps lors de mes phases de 
+débogage. 
+
+Avant d'aller plus loin : il existe un raccourci extrêmement pratique pour afficher l'inspecteur web avec l'élément de mon choix
+directement sélectionné. Il faut appuyer sur les touches Ctrl + Maj + C (ou Cmd + Alt + C sous OS X) et cliquer sur l'élément de
+mon choix dans la page.
+
+1.) Les règles CSS
+
+Les règles CSS rayées : ce sont celles qui sont réécrites et écrasées par une autre propriété CSS
+
+2.) Les points d'arrêt
+
+Des points d'arrêt applicables aux éléments HTML, permettant de mettre en pause à chaque modification d'un élément HTML.
+==> Dans l'inspecteur Web, clique-doit sur un élément de choix ==> Break-on ==> et on choisit le type de point d'arrêt
+
+Lorsque le débogueur met l'exécution en pause, on m'indique aussi la ligne JavaScript concernée (ie celle qui a modifié 
+l'élément HTML en question).
+
+Voici les options (cumulables) de point d'arrêt (dans Break-on) :
+
+    -   "Subtree modifications" : Se déclenche lorsque les noeuds enfants de l'élément ciblé sont modifiés
+    -   "Attribute modifications" : Se déclenche pour toute modification apportée aux attributs de l'élément ciblé
+    -   "Node removal" : Se déclenche lorsque l'élément ciblé est supprimé
+
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Déboguer mon code (partie 2/3)</title>
+    </head>
+    <body>
+    </body>
+</html>

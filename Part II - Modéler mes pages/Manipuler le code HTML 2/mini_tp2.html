@@ -1,0 +1,123 @@
+<!DOCTYPE html> 
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Mini tp Double 2</title>
+	</head>
+	<body>
+		<div></div>
+		<script>
+			(function (){
+				var div1 = document.createElement('div');
+				div1.setAttribute('id', 'divTP1');
+				var elemHolders =  {
+					strong: ['Wolrd Wide Web Consortium', 'W3C'],
+					a: {
+						href: ["http://fr.wikipedia.org/wiki/Organisme_de_normalisation", "http://fr.wikipedia.org/wiki/World_Wide_Web"],
+						title: ["Organisme de normalisation", "World Wide Web"],
+						text: ["organisme de standardisation", "World Wide Web"]
+					},
+				};
+				var strongs = [], links = [];
+				for(var i = 0; i < 2; ++i) {
+					strongs.push(document.createElement('strong'));
+					strongs[i].appendChild(document.createTextNode(elemHolders.strong[i]));
+					links.push(document.createElement('a'));
+					links[i].appendChild(document.createTextNode(elemHolders.a.text[i]));
+					links[i].setAttribute('href', elemHolders.a.href[i]);
+					links[i].title = elemHolders.a.title[i];
+				}
+				var elems = ["\nLe ", strongs[0], ", abrégé par le sigle ", strongs[1], ", est un ", links[0], 
+					" à but non-lucratif chargé de promouvoir la compatibilité des technologies du ",
+					links[1], ".\n"
+				];
+
+				for(var i = 0; i < elems.length; i++) {
+					if(elems[i].nodeType == undefined) 
+						div1.appendChild(document.createTextNode(elems[i]));
+					else
+						div1.appendChild(elems[i]);
+				}
+				document.body.firstElementChild.appendChild(div1);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				var div2 = document.createElement('div');
+				div2.id = 'divTP2';
+				var p = div2.appendChild(document.createElement('p'));
+				p.appendChild(document.createTextNode('Langages basés sur ECMAScript :'));
+				var ul = div2.appendChild(document.createElement('ul'));
+				var tabLi = ["JavaScript", "JScript", "ActionScript", "EX4"];
+				for(var i = 0; i < 4; i++) {
+					let li = ul.appendChild(document.createElement('li'));
+					li.appendChild(document.createTextNode(tabLi[i]));
+				}
+				div2.appendChild(ul);
+				document.querySelector('body div').appendChild(div2);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				var div3 = document.createElement('div');
+				div3.id = 'divTP3';
+				var p3 = div3.appendChild(document.createElement('p'));
+				p3.appendChild(document.createTextNode('Langages basés sur ECMAScript :\n'));
+				var langages= [
+					{
+						dt: 'JavaScript',
+						dd: 'JavaScript est un langage de programmation de scripts principalement utilisé dans les pages web interactives mais aussi coté serveur.'
+					},
+					{
+						dt: "JScript",
+       					dd: "JScript est le nom générique de plusieurs implémentations d'ECMAScript 3 créées par Microsoft."
+					},
+					{
+						dt: "ActionScript",
+        				dd: "ActionScript est le langage de programmation utilisé au sein d'applications clientes (Adobe Flash, Adobe Flex) et serveur (Flash media server, JRun, Macromedia Generator)."
+					},
+					{
+						dt: "EX4",
+        				dd: "ECMAScript for XML (E4X) est une extension XML au langage ECMAScript."
+					}
+				];
+				var dl = div3.appendChild(document.createElement('dl')), dt, dd;
+					
+
+				for(var i = 0; i < langages.length; i++) {
+					dt = dl.appendChild(document.createElement('dt'));
+					dt.appendChild(document.createTextNode(langages[i].dt));
+					dd = dl.appendChild(document.createElement('dd'));
+					dd.appendChild(document.createTextNode(langages[i].dd));
+					
+				}
+				document.querySelector('body div').appendChild(div3);
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+				var div4 = document.createElement('div');
+				div4.id = 'divTP4';
+				var balises = ['form', 'fieldset', 'legend', 'div', 'label', 'input', 'br'],
+					els = {}, 
+					attr = {
+						'form': {'enctype': "multipart/form-data", "method": "post", "action": "upload.php"},
+						'div': {'style': "text-align: center"},
+						'label': {'for': 'inputUpload'},
+						'input': {'type': 'file', 'name': 'inputUpload', 'id': 'inputUpload'}
+					};
+				for(var i = 0; i < balises.length; ++i) 
+					els[balises[i]] = document.createElement(balises[i]);
+				for(var i in attr) 
+					for(var j in attr[i]) 
+						els[i].setAttribute(j, attr[i][j]);
+					
+				els['legend'].appendChild(document.createTextNode('Uploader une image'));
+				els['label'].appendChild(document.createTextNode('Image à uploader :'));
+				var div5 = els['div'];
+				div5.appendChild(els['label']);
+				div5.appendChild(els['input']);
+				div5.appendChild(els['br']);
+				div5.appendChild(document.createElement('br'));
+				els['fieldset'].appendChild(els['legend']);
+				document.querySelector('body div').appendChild(div4).appendChild(els['form']).appendChild(els['fieldset'])
+					.appendChild(div5);
+				var submit = div5.appendChild(document.createElement('input'));
+				submit.setAttribute('type', 'submit');
+				submit.value = 'Envoyer';
+			})();
+		</script>
+	</body>
+</html>

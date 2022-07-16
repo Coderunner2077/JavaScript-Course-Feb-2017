@@ -1,0 +1,823 @@
+<!--
+                                                            L'élément Canvas
+
+L'élément canvas est une zone dans laquelle il est possible de dessiner au moyen du JavaScript. Cet élément fait son apparition dans
+la spécification du HTML5, mais existe depuis plusieurs années déjà. Il a été développé par Apple pour son navigateur Safari.
+Firefox a été un des premiers navigateurs à l'implémenter, suivi par Opéra et Chrome. Les dernières versions d'IE suppotent
+aussi cet élément.
+
+I./ Premières manipulations
+
+La première chose à faire est d'insérer le canvas :
+
+<canvas id="canvas" width="150" height="150">
+    <p>Votre navigateur date</p>
+</canvas>
+
+Dès que c'est fait, on accède au canvas :
+
+var canvas = document.getElementById('canvas'),
+    context = canvas.getContext('2d');
+
+Une fois qu'on a le canvas, il faut accéder à ce qu'on appelle son contexte, avec getContext(). Il n'y a pour l'instant
+qu'un seul contexte disponible : la deux dimensions (2D). Il est prévu que les navigateurs gèrent un jour la 3D, mais ça reste
+encore expérimental (ou pas??).
+
+1.) Principe de fonctionnement
+
+Dessiner avec canvas se fait par le biais de coordonnées. Le coin supérieur gauche du canvas est de coordonnées (0,0). Si on descend
+ou qu'on va vers la droite, on augmente les valeurs. Ca ne change pas tellement du système de positionnement habituel.
+
+On va utiliser des méthodes pour tracer des lignes et des formes géométriques.
+
+Traçons un rectangle de 50 sur 80 pixels :
+
+context.fillStyle = 'gold';     //la propriété fillStyle pour la couleur
+context.fillRect(0, 0, 50, 80);
+
+Dans un premier temps, on choisit une couleur avec fillStyle, comme un peintre qui trempe son pinceau avant de commencer son tableau.
+Puis, avec fillRect(), on trace un rectangle. Les deux premiers paramètres sont les coordonnées du sommet supérieur gauche du
+rectangle que l'on veut tracer. Le troisième paramètre est la largeur du tectangle, et le 4e est la hauteur.
+Autrement dit : context.fillRect(x, y, largeur, hauteur);
+
+Si on veut centrer ce rectangle, il faut faire un minimum de calculs :
+
+context.fillRect(50, 35, 50, 80);
+
+On peut aussi ajouter un rectangle d'une couleur semi-transparente :
+
+context.fillStyle = 'rgba(23, 145, 167, 0.5)';
+context.fillRect(40, 25, 40, 40);
+
+La propriété fillStyle peut recevoir diverses valeurs : le nom de la couleur, un code héxadécimal (sans oublier le # devant), une
+valeur RGB, HSL ou HSLA, ou encore, comme ici, une valeur RGBA. Dans le cas d'une valeur RGBA, le 4e paramètre est l'opacité, définie
+sur une échelle de 0 (transparent) à 1 (opaque).
+
+2.) Le fond et les contours
+
+On a créé des formes pleines, mais il est également possible de créer des formes creuses, avec juste un contour. Canvas considère
+deux types de formes : fill et stroke. Une forme fill est une forme remplie, et une forme stroke est une forme vide pourvue d'un
+contour. Voici la méthode pour créer une forme creuse :
+
+context.strokeStyle = '#0000ff';
+context.strokeRect(0, 0, 50, 80);
+
+context.fillStyle = 'rgba(23, 145, 167, 0.5)';
+context.fillRect(40, 25, 40, 40);
+
+Comme il s'agit d'un contour, il est possible de choisir l'épaisseur à utiliser. Cela se fait grâce à la propriété lineWidth :
+
+context.lineWidth = '5';
+context.strokeStyle = 'blue';
+context.strokeRect(45, 45, 60, 60);
+
+3.) Effacer
+
+Une dernière méthode existe en ce qui concerne les rectanles : clearRect(x, y, largeur, hauteur). Cette méthode agit comme une
+gomme, ie elle va effacer du canvas les pixels délimités par le rectangle spécifié.
+clearRect() est utile pour faire des découpes au sein des formes, ou tout simplement pour effacer le contenu du canvas.
+
+context.strokeStyle = 'gold';
+context.strokeRect(50, 35, 50, 80);
+
+context.fillStyle = 'rgba(23, 145, 167, 0.5);
+context.fillRect(40, 25, 40, 40);
+
+context.clearRect(45, 45, 60, 60);
+
+II./ Formes géométriques
+
+Canvas fournit peu de formes géométriques. IL y a le rectangel, les arcs et... c'est tout. Mais aussi, pour compléter ce manque,
+Canvas dispose de chemins ainsi que de courbes de bézier cubiques et quadratiques.
+
+1.) Les chemins simples
+
+Les chemins vont me permettre de créer des lignes et des polygones. Pour ce faire, plusieurs nouvelles méthodes :
+
+    -   beginPath() : initie le chemin
+    -   moveTo(x,y) : on déplace le "crayon" à l'endroit voulu pour commencer le tracé, ie c'est le point de départ du tracé
+    -   lineTo(x,y) : pour indiquer le point suivant
+    -   closePath() : ferme / relie le chemin
+    -   stroke() : finalise le tracé d'une forme non-remplie
+    -   fill() : finalise le tracé d'une forme remplie
+
+Exemple :
+
+context.strokeStyle = 'rgb(23, 145, 167);
+context.beginPath();
+context.moveTo(20, 20);     // 1er point
+context.lineTo(130, 20);    // 2e point
+context.lineTo(130, 50);    // 3e point
+context.lineTo(75, 130);    // 4e point
+context.lineTo(20, 50);     // 5e point
+context.closePath();        // On relie le cinquième point au premier
+context.stroke();
+
+closePath() n'est pas forcément nécessaire; il termine le chemin pour moi, en reliant le dernier point au tout premier. Si on
+veut une forme fermée, via stroke(), c'est assez pratique. Par contre, si on veut remplir la forme avec fill(), la forme sera fermée
+automatiquement, et dans ce cas-là closePath() sera inutile.
+
+2.) Les arcs
+
+En plus des lignes droites, il est possible de tracer des arcs de cercles, avec la méthode :
+
+    -   arc(x, y, rayon, angleDepart, angleFin, sensInverse)
+
+     ==>    les angles sont exprimés en radians;
+            x et y sont les coordonnées du centre de l'arc;
+            les paramètres angleDepart et angleFin définissent les angles de début et de fin de l'arc. Comme
+            dit plus haut, c'est exprimé en radians, et non en degrés
+
+Note : pour rappel, afin d'obtenir les radians, il faut  ==> (Math.PI * degres) / 180
+
+context.beginPath();    // Le cercle extérieur
+context.arc(75, 75, 50, 0, Math.PI * 2);     // Ici, le calcul est simplifié
+context.stroke();
+
+context.beginPath();    // La bouche, un arc de cercle
+context.arc(75, 75, 40, 0, Math.PI);
+context.stroke();
+
+context.beginPath();    // L'oeil gauche
+context.arc(55, 70, 20, (Math.PI * 220) / 180, (Math.PI * 320) / 180);
+context.stroke();
+
+context.beginPath();    // L'oeil droit
+context.arc(95, 70, 20, (Math.PI * 220) / 180, (Math.PI * 320) / 180);
+context.stroke();
+
+
+Pour chaque arc, il est plus propre et plus facile de commencer un nouveau chemin avec beginPath()
+
+3.) Utilisation de moveTo()
+
+Comme on l'a vu plus haut, moveTo() permet de déplacer le "crayon" à l'endroit où l'on souhaite commencer le tracé. Mais cette
+méthode peut aussi être utilisée pour effectuer des "levées de crayon" au sein d'un même dessin :
+
+context.beginStroke();
+context.arc(75, 75, 40, 0, Math.PI);
+context.fill();
+
+context.beginPath();
+context.arc(75, 75, 50, 0, Math.PI * 2);
+
+context.moveTo(41, 58);
+context.arc(55, 70, 20, Math.PI * 220 / 180, Math.PI * 320 / 180);
+
+context.moveTo(81, 58);
+context.arc(55, 70, 20, Math.PI * 220 / 180, Math.PI * 320 / 180);
+context.stroke();
+
+4.) Les courbes de bézier
+
+Il est également possible de réaliser des courbes, par le biais des courbes de Bézier. Deux types de courbes sont disponibles :
+cubiques et quadratiques. Ce genre de courbes est relativement connu. Les courbes sont définies par les coordonées des tangentes
+qui servent à la construction des courbes.
+Voici les deux types de courbes, avec les tangentes colorées en gris :
+
+Réf bezier_quadratique_cubique.png
+
+Une courbe quadratique sera dessinée par quadraticCurveTo(), alors qu'une courbe cubique le sera par bezierCurveTo() :
+
+quadraticCurveTo(cp1X, cp1Y, x, y);
+
+bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, x, y);
+
+Les courbes sont définies par leurs points d'arrivée (x et y) et par les points de contrôle. Dans le cas d'une courbe de bézier
+cubique, deux points sont nécessaires. La difficulté des courbes de bézier est de connaître les valeurs utiles pour les points
+de contrôle. C'est d'autant plus complexe qu'on ne voit pas en temps réel ce qu'on fait... Ce genre de courbes est donc puissant,
+mais complexe à mettre en oeuvre.
+
+Note : il existe toutefois des plugins qui permettent de convertir les dessins vectoriels en instructions Canvas. C'est le cas
+de Ai2Canvas (https://github.com/mikeswanson/Ai2Canvas), un plugin pour Adobe Illustrator.
+
+Voici une variante du logo de JavaScript à partir d'un rectange arrondi :
+
+context.beginPath();
+context.moveTo(131, 119);
+context.bezierCurveTo(131, 126, 126, 131, 119, 131);
+context.lineTo(30, 131);
+context.bezierCurveTo(23, 131, 18, 126, 18, 119);
+context.lineTo(18, 30);
+context.bezierCurveTo(18, 23, 23, 18, 30, 18);
+context.lineTo(119, 18);
+context.bezierCurveTo(126, 18, 131, 23, 131, 30);
+context.lineTo(131, 119);
+context.closePath();
+context.fillStyle = 'rgb(23, 145, 167)";
+context.fill();
+
+context.font = "68px Calibri,Geneva,Arial";
+context.fillStyle = 'white';
+context.filltext('js', 84, 115);
+
+Ce n'est pas compliqué à utiliser, c'est le même principe que pour arc(). Ce qu'il y a de difficile ici est de s'y retrouver
+dans les coordonnées.
+
+III./ Images et textes
+1.) Les images
+
+Il est possible d'insérer des images au sein d'un canvas. Pour ce faire, on utilisera la méthode drawImage(image, x, y), mais
+attention : pour qu'une image puisse être utilisée, elle doit au préalable être accessible via un objet Image ou un élément <img />.
+Il est également possible d'insérer un canvas dans un canvas ! En effet, le canvas que l'on va insérer est considérée comme une
+image.
+
+Insérons une image au sein d'un canvas :
+
+var zozor = new Image();
+    zozor.src = 'zozor.png';    // Image de 80 x 80
+
+Ou alors, une image déjà présente dans la page :
+
+var zozor = document.querySelector('#myZozor');
+
+Et ensuite :
+
+context.drawImage(zozor, 35, 35);
+
+Attention aux images trop grandes : si l'image est trop longue à charger, elle sera affichée de manière saccadée au sein du
+canvas. Une solution est d'utiliser onload pour déclencher le dessin de l'image une fois qu'elle est chargée :
+
+var zozor = new Image();
+    zozor.src = 'zozor.png';
+var zozoz.addEventListener('load', function() {
+    context.drawImage(zozor, 35, 35);
+}
+
+2.) Mise à l'échelle
+
+drawImage(image, x, y, largeur, hauteur) possède deux paramètres facultatifs : largeur et hauteur, qui permettent de définir
+la largeur et la hauteur que l'image occupera une fois incrustée dans le canvas. Si la diminution de la taille des images ne pose
+pas trop de problèmes, il faut éviter de les agrandir, car sinon elles deviennent floues.
+
+context.drawImage(zozor, 35, 35, 40, 40);
+
+Ici, l'image est réduite de moitié, puisque de base elle fait 80 x 80
+
+3.) Recadrage
+
+Quatre paramètres supplémentaires et optionnels s'ajoutent à drawImage(). Ils permettent de recadrer l'image, ie de prélever une
+zone rectangulaire au sein de l'image afin de la placer dans le canvas :
+
+drawImage(image, sx, sy, sLargeur, sHauteur, dx, dy, dLargeur, dHauteur);
+
+Les paramètres commençant par 's' indiquent la source, ie l'image, ceux commençant par 'd' indiquent la destination, autrement
+dit le canvas.
+
+Réf recadrage.png
+
+Toute la difficulté est donc de ne pas s'emmêler les pinceaux dans les paramètres :
+
+var zozor = document.querySelector('#plush');
+
+context.drawImage(zozor, 99, 27, 100, 100, 25, 25, 100, 100);
+
+4.) Les patterns
+
+Comment faire en sorte que l'image se répète pour, par exemple, créer un fond. La réponse : c'est les patterns.
+On parle aussi de motifs en français. Un pattern est une image qui se répète  comme un papier peint.
+Pour en créer un, on utilise la méthode :
+
+    -   createPattern(image, type) : Le premier argument est l'image à utiliser, et le deuxième est le type de pattern.
+
+Différents types existent, mais seul repeat semble reconnu par tous les navigateurs :
+
+var zozor = new Image(),
+    zozor.src = 'zozor.png";
+    zozor.addEventListener('load', function(e){
+        var pattern = context.createPattern(zozor, 'repeat');
+        context.fillStyle = pattern;
+        context.fillRect(0, 0, 150, 150);
+    }
+
+La façon de procéder est un peu étrange, puisqu'il faut passer le pattern à fillStyle, et ensuite créer un rectangle plein qui
+recouvre l'integralité du canvas. En clair, il s'agit de créer un rectangle avec une image qui se répète comme fond.
+
+Attention : Je dois absolument passer par l'événement load, sinon le pattern ne s'affichera pas si l'image n'est pas chargée.
+
+5.) Le texte
+
+Pour écrire du texte au sein d'un canvas, il y a les méthodes fillText() et strokeText(), secondées par la propriété font,
+qui permet de définir le style du texte :
+
+context.fillStyle = 'rgba(23, 145, 167, 1)';
+context.fillRect(50, 50, 50, 50);
+
+context.font = 'bold 22pt Calibri,Geneva,Arial';  // texte en Calibri, de 22 points et mis en gras
+context.fontStyle = '#fff';
+context.fillText('js', 78, 92);
+
+Les propriétés fillStyle et strokeStyle sont toujours utilisables, puisque les textes sont considérés comme des formes  au
+même titre que les rectangles ou les arcs.
+
+La propriété font reçoit des informations sur la police à utiliser, à l'exception de la couleur, qui est gérée par strokeStyle et
+fillStyle.
+
+fillText() reçoit trois paramètres : le texte, et les coordonnées x et y de la lignes d'écriture du texte, côté gauche (et non pas le
+coin supérieur gauche !). Réf text_pos.png
+
+Un quatrième paramètre peut être ajouté : la largeur maximale que le texte doit utiliser.
+
+IV./ Lignes et dégradés
+1.) Les styles de lignes
+a./ Les extrêmités
+
+La propriété lineCap permet de définir la façon dont les extrêmités des chemins sont affichées. Trois valeurs sont admises :
+
+    -   butt : extrêmité normale, qui ne dépasse pas (c'est la valeur par défaut)
+    -   round : extrêmité arrondie qui dépasse un peu
+    -   square : extrêmité carrée qui dépasse un peu
+
+Réf butt_round_square.png
+
+lineCap s'utilise de la même façon que lineWidth, exemple :
+
+context.beginPath();
+context.lineCap = 'round';
+context.moveTo(75, 20);
+context.lineTo(75, 130);
+context.stroke();
+
+b./ Les intersections
+
+Comment gérer la façon dont les angles des chemins sont affichés ? Simple, avec lineJoin. Cette propriété reçoit elle aussi trois
+valeurs différentes :
+    -   round
+    -   bevel
+    -   miter : valeur par défaut.
+
+Réf round_bevel_miter.png
+
+2.) Les dégradés
+
+A l'heure actuelle, que ferions-nous sans dégradés ? Canvas propose deux type de dégradés : linéaire et radial. Pour créer un
+dégradé, on commence par créer un objet canvasGradient que l'on va assigner à fillStyle. Pour créer un tel objet, on utilise
+au choix createLinearGradient() ou createRadialGradient().
+
+a./ Les dégradés linéaires
+
+On a besoin de quatre paramètres pour créer un dégradé linéaire :
+
+createLinearGradient(debutX, debutY, finX, finY);
+
+debutX et debutY sont les coordonnées du point de départ du dégradé, et finX et finY sont les coordonnées de fin. Faisons
+un dégradé :
+
+var linear = new context.createLinearGradient(0, 0, 150, 150);
+
+context.fillStyle = linear;
+
+Ce n'est pas suffisant, puisqu'il manque les informations sur les couleurs. On va ajouter ça avec :
+
+addColorStop(position, color);
+
+==> position : une valeur comprise entre 0 et 1. C'est la position relative de la couleur par rapport au dégradé. Si on
+met 0.5, la couleur commencera au milieu :
+
+var linear = context.createLinearGradient(0, 0, 0, 150);
+linear.addColorStop(0, 'white');
+linear.addColorStop(0.5, '#1791a7');
+
+context.fillStyle = linear;
+context.fillRect(20, 20, 110, 110);
+
+Pour modifier l'inclinaison du dégradé, il faut modifier les paramètres de createLinearGradient(). Par exemple, si on met
+createLinearGradient(0, 0, 150, 150), la fin du dégradé sera dans le coin inférieur droit, et donc incliné à 45 degrés.
+
+Il est possible de mettre plusieurs addColorStop(). Voici un exemple avec quatre :
+
+var linear = context.createLinearGradient(0, 0, 0, 150);
+linear.addColorStop(0, 'white');
+linear.addColorStop(0.5, '#1791a7');
+linear.addColorStop(0.5, 'orange');
+linear.addColorStop(1, 'white');
+
+context.fillStyle = linear;
+context.fillRect(10, 10, 130, 130);
+
+b./ Dégradés radiaux
+
+Du côté des dégradés radiaux, il faut six paramètres :
+
+createRadialGradient(centreX, centreY, centreRayon, finX, finY, finRayon);
+
+Un dégradé radial est défini par deux choses : un premier cercle (le centre) qui fait office de point de départ et un second
+qui fait office de fin. Ce qui est pratique, c'est que les deux cercles n'ont pas besoin d'avoir la même origine, ce qui permet
+d'orienter le dégradé :
+
+var radial = context.createRadialGradient(75, 75, 0, 130, 130, 150);
+radial.addColorStop(0, '#1791a7');
+radial.addColorStop(1, 'white');
+
+context.fillStyle = radial;
+context.fillRect(10, 10, 130, 130);
+
+Ici, le cercle du centre est... au centre du canvas, et celui de fin en bas à droite. Grâce aux dégradés radiaux, il est
+possible de créer des bulles assez facilement. La seule condition est que la couleur de fin du dégradé soit transparente,
+ce qui nécessite l'utilisation d'une couleur RGBA ou HSLA :
+
+Réf script
+
+V./ Les opérations
+
+1.) L'état graphique
+
+La méthode save() a pour fonction de sauvegarder l'état graphique du canvas, ie les informations concernant les styles appliqués
+au canvas. Ces informations sont fillStyle, strokeStyle, lineWidth, lineCap, lineJoin ainqi que translate() et rotate() (à découvrir
+plus loin).
+
+A chaque appel de la méthode save(), l'état graphique courant est sauvegardé dans une pile. Pour restaurer l'état précédent, il
+faut utiliser restore().
+
+2.) Les translations
+
+La translation permet de déplacer le repère des axes du canvas. L'idée est de placer le point (0,0) à l'endroit où l'on
+souhaite dessiner une forme. De cette manière, on dessine la forme sans se soucier des calculs de son emplacement, ce qui
+peut se révéler utile quand on insère des formes complexes. Une fois que des formes sont dessinées, on replace les axes à
+leur point d'origine. Et, bonne nouvelle, save() et restore() prennent en compte les translations !
+
+Les translations se font avec la méthode translate(x, y). x est l'importance de déplacement sur l'axe des abscisses et y sur
+l'axe des ordonnées : les valeurs peuvent donc être négatives.
+
+context.save();
+context.translate(40, 40);
+
+context.fillStyle = 'teal';
+context.fillRect(0, 0, 50, 50);
+context.restore();
+
+context.fillStyle = 'orange';
+context.fillRect(0,0, 50, 50);
+
+On commence par sauvegarder l'état du canvas. Ensuite, on déplace l'origine des axes au point (40,40) et on y dessine
+un carré bleu-gris. Dès que c'est fait, on restaure l'état, on dessine le carré orange.
+Grâce à la translation, on a pu laisser (0,0) comme coordonnées de fillRect() !
+
+3.) Les rotations
+
+Les rotations permettent d'appliquer une rotation aux axes du canvas. Le canvas tourne autour de son point d'origine (0,0). La
+méthode rotate() reçoit un seul paramètre : l'angle de rotation spécifié en radians. Il est possible de combiner une
+rotation et une translation, comme le montre l'exemple suivant :
+
+Réf script
+
+VI./ Les animations
+
+La gestion des animations avec Canvas est quasi-inexistante ! En effet, Canvas ne propose rien pour animer les formes, les
+déplacer, les modifier... Pour arriver à créer une animation avec Canvas, il faut :
+
+    1.  dessiner une image
+    2.  effacer tout
+    3.  redessiner une image légèrement modifiée
+    4.  Effacer tout
+    5.  Redessiner une image , légèrement modifiée
+    6.  Ainsi de suite
+
+En clair, il suffit d'appeler une fonction qui, toutes les x secondes, va redessiner le canvas. Il est également possible
+d'exécuter des fonctions à la demande de l'utilisateur, mais ça, c'est assez simple.
+
+1.) Une question de framerate
+
+Framerate ==> frames per second. Il en faut 60 par secondes pour que ce soit fluide. Mais parfois, ces 60 peuvent ne pas
+être toutes affichées à cause d'un manque de performances, on appelle cela une baisse de framerate et cela est généralement
+perçu par l'oeil humain comme étant un ralenti saccadé.
+Ce problème est malheureusement trop fréquent avec les fonctions setTimeout() et setInterval(), qui n'ont pas été conçues
+à l'origine pour ce genre d'utilisations...
+
+Une solution à ce problème a été développée : requestAnimationFrame(). A chacune de ses exécutions, cette fonction va
+déterminer à quel moment elle doit se redéclencher de manière à garder un framerate de 60 images par secondes. En clair, elle
+s'exécute de manière à afficher quelque chose de fluide.
+
+Note : cette fonction étant relativement nouvelle, elle n'est pas supportée par les anciennes versions de certains navigateurs (notammet
+IE ==> avant version 11, c'est mort).
+
+2.) Un exemple concret
+
+Reprenons le canvas que l'on vient de réaliser : en me basant sur son code, je vais faire tourner le dessin dans le sens
+des aiguilles d'une montre. Pour commencer, il faut créer une fonction qui sera appelée par window.requestAnimationFrame(). IL
+s'agira de la fonction draw(angle). Cette fonction efface le canvas et le redessine avec un angle de rotation incrémenté de
+quelques degrés.
+
+window.addEventListener('load', function(){
+    var canvas = document.getElementById('canvas'),
+        context = canvas.getContext('2d');
+
+        function draw(angle) {
+            context.save();
+            context.clearRect(0, 0, 150, 150);
+            context.translate(75, 75);
+
+            context.fillStyle = 'teal';
+            context.rotate(Math.PI / 180 * (45 + angle);
+            context.fillRect(0, 0, 50, 50);
+
+            context.fillStyle = 'orange';
+            context.rotate(Math.PI / 2);
+            context.fillRect(O, 0, 50, 50);
+
+            context.fillStyle = 'teal';
+            context.rotate(Math.PI / 2);
+            context.fillRect(0, 0, 50, 50);
+
+            context.fillStyle = 'orange';
+            context.rotate(Math.PI / 2);
+            context.fillRect(0, 0, 50, 50);
+
+            context.restore();
+            angle += 2;
+            if(angle >= 360)
+                angle = 0;
+
+            windows.requestAnimationFrame(function() {
+                draw(angle);
+            });
+
+            draw(0);
+        }
+
+La variable angle représente le décalage. Lors du premier appel de draw(), le décalage vaut 0. A chaque appel de la fonction, il est
+incrémenté de 2. Blabla.
+
+Remarque : ne pas oublier l'appel de la méthode restore() !!
+
+Les possibilités d'animation de Canvas sont toutes basées sur le même principe :
+window.requestAnimationFrame(). Ici, il s'agissait de créer un effet de rotation, mais il est possible de créer une courbe qui
+s'étire (courbe de Bézier pour laquelle on incrémente les valeurs), d'animer une balle qui rebondit... Bref, les possibilités sont
+nombreuses, mais une fois que le principe est acquis, il est facile de se débrouiller.
+
+Note : toutes les ficelles de cet élément (Canvas) n'ont pas été vues, mais le principal est là.
+
+En résumé :
+    -   L'élément <canvas> est une zone de la page dans laquelle il est possible de dessiner des formes via le JavaScipt. Canvas
+    supporte également un système basique pour créer des animations.
+    -   Canvas ne supporte que quelques formes : le rectangle, l'arc de cercle, et les courbes de Bézier quadratiques et cubiques
+    -   Il est également possible d'insérer des images au sein du canvas, tout comme de créer des dégradés ou d'ajouter du
+     texte
+    -   L'utilisation des rotations et des translations facilite les calculs des coordonnées et donc la création du dessin.
+
+Note : il existe des frameworks qui permettent de simplifier le dessin, et même d'ajouter des événements aux "formes". C'est
+le cas de KineticjS (https://openclassrooms.com/courses/piloter-canvas-avec-kineticjs).
+
+Canvas fournir peu de formes géométriques
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Element Canvas</title>
+    <style>
+        canvas {
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas" width="800" height="500">
+        <p>Votre navigateur date, changez-le</p>
+    </canvas>
+    <script>
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Les arcs
+        /*
+        var canvas = document.getElementById('canvas'),
+            context = canvas.getContext('2d');
+        canvas.style.border = '2px solid black';
+        */
+        /*
+        context.lineWidth = '4';
+        context.strokeStyle = '#00eeee';
+        context.beginPath();
+        context.arc(75, 75, 50, 0, Math.PI * 2);
+        context.stroke();
+
+        context.fillStyle = '#00eeee';
+        context.beginPath();
+        context.arc(75, 75, 40, 0, Math.PI);
+        context.fill();
+
+        context.beginPath();
+        context.arc(55, 70, 20, (Math.PI * 220) / 180, Math.PI * 320 / 180);
+        context.stroke();
+
+        context.beginPath();
+        context.arc(95, 70, 20, Math.PI * 220 / 180, Math.PI * 320 / 180);
+        context.stroke();
+
+        */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Les courbes
+        /*
+        context.beginPath();
+        context.moveTo(131, 119);
+        context.bezierCurveTo(131, 126, 126, 131, 119, 131);
+        context.lineTo(30, 131);
+        context.bezierCurveTo(23, 131, 18, 126, 18, 119);
+        context.lineTo(18, 30);
+        context.bezierCurveTo(18, 23, 23, 18, 30, 18);
+        context.lineTo(119, 18);
+        context.bezierCurveTo(126, 18, 131, 23, 131, 30);
+        context.lineTo(131, 119);
+        context.closePath();
+        context.fillStyle = 'rgb(23, 145, 167)';
+        context.fill();
+
+        context.font = '68px Calibri,Geneva,Arial';
+        context.fillStyle = 'white';
+        context.fillText('js', 84, 115, 300);
+        */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Les dégradés
+        //Les dégradés linéaires
+        //var linear = context.createLinearGradient(0, 0, 150, 0);
+        /*
+        linear.addColorStop(0, '#0000ff');
+        linear.addColorStop(0.333, '#fff');
+        linear.addColorStop(0.666, '#fff');
+        linear.addColorStop(1, '#ff0000');
+        */
+        /*
+        linear.addColorStop(0, '#0000ff');
+        linear.addColorStop(0.33, "#0000ff");
+        linear.addColorStop(0.33, '#fff');
+        linear.addColorStop(0.66, "#fff");
+        linear.addColorStop(0.66, '#ff0000');
+        linear.addColorStop(1, '#ff0000');
+
+         context.fillStyle = linear;
+         context.fillRect(0, 0, 150, 150);
+        */
+
+        //Les dégradés radiaux
+        /*
+        var linear = context.createRadialGradient(75, 75, 0, 130, 130, 150);
+        linear.addColorStop(0, '#1791a7');
+        linear.addColorStop(1, '#fff');
+        */
+        /*
+        var radial1 = context.createRadialGradient(0, 0, 10, 100, 20, 150); // Un fond
+        radial1.addColorStop(0, '#ddf5f9');
+        radial1.addColorStop(1, '#ffffff');
+
+        var radial2 = context.createRadialGradient(75, 75, 10, 82, 70, 30); // La bulle orange
+        radial2.addColorStop(0, '#ffc55c');
+        radial2.addColorStop(0.9, '#ffa500');
+        radial2.addColorStop(1, 'rgba(245, 160, 6, 0)');
+
+        var radial3 = context.createRadialGradient(105, 105, 20, 112, 120, 50); // La bulle turquoise
+        radial3.addColorStop(0, '#86cad2');
+        radial3.addColorStop(0.9, '#61aeb6');
+        radial3.addColorStop(1, 'rgba(159, 209, 216, 0)');
+
+        context.fillStyle = radial1;
+        context.fillRect(10, 10, 130, 130);
+        context.fillStyle = radial2;
+        context.fillRect(10, 10, 130, 130);
+        context.fillStyle = radial3;
+        context.fillRect(10, 10, 130, 130);
+        */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Les rotations
+        /*
+        context.translate(75, 75);
+
+        context.fillStyle = "teal";
+        context.rotate(Math.PI * 45 / 180);
+        context.fillRect(0, 0, 50, 50);
+
+
+        context.fillStyle = 'orange';
+        context.rotate(Math.PI / 2);
+        context.fillRect(0, 0, 50, 50);
+
+        context.fillStyle = 'teal';
+        context.rotate(Math.PI / 2);
+        context.fillRect(0, 0, 50, 50);
+
+        context.fillStyle = 'orange';
+        context.rotate(Math.PI / 2);
+        context.fillRect(0, 0, 50, 50);
+        */
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Les animations
+
+        /*
+        window.addEventListener('load', function() {
+            var can = document.getElementById('canvas'),
+                con = can.getContext('2d');
+
+            function draw(angle) {
+                con.save();
+                con.clearRect(0, 0, 150, 150);
+                con.translate(75, 75);
+
+                con.fillStyle = 'teal';
+                con.rotate((Math.PI / 180) * (45 + angle));
+                con.fillRect(0, 0, 50, 50);
+
+                con.fillStyle = 'orange';
+                con.rotate(Math.PI / 2);
+                con.fillRect(0, 0, 50, 50);
+
+                con.fillStyle = 'teal';
+                con.rotate(Math.PI / 2);
+                con.fillRect(0, 0, 50, 50);
+
+                con.fillStyle = 'orange';
+                con.rotate(Math.PI / 2);
+                con.fillRect(0, 0, 50, 50);
+
+                con.restore();
+
+                angle += 2;
+                if(angle >= 360)
+                    angle = 0;
+                window.requestAnimationFrame(function(){
+                    draw(angle);
+                });
+            }
+            draw(0);
+        });
+
+
+    */
+
+
+
+        
+        // Animation du ballon
+        window.addEventListener('load', function() {
+            var canvas = document.getElementById('canvas'),
+                context = canvas.getContext('2d'),
+                width = canvas.width,
+                height = canvas.height,
+                down = true,
+                right = true,
+                x = 0,
+                y = 0;
+
+            function draw(x, y, rayon, angle) {
+
+                context.clearRect(0, 0, width, height);
+                if(y >= height - rayon)
+                    down =  false;
+                else if(y <= rayon)
+                    down = true;
+                if(x >= width - rayon)
+                    right = false;
+                else if(x <= rayon)
+                    right = true;
+
+                if(right) {
+                    x += 5;
+                    angle++;
+                }
+                else {
+                    x -= 5;
+                    angle--;
+                }
+                if(down) y += 5;
+                else y -= 5;
+
+                context.fillStyle = 'red';
+                context.beginPath();
+                context.arc(x, y, rayon, Math.PI * (240 + angle) / 180, Math.PI * angle / 180);
+                context.fill();
+                context.beginPath();
+                context.fillStyle = 'blue';
+                context.arc(x, y, rayon, Math.PI * angle / 180, Math.PI * (120 + angle) / 180);
+                context.fill();
+                context.fillStyle = 'orange';
+                context.beginPath();
+                context.arc(x, y, rayon, Math.PI * (angle + 120) / 180, Math.PI * (angle + 240) / 180);
+                context.fill();
+
+                window.requestAnimationFrame(function() {
+                    draw(x, y, rayon, angle);
+                });
+            };
+
+            draw(300, 50, 30, 180);
+        });
+
+        /*
+        window.addEventListener('load', function() {
+            var canvas = document.querySelector('#canvas'),
+                con = canvas.getContext('2d');
+
+                con.fillStyle = 'blue';
+                con.rotate(Math.PI * 10 / 180);
+                con.fillRect(0, 0, 40, 40);
+
+                con.fillStyle = 'red';
+                con.rotate(Math.PI * 45 / 180);
+                con.fillRect(90, 0, 40, 40);
+
+                con.fillStyle = 'black';
+                con.rotate(Math.PI * 10 / 180);
+                con.fillRect(180, 0, 40, 40);
+        });
+        */
+        </script>
+</body>
+</html>

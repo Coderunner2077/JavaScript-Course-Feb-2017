@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Mini tp drag n drop CC3-JS</title>
+		<style>
+			.draggableBox {
+				position: absolute;
+				width: 80px; height: 60px;
+				padding-top: 10px;
+				text-align: center;
+				font-size: 40px;
+				background-color: #222;
+				color: #CCC;
+				cursor: move;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+
+			}
+		</style>
+	</head>
+	<body>
+		<div class="draggableBox">1</div>
+		<div class="draggableBox">2</div>
+		<div class="draggableBox">3</div>
+
+		<script>
+			(function() {
+				var storage = {};
+				function init() {
+					var boxes = document.querySelectorAll('.draggableBox'),
+					
+					for(var i = 0; i < boxes.length; i++) {
+						var box = boxes[i];
+						box.addEventListener('mousedown', function(e) {
+							let target = e.target;
+							storage.target = target;
+							storage.offsetX = e.clientX - target.offsetLeft;
+							storage.offsetY = e.clientY - target.offsetTop;
+						});
+						box.addEventListener('mouseup', function(e) {
+							storage = {};
+						});
+					}
+					document.addEventListener('mousemove', function(e) {
+						target = storage.target;
+						if(target) {
+							target.style.left = e.clientX - storage.offsetX + 'px';
+							target.style.top = e.clientY - storage.offsetY + 'px';
+						}
+					});
+				}
+				init();
+			})();
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,304 @@
+<!--
+                                                    Manipuler le CSS
+
+Le JavaScript est un langage permettant de rendre une page Web dynamique du côté du client. Et quoi de mieux que les animations 
+pour rendre une page dynamique ? Seulement, pour faire des animations, il faut accéder au CSS et le modifier.
+
+I./ Editer les propriétés CSS
+
+1.) Quelques rappels sur le CSS
+
+Le Cascading Style Sheets est un langage permettant d'éditer l'aspect graphique des éléments HTML et XML.
+
+Rappelons une chose capitale : les propriétés CSS de l'attribut <style> sont prioritaires sur les propriétés d'une feuille de 
+style. Ainsi, dans l'exemple suivant, le texte n'est pas rouge mais bleu :
+<style>
+    div {
+        color: red;
+    }
+</style>
+
+<div style="color:blue;">I'm blue ! </div>
+
+2.) Editer les styles CSS d'un élément
+
+Comme on vient de le voir, il y a deux manières de modifier le CSS d'un élément HTML, on va aborder ici la méthode la plus
+simple et la plus utilisée : l'utilisation de la propriété style. 
+
+L'édition des feuilles de style ne sera pas abordée, car elle est profondément inutile en plus d'être mal gérée par de
+nombreux navigateurs.
+
+Alors comment accéder à la propriété style d'un élément ? Eh bien, de la même manière que pour n'importe quel élément :
+
+element.style;
+
+Une fois que l'on a accédé à notre propriété, comment modifier le CSS ? Eh bien, tout simplement en écrivant leur nom et
+en leur attribuant une valeur. Par exemple : 
+
+element.style.width = '200px';
+
+ATTENTION : ne JAMAIS oublier l'unité de valeur, c'est une source d'erreurs très fréquente.
+
+Maintenant, voilà comment on accède à une propriété CSS possédant un nom composé, étant donné que les tirets sont
+interdits en JavaScript : on supprime les tirets et chaque mot suivant normalement un tiret voit sa première lettre
+devenir majuscule. Exemple :
+
+element.style.background-color = 'blue'; // ==> ERREUR !!!!
+
+element.style.backgroundColor = 'blue'; // ==> OK !
+
+Donc, j'ai vu que l'édition du CSS d'un élément n'est pas bien compliquée. 
+
+Cependant, il y a une limitation de taille : en ce qui concerne la lecture des propriétés CSS !
+
+Réf html-script
+
+Eh bien, on n'obtient rien ! Pourquoi ? Parce que mon code va lire uniquement les valeurs contenues dans la propriété style. 
+C'est-à-dire, rien du tout dans mon exemple, car j'ai modifié les styles CSS depuis une feuille de style, et non pas depuis
+l'attribut style.
+
+En revanche, en modifiant le CSS avec l'attribut style, on retrouve sans problème la couleur de fond du div en question :
+
+Réf html
+
+C'est gênant. Malheureusement, on ne peut pas y faire grand-chose à partir de la propriété style.
+Pour cela, on va devoir utiliser la fonction getComputedStyle().
+
+II./ Récupérer les propriétés CSS
+
+1.) La fonction getComputedStyle()
+
+La propriété style n'intègre pas les propriétés CSS d'une feuille de style, ce qui limite énormément les possibilités 
+d'analyse... Heureusement, il existe une fonction permettant de remédier à ce problème : getComputedStyle() !
+
+Cette fonction va se charger de récupérer, à ma place, la valeur de n'importe quel style CSS ! Qu'il soit déclaré dans
+la propriété style, une feuille de style ou bien même encore calculé automatiquement, cela importe peu : getComputedStyle()
+la récupérera sans problème. 
+
+Attention : toutes les valeurs obtenues par le biais de getComputedStyle() ou currentStyle sont en lecture seule !
+
+Son fonctionnement est très simple : Réf script
+
+Attention : les version d'IE antérieures à la version 9 ne supportent pas la fonction getComputedStyle() mais la propriété
+currentStyle
+
+2.) Les propriétés de type offset
+
+a./ Introduction
+
+Certaines valeurs de positionnement ou de taille ne pourront pas être obtenues de façon simple avec getComputedStyle(),
+pour pallier ce problème il existe les propriétés offset qui sont au nombre de cinq :
+
+___________________________________________________________________________________________________________
+-----------------------------------------------------------------------------------------------------------
+NOM DE L'ATTRIBUT   |   CONTENU
+___________________________________________________________________________________________________________
+-----------------------------------------------------------------------------------------------------------
+offsetWidth         |   Contient la largeur complète (width + padding + border) de l'élément
+-----------------------------------------------------------------------------------------------------------
+offsetHeight        |   Contient la hauteur complète (height + padding + border) de l'élément
+-----------------------------------------------------------------------------------------------------------
+offsetLeft          |   Surtout utile pour les éléments en position absolue.
+                    |   Contient la position  de l'élément par rapport au bord gauche de son élément parent
+-----------------------------------------------------------------------------------------------------------
+offsetTop           |   Surtout utile pour les éléments en position absolue.
+                    |   Contient la position de l'élément par rapport au bord sup. de son élément parent
+-----------------------------------------------------------------------------------------------------------
+offsetParent        |   Utile pour un élément en position absolue ou relative.
+                    |   Contient l'objet de l'élément parent par rapport auquel est positionné l'élément
+                    |   actuel.
+___________________________________________________________________________________________________________
+-----------------------------------------------------------------------------------------------------------
+
+Leur utilisation ne se fait pas de la même manière que n'importe quel style CSS, tout d'abord parce que ce ne sont pas 
+des styles CSS ! Ce sont juste des propriétés (EN LECTURE SEULE) mises à jour dynamiquement qui concernent certains états
+physiques de l'élément. 
+
+Pour les utiliser, on oublie la propriété style vu qu'il ne s'agit pas de style CSS et on les lit directement sur l'objet
+de notre élément HTML. Exemple :
+
+alert(element.offsetHeight); //On affiche la hauteur complète d'un élément HTML
+
+Attention : les valeurs contenues dans ces propriétés (à part offsetParent) sont exprimées en pixels et sont donc 
+de type Number, pas comme les valeurs des styles CSS qui sont de type String et pour lesquelles les valeurs sont 
+explicitement exprimées (px, cm, em, etc.).
+
+b./ La propriété offsetParent
+
+Concernant la propriété offsetParent, elle contient l'objet de l'élément parent par rapport auquel est positionné mon
+élément actuel. C'est bien, mais qu'est-ce que ça veut dire ?
+
+Eh bien, il faudra faire un petit rappel sur le fonctionnement particulier du positionnement en absolu :
+
+Lorsque je décide de mettre un de mes éléments HTML en positionnement absolu, celui-ci est sorti du positionnement
+par défaut des éléments HTML et va se placer tout en haut à gauche de ma page Web, par-dessus tous les autres 
+éléments. Seulement, ce principe n'est appliquable que si mon élément n'est pas déjà lui-même placé dans un élément
+en postionnement absolu. Si cela arrive, alors mon élément se positionnera non plus par rapport au coin supérieur 
+gauche de la page Web, mais par rapport au coin supérieur gauche du précédent élément placé en positionnement absolu,
+relatif ou fixe.
+
+Revenons à présent à la propriété offsetParent ! Si elle existe, c'est parce que les propriétés offsetTop et offsetLeft
+contiennent la positionnement de mon élément par rapport à son précédent élément parent et non pas par rapport à la page. 
+Si l'on veut obtenir son positionnement par  rapport à la page, il faudra alors aussi ajouter les valeurs de positionnement
+de son (ses) élément(s) parent(s). 
+
+Réf css-html-script
+
+En effet, pour connaître le positionnement par rapport à la page d'un élément enfant, les valeurs seules de positionnement 
+de celui-ci n'ayant pas suffi, j'ai été obligé de créer une fonction pour calculer le positionnement par rapport à la page
+(et non pas par rapport à l'élément parent).
+
+Autre chose : il faut savoir qu'en HTML, la largeur (ou hauteur) complète d'un élément correspond à la valeur de :
+width + celle du padding + celle des bordures.
+
+Par exemple, dans ce code :
+<style>
+    #offsetTest {
+        width: 100px;
+        height: 100px;
+        padding: 10px;
+        border: 2px solid black;
+    }
+</style>
+
+==> La largeur complète de mon élément <div> vaut : 100 + 10 (padding-left) + 10 (padding-right) + 2 (border-left) + 2 (border-r)
+==> 124px !
+
+Et il s'agit bien sûr de la valeur retournée par offsetWidth : 
+
+Réf script
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Manipuler le CSS</title>
+        <style type="text/css">
+            #myDiv, #myDiv2
+            {
+                background-color: orange;
+            }
+            #d_relatif
+            {
+                width: 200px;
+                height: 200px;
+                background-color: blue;
+                position: relative;
+                left: 100px;
+                top: 100px;
+                display: none;
+            }
+            #div_absolu
+            {
+                width: 50px;
+                height: 50px;
+                background-color: #222;
+                position: absolute;
+                left: 100px;
+                top: 100px;
+            }
+            
+            #parent,
+            #child {
+                position: absolute;
+                top: 50px;
+                left: 100px;
+            }
+    
+            #parent {
+                width: 200px;
+                height: 200px;
+                background-color: blue;
+            }
+    
+            #child {
+                width: 50px;
+                height: 50px;
+                background-color: red;
+            }
+            
+            
+            #offsetTest {
+                width: 100px;
+                height: 100px;
+                padding: 10px;
+                border: 2px solid green;
+                position: absolute;
+                left: 100px;
+                top: 50px;
+            }
+            
+            #noPadding {
+                width: 100px;
+                height: 100px;
+                border: 2px solid black;
+                position: absolute;
+                left: 100px;
+                top: 50px;
+            }
+            
+        </style>
+       
+    </head>
+    <body>
+        <div id="d_relatif">
+            <div id="div_absolu"></div>
+        </div>
+        
+        <div id="myDiv" style="">Je possède un fond orange</div>
+        <div id="myDiv2">Je possède aussi un fond orange (uniquement propriété CSS)</div>
+        
+        <div id="parent">
+            <div id="child"></div>
+        </div>
+        
+        <div id="offsetTest"></div>
+        <br />
+        <div id="noPadding"></div>
+        <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Edition via la propriété style
+            var div = document.getElementById('myDiv');
+            alert('Selon le JavaScript, la couleur de fond de ce div est : ' + div.style.backgroundColor);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Lecture des propriétés CSS
+            var div2 = document.getElementById('myDiv2'),
+                bColor = getComputedStyle(div2).backgroundColor;
+            alert('Selon le JavaScript, la couleur de fond de myDiv2 est : ' + bColor);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //offset & co
+            
+            var parent = document.getElementById('parent'),
+                child = document.getElementById('child');
+            
+            alert("Sans la fonction de calcul, la position de l'élément enfant est : \noffsetLeft : " 
+                 + child.offsetLeft + "px\noffsetTop: " + child.offsetTop + "px");
+            
+            function getOffset(element){        //ma fonction qui calcule le positionnement complet
+                var top = 0,
+                    left = 0;
+                do{
+                    top += element.offsetTop;
+                    left += element.offsetLeft;
+                }while(element = element.offsetParent);         // tant que l'élément reçoit un "offsetParent" valide, on 
+                                                            //on additionne les valeurs des offset
+                //autre point important : <body> a une propriété offsetParent qui est à undefined
+                
+                return {            //on retourne un objet pour pouvoir retourner les deux valeurs calculés
+                    top: top,
+                    left: left
+                };
+            }
+            
+            alert("Avec la fonction de calcul, la position de l'élément enfant est : \noffsetLeft : "
+                 + getOffset(child).left + "px \noffsetTop : " + getOffset(child).top + "px");
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //offsetWidth : largeur complète donc
+            var offsetTest = document.getElementById('offsetTest');
+            alert(offsetTest.offsetWidth);
+        </script>
+    </body>
+</html>

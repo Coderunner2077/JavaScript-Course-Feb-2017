@@ -1,0 +1,654 @@
+<!--
+                                                Les objets
+
+I./ Objet constructeur
+
+1.) Définition d'un constructeur
+
+Constructeur d'un objet Person : 
+
+function Person(){
+    //code constructeur
+}
+
+Le mot-clé this (tout comme en Java et C++) fait référence à l'objet dans lequel il est exécuté.
+Grâce à this, on va pouvoir définir les propriétés de l'objet Person :
+
+function Person(nick, age, sex, work, friends){
+    this.nick = nick;
+    this.age = age;
+    this.sex = sex;
+    this.work = work;
+    this.friends = friends;
+}
+
+2.) Instanciation 
+
+var seb = new Person('Sebastien', 23, 'm', 'JavaScripteur', []);
+var lau = new Person('Laurent', 22, 'm', Sous-officier', []);
+
+Vérifier si une variable est une instance d'un objet : avec le mot-clé instanceof 
+
+==>
+    alert(seb instanceof Person); //affiche true
+
+3.) Modifier les données
+
+Comme avec les propriétés...
+
+seb.nick = 'Bastien';
+seb.age = 18;
+
+On crée un tableau contenant des instances de Person :
+
+var myArray = [
+    new Person('Sébastien', 23, 'm', 'JavaScripteur', []),
+    new Person('Laurence', 19, 'f', Sous-officier', []),
+    new Person('Ludovic', 9, 'm', 'Etudiant', []),
+    new Person('Pauline', 16, 'f', 'Etudiante', []),
+    new Person('Guillaume', 16, 'm', 'Dessinateur', [])
+];
+
+II./ Ajouter des méthodes
+
+On peut insérer dans la propriété tableau : 
+
+seb.friends.push(new Person('Johan', 39, 'm', 'Chercheur', []));
+
+Ou encore: 
+
+seb.friends[0].friends.push(new Person('Victor', 15, 'm', 'Etudiant', []));
+
+Ajoutons maintenant une méthode addFriend !
+
+1.) Ajouter une méthode
+
+a./ Définir une méthode dans le constructeur
+
+function Person(){
+    this.nick = nick;
+    this.age = age;
+    this.sex = sex;
+    this.work = work;
+    this.friends = friends;
+
+    this.addFriend = function(nick, age, sexe, work, friends){
+        this.friends.push(new Person(nick, age, sexe, work, friends));
+    };
+}
+
+b./ Ajouter une méthode via prototype
+
+Lorsque je définis un objet, il possède automatiquement un sous-objet prototype.
+
+Attention : prototype est un objet, mais c'est aussi le nom d'une bibliothèque JavaScript : Prototype. Ne pas confondre !
+
+Cet objet prototype permet d'ajouter des méthodes à un objet. Voici comment ajouter une méthode addFriend() à mon objet 
+Person :
+
+Person.prototype.addFriend = function(nick, age, sexe, work, friends){
+    this.friends.push(new Person(nick, age, sexe, work, friends));
+};
+
+this fait référence à l'objet dans lequel il s'exécute (ie Person ici).
+
+L'ajout de méthodes par Prototype a l'avantage d'être indépendant de l'objet, ie je peux définir mon objet dans un fichier, 
+et ajouter les méthodes dans un autre fichier (pour autant que les deux fichiers soient inclus dans la même page Web).
+
+Note : En réalité, l'ajout des méthodes par prototype est particulier, car les méthodes ajoutées ne seront pas copiées
+dans les instances de mes objets. Autrement dit, en ajoutant la méthode addFriend() par prototype, une instance comme seb
+ne possèdera pas la méthode directement dans son propre objet, elle sera obligée d'aller la chercher au sein de son
+objet constructeur, ici Person. Cela veut dire que si je fais une modification sur une méthode contenue dans un 
+prototype, alors on affecte (!?) toutes les instances de mon objet (y compris celles qui sont déjà créées), cette solution
+est donc à privilégier.
+
+III./ Ajouter des méthodes aux objets natifs
+
+Une grande particularité du JavaScript est qu'il est orienté objet par prototype, ce qui le dote de certains caractéristiques
+que les autres langages orientés objet ne possèdent pas. Avec le JavaScript, il est possible de modifier des objets natifs,
+comme c'est le cas en C# par exemple. En fait, les objets natifs possèdent eux aussi un objet prototype autorisant donc
+la modification de leur objet. 
+
+1.) Ajout des méthodes
+
+Ce n'est parfois pas facile de visualiser le contenu d'un tableau via alert(). Pourquoi ne pas créer une méthode permettant 
+d'afficher le contenu littéral via alert(), mais de façon plus élégante (un peu comme la fonction var_dump() du PHP).
+
+Voici le contenu de l'objet à afficher :
+
+var family = {
+    self: 'Sébastien',
+    sister: 'Laurence',
+    brother: 'Ludovic',
+    cousin_1: 'Pauline',
+    cousin_2: 'Guillaume'
+};
+
+family.debug()      // je vais créer cette méthode debug()
+
+Comme il s'agit d'un objet, le type natif est Object. Comme vu précédemment, on va utiliser son sous-objet prototype pour
+lui ajouter la méthode voulue :
+if(!Object.prototype.debug){
+    Object.prototype.debug = function(){
+        var text = 'Object {\n';
+        for(var i in this){
+            if(i !== debug)
+                text += '\t['+i+'] => ' this[i] + '\n';
+        }
+        text += '}';
+        alert(text);
+    };
+}
+
+Pourquoi tester si i est différent de debug ?
+
+==> parce qu'en ajoutant la méthode debug() aux objets, elle s'ajoute elle-même aux objets littéraux : autrement dit,
+debug() va se lister elle-même ce qui n'a pas beaucoup d'intérêt. 
+
+On a donc ajouté une méthode à Object. Mais on l'a fait uniquement en guise d'illustration ==> ceci ne doit JAMAIS être 
+reproduit dans mes scripts pour une raison très simple : après ajout d'une méthode ou d'une propriété à Object, celle-ci
+sera listée à chaque fois que j'utiliserai un for in sur un objet. Par exemple, le code suivant ne devrait même pas afficher
+une seul alerte :
+
+var myObject = {};
+
+for(var i in myObject)
+    alert(i);
+
+Et pourtant, après ajout d'une méthode comme debug(), ma boucle affichera cette méthode pour tout objet parcouru, ce qui
+n'est clairement pas conseillé. Cependant, cette restriction s'applique uniquement à l'objet natif Object, les autres
+objets comme Array, String, etc. ne sont pas concernés.
+
+Remarque : l'interpréteur JS me signale que la méthode debug() n'existe pas. Je n'ai donc pas pu l'ajouter.
+
+2.) Remplacer des méthodes
+
+Quand on utilise prototype, on affecte une fonction. Cela veut donc dire qu'il est possible de modifier les méthodes
+natives des objets en leur affectant une nouvelle méthode. Cela peut se révéler très utile dans certains cas, mais
+on verra cela plus tard quand on abordera les polyfills.
+
+a./ Limitations : dans IE
+
+En théorie, chaque objet peut se voir attribuer des méthodes via prototype. Mais en pratique, si cela fonctionne avec
+les objets natifs génériques comme String, Date, Array, Object, Number, Boolean et de nombreux autres, cela fonctionne
+moins bien avec les objets natifs liés au DOM comme Node, Element ou encore HTMLElement, en particulier dans Internet 
+Explorer.
+
+b./ Limitations : chez les éditeurs
+
+Si mes scripts sont destinés à être utilisés sous la forme d'extensions pour Firefox et que je soumets mon extension
+sur le site de Mozilla Addons, celle-ci sera refusée car Mozilla trouve qu'il est dangereux de modifier les objets
+natifs. C'est un peu vrai, puisque si je modifie une méthode native, elle risque de ne pas fonctionner correctement pour
+une autre extension.
+
+IV./ Les namespaces
+
+Un namespace ("un espace de nom") est un ensemble fictif qui contient des informations, généralement des propriétés et
+des méthodes, ainsi que des sous-namespaces. Le but d'un namespace est de s'assurer de l'unicité des informations qu'il
+contient. 
+
+Un namespace sert à éviter que des propriétés et des méthodes soient écrasées, lorsqu'on utilise un script extérieur, par
+d'autres propriétés et méthodes ayant le même nom. 
+
+Attetion : le JavaScript, contrairement aux autres langages  comme le C# ou le Java, ne propose pas de vrai système de
+namespace. Ce que l'on étudie ici est un système pour reproduire plus ou moins correctement un tel système.
+
+1.) Définir un namespace
+
+Un namespace est une sorte de catégorie : on va créer un namespace, et au sein de celui-ci, on va placer nos fonctions.
+De cette manière, mes fonctions seront en quelque sorte préservées d'un éventuel écrasement. Comme le JavaScript ne
+possède pas de structure spécifique à la création de namespace, on va se débrouiller seuls, et utiliser un simple
+objet littéral. Premier exemple :
+
+var myNamespace = {
+    myBestFunction: function(){
+        alert('Ma meilleure fonction !');
+    }
+};
+
+myNamespace.myBestFunction();   //On exécute la fonction
+
+Donc, dans les objets littéraux, en utilisant la même syntaxe que pour définir les propriétés, on peut définir des 
+méthodes.
+
+Pour appeler myBestFunction(), il faut obligatoirement passer par myNamespace, ce qui limite très fortement la probabilité
+de voir ma fonction écrasée par une autre. Besoin d'originalité du namespace... Technique certes non infaillible, mais
+qui réduit considérablement les problèmes.
+
+2.) Un style de code
+
+Une grande majorité des "gros" scripts sont organisés via un namespace, car cela permet de décomposer le script en
+catégories. Par exemple, voici une ébauche d'un script gérant un webmail (comme Hotmail ou Gmail) : 
+
+Réf script
+
+Cette ébauche comprend une méthode d'initialisation et deux sous-namespaces : mails et contacts, servant respectivement
+à gérer les e-mails et les contacts. Chacun de ces sous-namespaces contient des méthodes qui lui sont propres. 
+
+Structurer son code ainsi est propre et lisible, ce qui n'est pas toujours le cas d'une simple succession de fonctions.
+Bien sûr, tout dépend du développeur. Mais de manière générale, un code en namespace est accessible, plus lisible et 
+plus compréhensible. C'est évidemment une question d'habitude.
+
+3.) L'emploi de this
+
+Le mot-clé this s'utilise ici exactement comme dans les objets vus précédemment. Mais attention, si j'utilise this dans
+un sous-namespace, celui-ci pointera vers ce sous-namespace, et non vers le namespace parent. 
+
+Pour accéder à l'objet parent à partir d'un sous-namespace, il n'y a malheureusement pas d'autre choix que d'écrire son
+nom entièrement :
+
+Réf script
+
+4.) Vérifier l'unicité du namespace
+
+Une sécurité supplémentaire est de vérifier de l'existance du namespace : s'il n'existe pas, on le définit, et dans le 
+cas contraire, on ne fait rien pour ne pas risquer d'écraser une version déjà existante, tout en retournant un message
+d'erreur :
+
+Réf script
+
+V./ Modifier le contexte d'une méthode
+
+On va aborder ici un sujet assez avancé : la modification du contexte d'une méthode. 
+
+Une fonction est indépendante, et une méthode est dépendante d'un objet. Le fait qu'un méthode soit dépendante est
+à la fois un avantage et un inconvénient :
+
+    -   Un avantage car je n'ai pas à spécifier quel objet la méthode doit modifier
+    -   Un inconvénient car cette méthode ne pourra fonctionner que sur l'objet dont elle est dépendante
+
+Cet inconvénient peut être résolu grâce à deux méthodes nommées apply() et call().
+
+Une méthode utilise généralement, le mot-clé this pour savoir à quel objet elle appartient, c'est ce qui fait qu'elle
+est dépendante. Les deux méthodes apply() et call() existent pour permettre de rediriger la référence du mot-clé this vers
+un autre objet !
+
+Faisons un cas pratique sur la méthode toString() que tout objet possède. C'est elle qui est appelée par la fonction alert()
+lorsqu'on lui passe un objet en paramètre. ELle possède cependant un fonctionnement différent selon l'objet sur lequel elle
+est utilisée :
+
+alert(['test']); //Affiche "test"
+alert({0:'test'}) //Affiche "[object Object]"
+
+Ainsi, la méthode toString() renvoie un résultat radicalement différent selon l'objet. Mon objectif maintenant sera de 
+faire en sorte d'appliquer la méthode toString() de l'objet Object sur un objet Array, et ce afin d'obtenir sous forme de 
+chaîne de caractères le type de mon tableau au lieu d'obtenir son contenu. 
+
+C'est là qu'entrent en jeu les deux méthodes apply() et call(). Elles vont me permettre de redénifir le mot-clé this de
+la méthode toString(). Ces deux méthodes fonctionnent quasiment de la même manière, elles prennent toutes les deux
+en paramètre un 1er argument obligatoire qui est l'objet vers lequel va pointer le mot-clé this. Les deux méthodes se
+différencient sur les arguments facultatifs (à voir plus loin...). En attendant, on va se servir de la méthode call().
+
+Voici comment il faut utiliser la méthode call() :
+
+methode_a_redefinir.call(objet_a_redefinir);
+
+Dans mon exemple actuel, la méthode à modifier est toString() de l'objet Object. Voici donc comment procéder :
+
+var result = Object.prototype.toString.call(['test']);
+
+alert(result); //Affiche : "[object Array]"
+
+Nous y voilà, la méthode toString() de Object a bien été appliquée à notre tableau, on obtient donc son type et non son
+contenu.
+
+A présent, revenons sur les arguments facultatifs de nos deux méthodes apply() et call(). La 1re prend en paramètre 
+facultatif un tableau de valeurs, tandis que la 2e prend une infinité de valeurs en paramètres. Ces arguments facultatifs
+servent à la même chose : ils seront passés en paramètres à la méthode souhaitée.
+
+Ainsi, si on écrit :
+
+var myArray = [];
+
+myArray.push.apply(myArray, [1, 2, 3]);
+
+Cela revient à écrire :
+
+myArray.push(1, 2, 3);
+
+De même, si on écrit :
+
+myArray.push.call(myArray, 1, 2, 3);
+
+Cela revient à écrire :
+
+myArray.push(1, 2, 3);
+
+V./ L'héritage
+
+Tout comme dans bcp d'autres langages, il est possible en JavaScript d'appliquer le concept d'héritage à un objet. 
+
+Voici un exemple : un objet Vehicle dont héritent un objet Car et un objet Camion ==>
+
+Réf script
+
+Maintenant que notre objet Vehicle est prêt, on va l'exploiter. L'héritage va ici consister à créer deux objets 
+constructeurs (un pour notre voiture et un pour notre camion) qui vont tous les deux hériter de Vehicle. 
+
+Commençons par la voiture qui va ajouter quelques fonctionnalités concernant son coffre :
+
+Réf script
+
+var myCar = new Car('AA-555-AA', 70, 2.5);
+
+Cette voiture est maintenant capable de démarrer et arrêter son moteur, ouvrir et fermer son coffre, et on connaît
+sa plaque d'immatriculation ainsi que la taille de son réservoir et de son coffre.
+
+Note : documentation sur la méthode Object.create ==> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+
+Je crée également mon objet Camion héritant aussi de Vehicle.
+
+Réf script
+
+On a donc créé deux objets constructeurs qui possèdent des caractéristiques communes regroupées au sein d'un objet 
+constructeur parent. Ainsi, chaque objet enfant n'a qu'à prendre en charge ses propres particularités, les aspects communs
+seront gérés par l'objet parent, évitant ainsi de dupliquer mon code. Dans le cas où mon code serait relativement complexe,
+il est bien évidemment possible de faire hériter un objet d'un parent qui hérite lui-même d'un autre parent et ainsi de suite...
+
+Dans la pratique, il est probable qui l'héritage me soit assez peu utile en JavaScript mais cette notion reste cependant
+utile lorsque mon code finit par se complexifier car il me permettra de mieux segmenter mon code.
+
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les objets</title>
+    </head>
+    <body>
+        <script>
+            function Person(nick, age, sex, work, friends){
+                this.nick = nick;
+                this.age = age;
+                this.sex = sex;
+                this.work = work;
+                this.friends = friends;
+                
+                //Ajout d'une méthode (dans le constructeur)
+                this.addFriend = function(nick, age, sex, work, friends){
+                    this.friends.push(new Person(nick, age, sex, work, friends));
+                };
+                
+            }
+            
+            var seb = new Person('Sebastien', 23, 'm', 'JavaScripteur', []);
+            var lau = new Person('Laurent', 22, 'm', 'Sous-officier', []);
+            
+            /*
+            Person.prototype.addFriend = function(nick, age, sex, work, friends){
+                this.friends.push(new Person(nick, age, sex, work, friends));
+            };
+            */
+            
+            alert(seb.nick);
+            
+            seb.addFriend('Nouveau', 20, 'f', 'Travailleur', []);
+            alert(seb.friends[0].nick); // ça a marché dans les deux cas (déf. dans constructeur ou dans prototype)
+                
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Ajout de méthode à un object natif (debug() à l'objet Object)
+            
+            //Testons si cette méthode n'existe pas déjà
+            if(!Object.prototype.debug){
+                
+                //Créons la méthode
+                Object.prototype.bebug = function(){
+                    var text = 'Object {\n';
+                    for(var i in this)
+                        if(i !== debug)
+                            text += '\t[' + i + '] => ' + this[i] + '\n';
+                    text += '}';
+                    
+                    alert(text);
+                };
+            }
+            
+            var family = {
+                self: 'Sébastien',
+                sister: 'Laurence',
+                brother: 'Ludovic',
+                cousin_1: 'Pauline',
+                cousin_2: 'Guillaume'
+            };
+            
+            //family.debug();  // marche pas
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Namespaces
+            
+            //Namespace pour gérer un webmail
+            var thundersebWebMail = {
+                //Propriétés
+                version: 1.42,
+                lang: 'english',
+                
+                //Initialisation
+                init: function(){ /* initialisation */ },
+                
+                //Gestion des mails
+                mails: {
+                    list: function(){ /* Affiche la liste des e-mails */ },
+                    show: function(){ /* Affiche un e-mail */ },
+                    trash: function(){ /* Supprime un e-mail */ },
+                    //et caetera...
+                },
+                
+                //Gestion des contacts
+                contacts: {
+                    list: function(){ /* Affiche la liste des contacts */ },
+                    edit: function(){ /* Edite un contact */ },
+                    //et caetera...
+                }
+            };
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //this
+            
+            var myNamespace = {
+                
+                test: function(){
+                        alert('Test');
+                 },
+                
+                subNamespace: {
+                    init: function(){
+                        //this.test(); // ==> faux !!
+                        myNamespace.test();
+                    }
+                }
+                    
+            };
+            
+            myNamespace.subNamespace.init();
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Vérifier l'unicité du namespace
+            if(typeof myNamespace === 'undefined'){
+                var myNamespace = {
+                    // TOut le code
+                }
+            } else {
+                alert('myNamespace existe déjà');
+            }
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Modifier le contexte d'une méthode
+            
+            var result = Object.prototype.toString.call(['test']);
+            
+            alert(result); // Affche "[object Array]"
+            
+            var myArray = [];
+            myArray.push.apply(myArray, [1, 2, 3]);
+            myArray.push.call(myArray, 4, 5, 6);
+            alert(myArray);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Héritage
+            
+            //objet Vehicle
+            function Vehicle(licensePlate, tankSize){
+                this.engineStarted = false; //notre véhicule est-il démarré ?
+                this.licensePlate = licensePlate; //La plaque d'immatriculation de notre véhicule
+                this.tankSize = tankSize; // La taille du réservoir en litres
+            }
+            
+            //Permet de démarrer notre véhicule
+            Vehicle.prototype.start = function(){
+                this.engineStarted = true;
+            };
+            
+            //Permet de stopper le véhicule
+            Vehicle.prototype.stop = function(){
+                this.engineStarted = false;
+            };
+            
+            Vehicle.prototype.toString = function(){
+                var text = 'Véhicule immatriculé '+ this.licensePlate + ', ' + this.tankSize + 'L';
+
+                return text;
+            };
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //objet Car
+            function Car(licensePlate, tankSize, trunkSize){
+                //On appelle le constructeur de "Vehicle" par le biais de la méthode call()
+                //afin qu'il affecte de nouvelles propriétés à Car
+                Vehicle.call(this, licensePlate, tankSize);
+                
+                //Une fois le constructeur parent appelé, l'initialisation de notre objet peut continuer
+                this.trunkOpened = false; //Coffre est-il ouvert ?
+                this.trunkSize = trunkSize; //taille de notre coffre en mètres cube.
+            }
+            
+            //L'objet prototype de Vehicle  doit être copié au sein du prototype de Car afin que ce dernier puisse
+            //bénéficier des mêmes méthodes
+            Car.prototype = Object.create(Vehicle.prototype, {
+                //Le prototype copié possède une référence vers son constructeur, actuellement défini à Vehicle, 
+                //on doit changer sa référence pour "Car" tout en conservant sa particularité d'être une 
+                //propriété non-énumérable
+                constructor: {
+                    value: Car,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true,
+                }
+            });
+            
+            //Il est bien évidemment possible d'ajouter de nouvelles méthodes spécifiques à Car
+            Car.prototype.openTrunk = function(){
+                this.trunkOpened = true;
+            };
+            
+            Car.prototype.closeTrunk = function(){
+                this.trunkOpened = false;
+            };
+            
+            Car.prototype.toString = function(){
+                var text = Vehicle.prototype.toString.call(this);
+                text += ', ' + this.trunkSize + 'm3, actuellement ';
+                text += (this.engineStarted) ? 'en circulation' : "immobilisé";
+                return text;
+            }
+            //Il est maitenant possible d'instancier une nouvelle voiture de manière tout à fait classique :
+            
+            var myCar = new Car('AA-555-AA', 70, 2.5);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //L'objet Camion
+            function Truck(licensePlate, tankSize, trailersNumber){
+                Vehicle.call(this, licensePlate, tankSize);
+                
+                this.trailersNumber = trailersNumber; //Le nombre de remorques attachées au camion
+            }
+            
+            Truck.prototype = Object.create(Vehicle.prototype, {
+                constructor: {
+                    value: Truck,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                }
+            });
+            
+            Truck.prototype.addTrailer = function(){
+                this.trailersNumber++;
+            };
+            
+            Truck.prototype.removeTrailer = function(){
+                if(this.trailersNumber > 0)
+                    this.trailersNumber--;
+                else
+                    alert("Il n'y a plus de remorques à retirer");
+            };
+            
+            Truck.prototype.toString = function(){
+                var text = Vehicle.prototype.toString.call(this);
+                text += ', actuellement ' + ((this.engineStarted) ? 'en circulation' : 'immobilisé');
+                text += (this.trailersNumber) ? (', tractant ' + this.trailersNumber + ' remorques') : '';
+                return text;
+            };
+            var vehic = new Vehicle('BB-999-BB', 60);
+            alert(vehic);
+            alert(myCar);
+            var camion = new Truck('CC-888-CC', 90, 2);
+            camion.addTrailer();
+            alert(camion);
+            alert(camion instanceof Vehicle); //true
+            alert(camion instanceof Truck); //true
+
+            Array.prototype.toString = function(){
+                var text = Object.prototype.toString.call(this);
+                return text;
+            };
+
+            alert('tableau : ' + ['test']);
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            function Hybride(licensePlate, trunkSize, carburant) {
+                Vehicle.call(this, licesePlate, trunkSize);
+                this.carburant = carburant;
+            }
+
+            Hybride.prototype = Object.create(Vehicle.prototype, {
+                constructor: {
+                    value: Hybride,
+                    enumerable: false,
+                    writable: true,
+                    configurable: true
+                }
+            });
+
+            Hybride.prototype.setCarburant = function(carburant) {
+                this.carburant = carburant;
+            };
+
+            Hybride.prototype.toString = function() {
+                var text =Vehicle.prototype.toString.call(this);
+                return text + ', hybride';
+            };
+            var hybride = new Hybride('43LH43', 2, "électrique");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </script>
+    </body>
+</html>

@@ -1,0 +1,142 @@
+<!--
+
+1.) L'ajout des évéments mousedown et mouseup
+
+Dans ma boucle qui parcourt le code HTML, j'ai deux ajouts d'événements que voici : 
+
+elements[i].addEventListener('mousedown', function(e) { // Initialise le drag & drop
+    var s = storage;
+    s.target = e.target;
+    s.offsetX = e.clientX - s.target.offsetLeft;
+    s.offsetY = e.clientY - s.target.offsetTop;
+});
+
+elements[i].addEventListener('mouseup', function() { // Termine le drag & drop
+    storage = {};
+});
+
+Ces deux événements ne font qu'accéder à la variable storage. A quoi me sert donc cette variable ? Il s'agit tout simplement
+d'espace de stockage, il permet de mémoriser l'élément actuellement en cours de déplacement ainsi que la position du
+curseur par rapport à mon élément (on reviendra sur ce point plus tard).
+
+Bref, dans mon événement mousedown, qui initiaise le drag & drop, j'ai ajouté l'événement ciblé dans la propriété 
+storage.target, puis les positions du curseur par rapport à mon élément dans storage.offsetX et storage.offsetY. 
+
+En ce qui concerne mon événement mouseup (qui termine le drag & drop), on attribue juste un objet vide à la variable storage,
+comme ça tout est vide !
+
+2.) La gestion de déplacement de mon élément
+
+Jusqu'à présent, mon code ne fait qu'enregistrer dans la variable storage l'élément ciblé pour mon drag & drop. Cependant,
+mon but c'est de faire bouger cet élément. Voilà pourquoi l'événement mousemove intervient :
+
+document.addEventListener('mousemove', function(e) { // Permet le suivi du drag & drop
+    var target = storage.target;
+
+    if (target) {
+        target.style.top = e.clientY - storage.offsetY + 'px';
+        target.style.left = e.clientX - storage.offsetX + 'px';
+    }
+});
+
+Pourquoi l'événement mousemove est-il appliqué à l'élément document ?
+
+Réfléchissons. Si j'applique cet événement à l'élément ciblé, que va-t-il se passer ? Dès que l'on bougera la souris, 
+l'événement se déclenchera et tout se passera comme on le souhaite, mais si je me mets à bouger la souris trop rapidement,
+le curseur va alors sortir de mon élément avant que celui-ci n'ait eu le temps de se déplacer, ce qui fait que l'événement 
+ne se déclenchera plus tant que l'on ne replacera pas le curseur sur lélément. La probabilité pour que cela se produise est
+plus élevée que l'on ne le pense, autant prendre toutes les précautions nécessaires.
+
+Un autre problème peut aussi surgir : dans mon code actuel, je ne gère pas le style CSS z-index, ce qui fait que lorsqu'on
+déplace le 1er élément et que l'on place le curseur sur un des deux autres éléments, le 1er élément se retrouve alors
+en dessous d'eux. En quoi est-ce un problème ? Eh bien, si on a appliqué le mousemove sur notre élément au lieu du document,
+alors cet événement ne se déclenchera pas vu que l'on bouge le curseur sur un des deux autres éléments et non pas sur 
+notre élément en cours de déplacement.
+
+La solution est donc de mettre l'événement mousemove sur mon document. Vu que cet événement se propage aux enfants, on est
+sûr qu'il se déclenchera à n'importe quel déplacement du curseur de la page. 
+
+Le reste du code n'est pas bien sorcier :
+
+    -   On utilise une condition qui vérifie qu'il existe bien un indice target dans notre espace de stockage. S'il n'y en
+            a pas, c'est qu'il n'y a aucun drag & drop en cours d'exécution
+    -   On assigne à notre élément cible (target) ses nouvelles coordonnées par rapport au curseur
+
+Alors, revenos maintenant sur un point important : il m'a fallu enregistrer la position du curseur par rapport au 
+coin supérieur gauche de mon élément dès l'initialisation du drag & drop. Pourquoi ?
+Car si je ne le fais pas, à chaque fois que je déplacerai mon élément, celui-ci placera son bord supérieur gauche sous
+mon curseur, et ce n'est clairement pas ce que l'on souhaite. 
+
+3.) Empêcher la sélection du contenu des éléments déplaçables 
+
+Comme j'ai pu le constater, il est possible que l'utilisateur sélectionne le texte contenu dans mes éléments déplaçables,
+cela est un peu aléatoire. Heureusement, il est possible de résoudre simplement ce problème avec quelques propriétés CSS
+appliquées aux éléments déplaçables : 
+
+-webkit-user-select: none;
+-moz-user-select: none;
+-ms-user-select: none;
+user-select: none;
+
+
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les formulaires</title>
+        <style>
+            .draggableBox {
+                position: absolute;
+                width: 80px; height: 60px;
+                padding-top: 10px;
+                text-align: center;
+                font-size: 40px;
+                background-color: #222;
+                color: #CCC;
+                cursor: move;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="draggableBox">1</div>
+        <div class="draggableBox">2</div>
+        <div class="draggableBox">3</div>
+        <script>
+            (function(){                // On utilise une IIFE pour ne pas polluer l'espace global
+                var storage = {};       //Contient l'objet de la div en cours de déplacement
+                function init(){        //fonction d'initialisation      
+                    var elements = document.querySelectorAll('.draggableBox'),
+                        elementsLength = elements.length;
+                    
+                    for(var i = 0; i < elementsLength; ++i){
+                        elements[i].addEventListener('mousedown', function(e){  //initialise le drag & drop
+                            var s = storage;
+                            s.target = e.target;
+                            s.offsetX = e.clientX - s.target.offsetLeft;
+                            s.offsetY = e.clientY - s.target.offsetTop;
+                        });
+                        elements[i].addEventListener('mouseup', function(){      //termine le drag & drop
+                            storage = {};
+                        });
+                    }
+                    
+                    document.addEventListener('mousemove', function(e){         //permet le suivi du drag & drop
+                        var target = storage.target;
+                        if(target){
+                            target.style.top = e.clientY - storage.offsetY + 'px';
+                            target.style.left = e.clientX - storage.offsetX + 'px';
+                        }
+                    });
+                }
+                
+                init();         //On initialise le code avec notre fonction toute prête
+            })();
+        </script>
+    </body>
+</html>

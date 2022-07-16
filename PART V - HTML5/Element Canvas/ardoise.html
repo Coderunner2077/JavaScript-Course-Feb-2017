@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Ardoise magique</title>
+    <style>
+        #toolBar span {
+            display: inline-block;
+            padding: 1px;
+            width: 30px;
+            height: 30px;
+        }
+        #blue {
+            background-color: blue;
+        }
+        #red {
+            background-color: red;
+        }
+
+        #white {
+            background-color: white;
+        }
+
+        #green {
+            background-color: green;
+        }
+        #size {
+            display: none;
+        }
+        #canvas {
+            border: 2px solid black;
+        }
+    </style>
+</head>
+<body>
+<div id="toolBar">
+    <span id="rond" onclick="updateForm(this)">Rond</span>
+    <span id="carre" onclick="updateForm(this)">Carre</span>
+    <span id="gomme" onclick="updateGomme(this)"></span>
+    <span id="red" onclick="updateColor(this)"></span>
+    <span id="blue" onclick="updateColor(this)"></span>
+    <span id="white" onclick="updateColor(this)"></span>
+    <span id="green" onclick="updateColor(this)"></span>
+    <span id="size">10</span>
+</div>
+<canvas id="canvas" width="900" height="800">
+    <p>Votre navigateur est nul</p>
+</canvas>
+<script>
+    function updateForm(element) {
+        var other = document.querySelector('.forme');
+        if(other === element)
+            return;
+        if(other)
+            other.className = '';
+
+        element.className = 'forme';
+        updateSize('10');
+    }
+
+    function updateColor(element) {
+        document.querySelector('#canvas').getContext('2d').fillStyle = element.id;
+    }
+
+    function updateGomme(element) {
+        updateForm(document.getElementById('carre'));
+        updateColor(document.getElementById('white'));
+        updateSize('20');
+    }
+
+    function updateSize(taille) {
+        document.getElementById('size').textContent = taille;
+    }
+
+    function getPosition(element) {
+        var top = 0,
+            left = 0;
+        do {
+            top += element.offsetTop;
+            left += element.offsetLeft;
+        } while(element = element.offsetParent);
+
+        return {
+            x: left,
+            y: top
+        }
+    }
+    (function(){
+        var canvas = document.querySelector('#canvas'),
+            context = canvas.getContext('2d'),
+            clicEnCours = false,
+            size = parseInt(document.getElementById('size').textContent, 10),
+            forme = (document.querySelector('.forme')) ? document.querySelector('.forme').id : 'carre',
+            couleur = 'black',
+            spans = document.querySelectorAll('span'),
+            length = spans.length;
+
+
+
+
+        canvas.addEventListener('mousedown', function(e){
+            if(document.querySelector('.forme') && document.querySelector('.forme').id === 'rond')
+                 forme = 'rond';
+            else
+                forme = 'carre';
+            size = parseInt(document.getElementById('size').textContent, 10);
+            var x = (e.clientX - size / 2) - getPosition(canvas).x,
+                y = (e.clientY - size / 2) - getPosition(canvas).y;
+            console.log(couleur);
+            console.log(forme);
+            clicEnCours = true;
+
+            if(forme === 'carre')
+                context.fillRect(x, y, size, size);
+            else
+                context.arc((x + size / 2), (y + size / 2), size / 2, 0, Math.PI * 2);
+            context.closePath();
+            context.fill();
+        });
+        canvas.addEventListener('mousemove', function(e) {
+            if(clicEnCours) {
+                var x = e.clientX - size / 2 - getPosition(canvas).x,
+                    y = (e.clientY - size / 2) - getPosition(canvas).y;  // bizarre...
+               // context.fillStyle = couleur;
+                context.beginPath();
+                if(forme === 'carre')
+                    context.fillRect(x, y, size, size);
+                else
+                    context.arc((x + size / 2), (y + size / 2), size / 2, 0, Math.PI * 2);
+                context.closePath();
+                context.fill();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function(){
+            clicEnCours = false;
+        });
+    })();
+</script>
+</body>
+</html>

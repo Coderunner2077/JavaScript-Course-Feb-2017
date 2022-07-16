@@ -1,0 +1,452 @@
+<!--
+                                                        Les expressions régulières
+
+Les expressions régulières, souvent surnommées "regex", trouvent leur place dans bon nombre de langages, comme le Perl, le
+Python ou encore le PHP.
+
+Les regex sont une sorte de langage "à part" qui sert à manipuler les chaînes de caractères. Voici quelques exemples de ce que
+les regex sont capables de faire :
+
+    -   Vérifier si une URL entrée par l'utilisateur ressemble effectivement à une URL. On peut faire pareil pour les adresses
+            e-mail, les numéros de téléphone et toute autre syntaxe structurée.
+    -   Rechercher et extraire des informations hors d'une chaîne de caractères (bien plus puissant que de jouer avec indexOf()
+            et substring())
+    -   Supprimer certains caractères, et au besoin les remplacer par d'autres
+    -   Pour les forums, convertir des langages comme le BBCode en HTML lors des prévisualisations pendant la framme
+    -   Et bien d'autres choses encore
+
+I./ Les regex en JavaScript
+
+La syntaxe des regex en JavaScript découle de la syntaxe des regex du langage Perl. C'est un langage très utilisé pour 
+l'analyse et le traitement des données textuelles (des chaînes de caractères, donc), en raison de la puissance de ses
+expressions régulières. Le JavaScript hérite donc d'une partie de la puissance des regex de Perl.
+
+1.) Utilisation
+
+Les regex ne s'utilisent pas seuls, et il y a deux manières de s'en servir : soit par le biais de RegExp qui est l'objet 
+qui gère les expressions régulières, soit par le biais de certaines méthodes de l'objet String :
+
+    -   match() : retourne un tableau contenant toutes les occurences recherchées
+    -   search() : retourne la position d'une portion de texte (semblable à indexOf() mais avec une regex)
+    -   split() : la fameuse méthode split(), mais avec une regex en paramètre
+    -   replace() : effectue un rechercher / remplacer
+
+On ne va pas commencer par ces quatre méthodes car on va d'abord se plonger dans l'étude des regex : les écrire et les tester.
+Pour ce faire, on va s'en servir de la méthode test() fournie par l'objet RegExp. L'instanciation d'un objet RegExp se fait
+comme ceci :
+
+var myRegex = /contenu_à_rechercher/;
+
+Cela ressemble à une chaîne de caractères, à l'excetpion près qu'elle est encadrée par deux slashs au lieu des apostrophes ou
+guillemets traditionnels. 
+
+Si ma regex contient elle-même des slashs, il faudra les échapper en utilisant des anti-slash comme ceci :
+
+var regex_1 = /contenu_\/_content/;             // ==> OK !
+var regex_bidon = /contenu_/_content/;          // ==> FAUX ! (car le slash n'est pas échappé)
+
+L'utilisation de la méthode test() est très simple. En cas de réussite de test, elle renvoie true; dans le cas contraire,
+elle renvoie false.
+
+Exemple :
+
+if(myRegex.test('Chaîne de caractères dans laquelle effectuer des recherches'){
+    //Code exécuté en cas de réussite du test
+} else {
+    //Code exécuté en cas d'échec
+}
+
+Pour mes tests, je peux utiliser une syntaxe plus concise, comme ceci :
+
+if(/contenu_à_rechercher/.test('Chaîne de caractères bla bla bla'))
+    //code
+
+II./ Rechercher des mots
+
+1.) Un mot, options et companie
+
+Effectuons donc une recherche pour tester si une phrase contient le mot "raclette" :
+
+if(/raclette/.test('Je mangerais bien une raclette savoyarde'))
+    alert('Tiens, ça parle de raclette');
+else
+    alert('Pas de raclette à l\'horizon');
+
+Si on change notre mot un peu, en mettant un 'R' majucule, le test renverra faux, car le mot "raclette" présent dans la phrase
+ne comporte pas de majuscule. 
+
+Il est possible, grâce aux options, de dire à la regex d'ignorer la casse, ie de rechercher indifféremment des majuscules ou
+des minuscules. Cette option s'appelle i, et comme chaque option (on en verra d'autres), elle se place juste après le slash de 
+fermeture de ma regex, comme ceci :
+
+/raclette/i
+
+Avec cette option, la regex reste utilisable comme on l'a vu précédemment :
+if(/Raclette/i.test('Je mangerais une raclette')
+    //code
+else
+    //code
+
+On peut aussi écrire une regex pour tester si, parmi deux mots ou plus, au moins un est cotnenu ou pas dans la chaîne de
+caractères : grâce à l'opérateur "OU", représenté par la barre verticale pipe |. Son utilisation est simple, puisqu'il suffit
+de la placer entre chaque mot recherché, comme ceci :
+
+if(/Raclette|Tartiflette/i.test('Je mangerais bien une tartiflette savoyarde'))
+    //code
+
+La recherche peut bien évidemment inclure plus de deux possibilités :
+
+/Raclette|Tartiflette|Fondue|Kébab|Croziflette/i
+
+Avec cette regex, on saura si la phrase contient au moins une de ces cinq spécialités savoyardes !
+
+2.) Début et fin de chaîne
+
+Les symboles ^ et $ permettent respectivement de représenter le début et la fin d'une chaîne de caractères. Si un de
+ces symboles est présent, il indique à la regex que ce qui est recherché commence ou termine la chaîne. Cela
+délimite la chaîne en quelque sorte :
+
+/^Raclette savoyarde$/
+
+Voici un tableau avec divers tests qui sont effectués pour montrer l'utilisation de ces deux symboles :
+__________________________________________________________________
+CHAÎNE                  |   Regex                   |   Résultat |
+------------------------------------------------------------------
+Raclette savoyarde      |   /^Raclette savoyarde$/  |   true
+Une raclette savoyarde  |   /^Raclette/             |   false
+Une raclette savoyarde  |   /savoyarde$/            |   true
+Une raclette savoyarde! |   /raclette savoyarde$/   |   false
+------------------------------------------------------------------
+
+III./ Les caractères et leurs classes
+
+1.) Choix parmi plusieurs lettres
+
+Il s'agira ici de classes de caractères qui permettent de spécifier plusieurs caractères ou types de caractères à 
+rechercher. Cela reste encore assez simple :
+
+/gr[ao]s/
+
+Une classe de caractères est écrite entre crochets et sa signification est simple : une des lettes qui se trouve à 
+l'intérieur des crochets peut convenir. 
+
+Beaucoup de caractères peuvent être utilisés au sein d'une classe :
+
+/gr[aèio]s/
+
+Ici, la regex cherchera les mots "gras", "grès", "gris" et "gros".
+
+Ref script
+
+2.) Les intervalles de caractères
+
+Toujours au sein des classes de caractères, il est possible de spécifier un intervalle de caractères. Si l'on veut trouver
+les lettres allant de 'a' à 'o', on écrira [a-o]. Si n'importe quelle lettre peut convenir, il est inutile de les citer 
+toutes : ==> [a-z] suffit.
+
+Plusieurs intervalles peuvent être écrits au sein d'une même classe. Ainsi, la classe [a-zA-A] va rechercher toutes les
+lettres de l'alphabet, qu'elles soient majuscules ou minuscules. 
+
+Pareil pour les intervalles de chiffres : la classe [0-9] recherchera un chiffre allant de 0 à 9. 
+
+Il est également possible de combiner des chiffres et des lettres : [a-z0-9] trouvera une lettre minuscule ou un chiffre.
+
+3.) Exclure des caractères
+
+Si au sein d'une classe, on peut inclure des caractères, on peut aussi en exclure ! Pour ce faire, il suffit de faire figurer
+un accent circonflexe au début d'une classe, juste après le premier crochet. Exemples :
+
+[^aeiouy] ==> ignorera les voyelles
+
+L'exclusion d'un intervalle est possible aussi :
+
+[^b-y]  ==> exclura les lettres allant de b à y
+
+Attention : il faut prendre en compte que la recherche n'ignore pas les caractères accentués. Ainsi, [a-z] ne trouvera pas
+â, à, î ou encore tout autre caractère accentué. S'il s'agit de trouver un caractère accentué, il faudra l'indiquer
+explicitement : [a-zâäàéèùêëîïôöçñ]. Toutefois, l'option i permet d'inclure aussi les variantes majuscules.
+
+4.) Trouver un caractère quelconque
+
+Le point permet de trouver n'importe quel caractère, à 'exception des sauts de ligne (les retours à la ligne). 
+Exemple :
+
+/gr.s/          ==> plus de 52 possibilités (je crois)
+
+IV./ Les quantificateurs
+
+Les quantificateurs permettent de dire combien de fois un caractère peut être répété. Il est possible de dire qu'un
+caractère peut être recherché 0 ou 1 fois, 1 fois ou une infinité de fois, ou bien, avec les accolades, un nombre bien
+déterminé de fois.
+
+1.) Les trois symboles quantificateurs
+
+Voici les trois symboles quantificateurs :
+
+    -   ? : ce symbole indique que le caractère qui le précède peut être répété 0 ou 1 fois
+    -   + : ce symbole indique que le caractère qui le précède peut être répété 1 ou plusieurs fois
+    -   * : ce symbole indique que le caractère qui le précède peut être répété 0, 1 ou plusieurs fois
+
+Exemple : réf script
+
+
+
+2.) Les accolades
+
+A la place des quantificateurs vus précédemment, on peut utiliser des accolades pour définir explicitement combien de fois
+un caractère peut être répété. Trois syntaxes sont disponibles :
+
+    -   {n}     :   le caractère est répété n fois
+    -   {n,m}  :   le caractère est répété de n à m fois. 
+    -   {n,}    :   le caractère est répété de n fois à l'infini
+
+Si la tartiflette peut contenir un, deux ou trois t, la regex peut s'écrire :
+
+/tartiflet{1,3}e/
+
+Ou encore :
+
+/racle[tf]+e/       recherchera raclette, racleffe, racletfe, raclefte, racletttttttttttte, etc.
+
+Voici un tableau avec quelques exemples de regex :
+
+Chaîne                  |   Regex                            |   Résultat
+--------------------------------------------------------------------------------------
+Hellowwwwwwwww          |   /Hellow+/                        |   true
+Goooooooogle            |   /G{2,}gle/                       |   true
+Le 1er septembre        |   /Le [1-9][a-z]{2,3} septembre/   |   true
+Le 1er septembre        |   /Le [1-9][a-z]{2,3}[a-z]+/       |   false
+--------------------------------------------------------------------------------------
+
+La dernière regex est fausse parce que l'espace n'a pas été spécifié (l'espace entre "1er" et "septembre").
+
+V./ Les métacaractères
+
+1.) Echapper les faux métacaractères
+
+Les caractères spéciaux comme ^, $, [ et ], ou encore + et *. Ces caractères sont ce que l'on appelle des métacaractères,
+en voici la liste complète :
+
+!^$()[]{}?+*./\|
+
+Un problème se pose si l'on veut chercher la présence d'une accolade dans une chaîne de caractères. Eh bien il faudra, là
+aussi, l'échapper avec anti-slash.
+
+/accolade \{comme ceci\}/
+
+De cette manière, les accolades seront vus par l'interpréteur comme étant des accolades "dans le texte", et non comme
+des métacaractères. Il en va de même pour tous les métacaractères cités précédemment. 
+
+Il faut même penser à échapper l'anti-slash avec... un anti-slash :
+
+/\/un slash et un anti-slash \\/
+
+2.) Les métacaractères au sein des classes
+
+Au sein des classes, il n'y a pas besoin d'échapper les métacaractères, à l'exception des crochets ([]), du tiret (qui est
+utilisé pour définir un intervalle) et de l'anti-slash (qui sert à échapper).
+
+Note : concernant le tiret, il y a une exception ==> il n'a pas besoin d'être échappé s'il est placé en début ou en fin
+de classe.
+
+Ainsi : 
+
+/[a-z!?]/       ==> recherche un caractère de a à z, ou les métacaractères ! et ?
+
+Et s'il faut trouver un slash ou un anti-slash, il ne faudra pas oublier de les faire échapper :
+
+/[a-z\/\\]/
+
+VI./ Types génériques et assertions
+
+1.) Les types génériques
+
+On a vu que les classes étaient pratiques pour chercher un caractère au sein d'un groupe, ce qui permet de trouver un
+caractère sans savoir au préalable quel sera ce caractère. Seulement, utiliser des classes alourdit fortement la 
+syntaxe des regex et les rend difficilement lisibles. Pour pallier ce petit souci, on va utiliser ce qu'on appelle les 
+types génériques. Certains parlent aussi de "classes raccourcies", mais ce terme n'est pas tout à fait exact.
+
+Les types génériques s'écrivent tous de la manière suivante : \x, où x représente une lettre. Voici la liste de tous
+les types génériques :
+
+________________________________________________________________________________________________
+Type    |   Description
+------------------------------------------------------------------------------------------------
+\d      |   Trouve un caract�re décimal (un chiffre)
+\D      |   Trouve un caractère qui n'est pas un décimal (donc qui n'est pas un chiffre)
+\s      |   Trouve un caractère blanc
+\S      |   Trouve un caractère qui n'est pas un caractère blanc
+\w      |   Trouve un caract�re alphanum�rique (underscore y compris) : <=>[a-zA-Z0-9_]
+\W      |   Trouve un caract�re qui n'est pas un caract�re "de mot" : <=> [^a-zA-Z0-9_]
+------------------------------------------------------------------------------------------------
+
+En plus de cela, il existe les caractères de type "espace blanc" :
+
+_______________________________________________________________
+Type    |   Description
+---------------------------------------------------------------
+\n      |   Trouve un retour à la ligne
+\t      |   Trouve une tabulation
+\r 		|	Retour de chariot
+---------------------------------------------------------------
+
+Ces deux caractères sont reconnus par le type générique \s (qui trouve n'importe quel espace blanc)
+
+2.) Les assertions
+
+Les assertions s'écrivent comme les types génériques, mais ne fonctionnent pas tout à fait de la même façon. Un type 
+générique recherche un caractère, tandis qu'une assertion recherche entre deux caractères. 
+
+Ce tableau présente les assertions :
+
+_______________________________________________
+Type    |   Description
+-----------------------------------------------
+\b      |   Trouve une limite de mot
+\B      |   Ne trouve pas de limite de mot
+-----------------------------------------------
+
+Attention : Il faut juste faire attention avec l'utilisation de \b, car cette assertion reconnaît les caractères accentués
+comme des "limites de mots". Cela peut donc provoquer des comportements inattendus.
+
+PETIT BEMOLE : 
+
+Pour v�rifier si deux lettres ou plus se r�p�tent ou pas (gr�ce aux quantificateurs), il faut utiliser des parenth�ses. Par exemple, si l'on veut
+reconna�tre "Ayayayayay", il faudra taper l'une des regex suivantes :
+
+/Ay(ay)*/
+/Ay(ay)?/
+/Ay(ay)+/
+
+Et si l'on veut emp�cher que ce soit des parenth�ses capturantes, on met "?:" au d�but comme j'ai appris :
+
+/Ay(?:ay)+/
+/Ay(?:ay)?/
+/Ay(?:ay)*/
+
+
+
+
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Les expressions régulière (1/2)</title>
+</head>
+<body>
+	<script>
+		/*
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		    var myRegex = /zlatané/;
+		    if(myRegex.test("Je l'ai zlatané quoi"))
+		        alert('Zlatané oui !');
+		    
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		    //Rechercher un mot
+		    
+		    if(/raclette/.test('Je mangerais bien une raclette'))
+		        alert('Tiens, ça parle de raclette');
+		    else
+		        alert('Pas de raclette à l\'horizon');
+		    
+		    //Ignorer la casse
+		    
+		    if(/Raclette/i.test('Je mangerais bien une raclette moi'))
+		        alert('Raclette !');
+		    else
+		        alert('pas de raclette');
+		    
+		    //Rechercher plusieurs mots
+		    if(/Raclette|Tartiflette|Fondue/i.test('Je mangerais aussi une tartiflette'))
+		        alert('Tarfiflette ?!');
+		    
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		    //Début et fin de chaîne
+		    if(/^C'est bon|nul$/.test('C\'est bon'))
+		        alert('Bon');
+		    if(/^C'est bon|nul$/.test('Ce film est nul'))
+		        alert('Nul');
+		    
+		    //Les intervalles de caractères
+		    if(/gr[ao]s/.test('Il est un peu gros lui'))
+		        alert('gros');
+		    if(/gr[a-z]s[se]/.test('Ouai ma grose'))
+		        alert('grose');
+		    
+		    //Les intervalles de chiffres
+		    if(/[0-5]%/.test('Seulement 4% de voix contre'))
+		        alert('4%');
+		    
+		    //Les intervalles de chiffres et de lettres
+		    if(/^C[0-9a-zA-Z]/.test('Ce BFMTv est nul'))
+		        alert('Ce');
+		    if(/^C[0-9a-zA-Z]/.test('CE SFR '))
+		        alert('CE');
+		    if(/^C[0-9a-zA-Z]/.test('C10'))
+		        alert('C1');
+		    
+		    //Intervalles exclus
+		    if(/sa[^l-o]op/.test('Quel sabop !'))
+		        alert('sabop, pas salop');
+		    if(/m[^ai]t/.test('met'))
+		        alert('OK pour m[^ai]t trouvant met mais excluant mit');
+		    //Trouver un caractère quelconque
+		    if(/bl.nc/.test('Il est blanc comme la neige'))
+		        alert('blanc');
+		 */
+
+		var result = /Pa(?:blo)?/.exec('Pabloblo');
+		alert(result[0]);
+		if(/\w/.test('éùàçè'))
+			alert('OK');
+			else
+			alert('pas ok');
+		
+		
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//Les quantificateurs
+
+		if (/racl[eè]tt?e/.test('Elle bonne cette raclète'))
+			alert('raclète??!');
+		if (/raclet+e/.test('Non, cette raclette voyons'))
+			alert('Ah, raclette.');
+		if (/raclet*e*/.test('Tu racles bien toi'))
+			alert('racle');
+		if (/raclet*e/.test('Une raclettttttttttttttte'))
+			alert('racletttttttttttttte');
+
+		//Les accolades
+		if (/racle[tf]{1,3}e/.test('raclefte'))
+			alert('raclefte');
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//Les métacaractères
+		if (/[a-z\/\\]/.test('/'))
+			alert('slash');
+		if (/[a-z!?/\\]/.test('/'))
+			alert('Au sein d\'une classe regex, il est facultatif d\'échapper un slash avec un anti-slash');
+		if (/[!a-z?]/.test('!')) //trouve !, ? et les lettres minuscules
+			alert('!');
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		//Les types génériques et assertions
+		//Les types génériques
+		if (/\d/.test('1'))
+			alert('1');
+		if (/coûte \d\w\s/.test('Ca coûte 3E '))
+			alert('Un chiffre suivi d\'une lettre suivie d\'un espace blanc');
+
+		//Les assertions
+		if (/coûte\b un\B/.test('Combien coûte unE pomme ?'))
+			alert('Limite de mot et pas de limite de mot');
+
+		if (/coûte\b/.test('Cela coûteé'))
+			alert('\\b dérape lorsqu\'il s\'agit de caractères accentués qu\'il prend pour des limites de mots');
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if(/accentu./.test('accentué'))
+			alert('Le point trouve aussi les caractères accentués !');
+	</script>
+</body>
+</html>

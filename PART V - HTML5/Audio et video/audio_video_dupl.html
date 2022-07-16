@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Audio et video</title>
+		<style>
+			#player {
+				padding: 10px;
+				border: 2px solid black;
+				background-color: lightgray;
+				height: 60px;
+				width: 200px;
+			}
+
+			#myDiv {
+				background-color: blue;
+				width: 200px;
+				height: 5px;
+			}
+
+			#progressBar {
+				background-color: red;
+				height: 5px;
+				width: 0px; 
+			}
+
+			#volumeBar {
+				display: inline-block;
+				margin-left: 20px;
+				background-color: white;
+				border: 2px solid blue;
+				width: 50px;
+				height: 10px;
+			}
+
+			#volume {
+				background-color: #0000ff;
+				height: 10px;
+				width: 50px;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="player">
+			<audio id="audioPlayer" ontimeupdate="updateProgress(this, 'progressBar', 'duration')">
+				<source src="wish_you_were_here.mp3">
+			</audio>
+			<div id="myDiv" onclick="clickProgress('audioPlayer', this, event)">
+				<div id="progressBar"></div>
+			</div>
+			<div id="duration">00:00</div>
+			<button id="play" onclick="play('audioPlayer', this)">Play</button>
+			<button id="stop" onclick="stop('audioPlayer')">Stop</button>
+			<div id="volumeDiv" onclick="updateVolume('audioPlayer', this, event"><div id="volume"></div></div>
+		</div>
+		<script>
+			(function() {
+				function play(idPlayer, control) {
+					var player = document.querySelector('#' + idPlayer);
+					if(player.paused) {
+						player.play();
+						control.textContent = 'Pause';
+					} else {
+						player.pause();
+						control.textContent = 'Play';
+					}
+				}
+
+				function stop(idPlayer) {
+					var player = document.querySelector('#' + idPLayer);
+					player.pause();
+					player.currentTime = 0;
+					document.querySelector('#' + play).textContent = 'Play';
+				}
+
+				function getPosition(element) {
+					var left = 0,
+						top = 0;
+					do {
+						left += element.offsetLeft;
+						top += emenent.offsetTop;
+					} while (element = element.offsetParent);
+					return {
+						x: left,
+						y: top
+					};
+				}
+
+				function getMousePosition(event) {
+					return {
+						x: event.pageX,
+						y: event.pageY
+					};
+				}
+
+				function clickProgress (idPLayer, control, event) {
+					var player = document.querySelector('#' + idPlayer),
+						coeff = (getMousePosition(event).x - getPosition(control).x) / control.offsetWidth;
+					player.currentTime = Math.floor(coeff * player.duration);
+				}
+
+				function updateTime (time) {
+					var hour = Math.floor(time / 3600),
+						min = Math.floor((time % 3600) / 60),
+						second = Math.floor(time % 60);
+					if(hour && hour < 10) 
+						hour = '0' + hour + ':';
+					if(min < 10)
+						min = '0' + min + ':';
+					if(second < 10)
+						second = '0' + second;
+					return (hour ? hour : '') + min + second;
+				}
+
+				function updateProgress (player, idBar, idTime) {
+					var duration = document.querySelector('#' + idTime),
+						bar = document.querySelector('#' + idBar),
+						time = player.currentTime;
+					duration.textContent = updateTime(time);
+					bar.style.width = Math.floor((time / player.duration) * bar.parentNode.offsetWidth) + 'px';
+				}
+
+				function updateVolume(idPlayer, control, event) {
+					var player = document.querySelector('#' + idPlayer),
+						volume = (getMousePosition(event).x - getPosition(control).x) / control.offsetWidth;
+					player.volume = volume;
+					document.querySelector('#' + 'volume').style.width = 
+						Math.floor(volume * control.offsetWidth) + 'px';
+				}
+			})();
+		</script>
+	</body>
+</html>

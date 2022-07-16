@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les chaînes de caractères</title>
+    </head>
+    <body>
+        <textarea onkeyup="listenKey(event)"></textarea>
+        <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les types primitifs
+            
+            var myString = 'Chaîne de caractères primitive';
+            
+            //instancier un objet String :
+            var myRealString = new String("L'objet String");
+            
+            //Ceci est valable pour les autres objets : 
+            var myArray = []; //Tableau primitif
+            var myRealArray = new Array();
+            
+            var myObject = {}; //Objet primitif
+            var myRealObject = new Object();
+            
+            var myBoolean = true; //Booléen primitif
+            var myRealBoolean = new Boolean("true");
+            
+            var myNumber = 42; //Nombre primitif
+            var myRealNumber = new Number("42"); 
+            
+            /*
+            Mais, différence minime entre un type primitif et une instance, le JavaScript convertissant automatiquement
+            les types primitifs en instances temporaires d'objet correspondant. C'est notamment vrai pour les chaînes de 
+            caractères.
+            */
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //déterminer le type via instanceof et typeof
+            myString = 'Chaîne de caractères primitive';
+            alert('chaine_primitive instanceof String ? : ' + myString instanceof String); // affiche faux
+            //==> car myString n'est pas une instance de String
+            
+            alert('typeof chaine_primitive : ' + typeof myString); //affiche string
+            
+            alert('typeof object_String : ' + typeof myRealString); //affiche object, pas String !!
+            
+            //Attention : La valeur retournée par typeof dont on peut être sûr, c'est undefined
+            
+            //Note : il est plus simple en tous points d'utiliser les types primitifs
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //L'objet String
+            //L'objet String possède une seule propriété : 
+            alert('une chaine'.length); //Pas obligatoire de déclarer une variable pour utiliser les propriétés et méthodes
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Méthodes 
+            /*
+                String possède quelques méthodes qui sont pour la plupart assez intéressantes et basiques. JavaScript est un
+                langage simple, qui ne contient pas énormément de méthodes de base. C'est un peu l'inverse du PHP.
+            */
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //toLowerCase() et toUpperCase()
+            myString = myString.toUpperCase();
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Accéder aux caractères
+            myString = 'Paul';
+            alert(myString.charAt(0)); // P
+            alert(myString.charAt(myString.length - 1)); //affiche l
+            
+            //Attention, sur la plupart des navigateurs, impossible d'accéder aux caractères en utilisant des crochets,
+            //A la place, on utilise la méthode charAt()
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Obtenir le cacactère en ASCII
+            
+            alert(myString.charCodeAt(0)); // retourne le code ASCII du caractère
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Créer une chaîne de caractères depuis une chaîne ASCII
+            
+            alert(String.fromCharCode(74, 97, 118, 97, 83, 99, 114, 105, 112, 116)); //affiche "JavaScript"
+            
+            function listenKey(event){
+                var keyCode = event.keyCode;
+                alert('La touche pressée possède le code ASCII : ' + keyCode + 
+                    '\nEt le caractère tapé est : ' + String.fromCharCode(keyCode));
+            }
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Supprimer les espaces au début et à la fin d'une chaîne de caractères
+            //==> trim();
+            myString = ' Et voilà ';
+            myString = myString.trim();
+            alert(myString.charAt(0)); // E
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //RECHERCHER, COUPER ET EXTRAIRE
+            //Connaître la position d'un caractère ou d'un morceau de chaîne
+            
+            //indexOf() et lastIndexOf() ==> respectivement, 1re occurence et dernière occurence d'un caractère ou d'un morceau
+            //de chaîne..
+            
+            //renvoient -1 si pas de valeur correspondante trouvée
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Utiliser le tilde avec indexOf() et lastIndexOf()
+            alert(~2); // affiche -3
+            alert(~3); // affiche -4
+            alert(~-2); // affiche 1
+            
+            /*  Le tilde (l'opérateur binaire NOT) incrémente d'abord la valeur puis ajoute une négation.
+            On s'en sert pas bcp, mais quand on s'en sert, c'est redoutablement efficace. Exemple :
+            */
+            
+            if(~myString.indexOf('voil')) //le tilde m'évite d'écrire if(myString.indexOf('voil') != -1)
+                alert("La chaîne contient bien le mot 'voil'");
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Extraire une chaîne (grâce à trois méthodes...)
+            
+            myString = 'Thunderseb and Nesk';
+            //substring(a, b) permet d'extraire une chaîne à partir de la position a (incluse) jusqu'à la position b (exclue)
+            var nick_1 = myString.substring(0, myString.indexOf(' ')); //'Thunderseb'
+            
+            var nick_2 = myString.substring(myString.lastIndexOf(' ') + 1); //'Nesk'
+            //Quand on ne spécifie pas de 2e argument pour substring() ==> la méthode va extraire la chaîne jusqu'au bout
+            
+            //La méthode substr() : chaine.substr(a, n);   
+            // ==> 1er argument : position de début de la chaîne à extraire
+            // ==> 2e argument : le nombre de caractères à extraire
+            
+            //la méthode substr() moins utilisée que substring()
+            
+            //La méthode slice(a, y); ==> a position début, y nombre de lettres à retrancher à partir de la fin de chaîne
+            var nick_2 = 'Thunderseb'.slice(0, -3); // ==> 'Thunder'
+            alert(nick_2);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Couper une chaîne en un tableau avec split()
+            
+            var myCSV = 'Paul, Guillaume, Claude';
+            var tab = myCSV.split(', '); //On coupe à chaque fois qu'une virgule suivie d'espace est rencontrée
+            alert(tab.length);
+            alert(tab);
+            
+            //Note : myString.split('\n'); ==> pour créer un tableau où chaque item contient une ligne
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Tester l'existence d'une chaîne de caractères
+            
+            //On a vu que instanceof et typeof n'étaient qu'à 50% fiables pour déterminer le type avec précision
+            //La méthode valueOf() de l'objet Object (que par conséquent tout objet peut appeler) renvoie la valeur primitive
+            //de n'importe quel objet
+            var string_1 = new String('Test');
+            var string_2 = string_1.valueOf();
+            
+            //tests :
+            alert(typeof string_1); //affiche object
+            alert(typeof string_2); //affiche string
+            
+            //Grâce à cette méthode, il devient plus simple de vérifier si une variable contient une chaîne de caractères
+            function isString(variable){
+                return typeof variable.valueOf() === 'string';
+            }
+            
+            //Donc, si le type de valeur primitive est "string", la fonction isString() renvoie "true".
+            //Petite précision :
+            alert('chaine_primitive'.valueOf()); // pas de problème, la méthode se contente ici de renvoyer la même chaîne...
+            
+            alert(isString('Test')); //affiche true
+            alert(isString(new String('Test'))); //affiche true
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Obtenir une instanciation d'objet à partir d'un type primitif
+            //autrement dit, on fait l'inverse de ce que fait valueOf() :
+            var stringForReal = Object('Mon instance de String obtenu à partir d\'une chaîne primitive');
+            
+            //pour rappel : Object est l'objet dont tous les autres objets (tels que String) héritent.
+            
+            
+        </script>
+    </body>
+</html>

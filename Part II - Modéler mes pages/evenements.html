@@ -1,0 +1,709 @@
+<!--
+                                                        Les événements
+
+D'abord, j'aborde ici l'utilisation des événements sans le DOM, puis avec le DOM-0 (inventé par Netscape) et enfin
+le DOM-2. On verra comment mettre en place ces événements, les utiliser, modifier leur comportement, etc.
+
+I./ Que sont les événements ?
+
+Les événements permettent de déclencher une fonction selon qu'un action s'est produite ou non. Par exemple, on peut
+faire appraître une fenêtre alert() lorsque l'utilisateur survole une zone d'une page Web.
+
+"Zone" étant un terme un peu vague, on parlera plutôt d'élément (HTML dans la plupart des cas). 
+
+1.) La théorie
+
+a./ Liste des événements
+
+Il existe de nombreux événements, tous plus ou moins utiles. Parmi les événements utiles que je n'aborderai pas ici, il 
+existe des événements spécifiques pour les plateformes mobiles (smarphones, tablettes, etc.).
+
+Voici la liste des principaux événements, ainsi que les actions à effectuer pour qu'ils se déclenchent :
+
+----------------------------------------------------------------------------------------------------------
+Nom de l'événement  |    Action à déclencher
+----------------------------------------------------------------------------------------------------------
+click               |   CLiquer (appuyer puis relâcher) sur un élément
+dblclick            |   Double-cliquer sur l'élément
+mouseover           |   Faire entrer le curseur sur l'élément
+mouseout            |   Faire sortir le curseur de l'élément
+mousedown           |   Appuyer (sans relâcher) sur le bouton gauche de la souris
+mouseup             |   Relâcher le bouton gauche de la souris sur l'élément
+mousemove           |   Faire déplacer le curseur sur l'élément
+keydown             |   Appuyer (sans relâcher) sur une touche de clavier sur l'élément
+keyup               |   Relâcher sur une touche de clavier sur l'élément
+keypress            |   Frapper (appuyer puis relâcher) sur une touche de clavier sur l'élément
+focus               |   "Cibler" l'élément
+blur                |   Annuler le "ciblage" de l'élément
+change              |   Changer la valeur d'un élément spécifique aux formulaires (input, checkbox, etc.)
+input               |   Taper un caractère dans un champ de texte (supporté que par certains navigateurs)
+select              |   Sélectionner le contenu d'un champ de texte (input, textArea, etc.)
+----------------------------------------------------------------------------------------------------------
+
+Note : il a été dit précédemment que les événements mousedown et mouseup se déclenchaient avec le bouton gauche de la souris.
+Ceci n'est pas tout à fait exact, ces deux événement peuvent se déclencher avec d'autres boutons de la souris (bouton droit ou
+clic de la molette). Cependant, cela ne fonctionne pas avec tous les navigateurs comme le Firefox qui a choisi de bloquer cette
+possibilité.L'utilisation de ces deux événements se limite donc généralement au bouton gauche de la souris. 
+
+Toutefois, ce n'est pas encore tout, il existe deux événements spécifiques à l'élément <form>, que voici :
+
+----------------------------------------------------------------------------------------------------------
+Nom de l'événement  |    Action à déclencher
+----------------------------------------------------------------------------------------------------------
+submit              |   Envoyer le formulaire
+reset               |   Réinitialiser le formulaire
+----------------------------------------------------------------------------------------------------------
+
+2.) La pratique
+
+a./ Utiliser les événements
+
+Voyons donc d'abord comment utiliser les événements sans le DOM, ce qui est considérablement plus limité :
+
+<span onclick="alert('Hello !');">Cliquez-moi !</span>
+
+J'ai donc juste ajouté à mon <span> un attribut contenant les deux lettres "on" et le nom de l'événement "click" (==>"onclick").
+
+On peut y inscrire quasiment tout ce que l'on souhaite, tant que cela tienne entre les guillemets de l'attribut.
+
+b./ Le mot-clé this
+
+Dans ce cas précis, le mot-clé this pointe sur l'élément qui a déclenché l'événement : 
+
+<span onclick="alert('Voici le contenu de l\'élément que vous avez cliqué : \n\n ' + this.innerHTML);">Click here </span>
+
+3.) Bloquer l'action par défaut de certains événements
+
+Si l'on souhaite bloquer le comportement normal d'un lien (clique ==> redirection), il suffit d'ajouter le code 'return false;'
+dans mon événement click :
+
+<a href="http://www.google.fr" onclick="alert('Bojour'); return false;">Click here</a>
+
+Ici, le 'return false;' sert juste à bloquer l'action par défaut de l'événement qui le déclenche. 
+
+Note : 'return true;' permet de faire fonctionner l'événement comme si de rien n'était.
+
+4.) L'utilisation de "javascript:" dans les liens : une technique prohibée
+
+UN TRUC A EVITER A TOUT PRIX : 
+
+<a href="javascript: alert('Technique de nul');">Click here</a>
+
+Il s'agit d'une vielle méthode qui permet d'insérer du JS directement dans l'attribut href du lien.
+
+Voici une méthode alternative à préférer à cette merde : 
+
+<a href="#" onclick="alert('Du progrès, tout doucement'); return false;">Click here</a>
+
+Pourquoi un 'return false;' ? 
+==> Parce que le dièse redirige tout en haut de la page Web, ce qui n'est pas ce que l'on souhaite.
+
+Attention : L'utilisation d'un lien uniquement pour le déclenchemenet d'un événement click n'est pas une bonne chose. Il vaut
+mieux privilégier l'utilisation d'une balise <button> à laquelle on retire le style CSS. La finalité de <a> n'est pas de
+déclencher un événement.
+
+II./ Les événements au travers du DOM
+
+1.) Le DOM-0
+
+C'est l'interface implémentée par Netscpace.
+
+Réf script
+
+Alors, voyons par étapes ce que j'ai fait dans ce code :
+
+    -   On récupère tout d'abord l'élément HTML dont l'ID est clickme
+    -   On accède ensuite à la propriété onclick à laquelle on assigne une fonction anonyme
+    -   Dans cette même fonction, on fait appel à la fonction alert() avec un texte en paramètre
+
+Donc, avec le DOM, on définit les événements non pas dans le code HTML mais directement en JavaScript. Chaque événement
+standard possède donc une propriété dont le nom est, à nouveau, précédé par les deux lettres "on". Cette propriété ne prend
+plus pour valeur un code JavaScript brut, mais soit le nom d'une fonction, soit une fonction anonyme. Bref, dans tous les cas,
+il faut lui fournir une fonction qui contiendra le code à exécuter en cas de déclenchement de l'événement.
+
+Concernant la suppression d'un événement avec le DOM-0, il suffit tout simplement de lui attribuer une fonction anonyme
+vide :
+
+element.onclick = function(){};
+
+Voilà tout pour l'événement DOM-0, on peut maintenant passer au coeur des événements : le DOM-2 et l'objet Event.
+
+2.) Pourquoi opter pour le DOM-2
+
+Pourquoi faut-il privilégier le DOM-2 ? Concernant la méthode sans le DOM, c'est simple : on ne peut pas y utiliser l'objet
+Event qui est pourtant une mine d'informations sur l'événement déclenché. Il est donc conseillé de mettre cette méthode de
+côté. En ce qui concerne le DOM-0, il a deux problèmes majeurs : il est vieux et il ne permet pas de créer plusieurs fois 
+le même événement.
+
+Le DOM-2, lui, permet la création multiple d'un même événement et gère aussi l'objet Event.
+
+Pourtant il existe des librairies qui ajoutent des événements DOM-0 à mes éléments HTML et cela n'est pas forcément bénéfique.
+En effet, de telles librairies sont à éviter, car en les utilisant, les événements de mon propre code risquent d'être 
+écrasés ou bien j'écrase ceux des librairies. 
+
+3.) Le DOM-2
+
+Réf script
+
+Donc voici les paramètres de la méthode addEventListener() :
+    -   Le nom de l'événement (sans les lettres "on")
+    -   La fonction à exécuter
+    -   Un booléen optionnel pour spécifier si l'on souhaite utiliser la phase de capture ou bien celle de bouillonement
+
+Une petite précision, le deuxième paramètre est donc une fonction, mais cela peut aussi être une référece à une fonction.
+
+Réf script
+
+Comme indiqué plus haut, le DOM-2 permet la création multiple d'événements identiques pour un même événement. On le voit 
+bien dans le code précédent d'ailleurs.
+
+Les événements identiques peuvent être déclenchés dans l'ordre de création, mais ce ne sera pas forcément le cas à chaque 
+essai. En effet, l'ordre de déclenchement est aléatoire...
+
+Voyons maintenant la suppression d'événements : celle-ci s'opère avec la méthode removeEventListener() et se fait de 
+manière assez simple : 
+
+element.addEventListener('click', myFunction); //On crée l'événement
+element.removeEventListener('click', myFunction); //On supprime l'événement en lui repassant les mêmes paramètres
+
+Toute suppression d'événement avec le DOM-2 se fait avec les mêmes paramètres utilisés lors de sa création. Cependant,
+cela ne fonctionne pas aussi facilement avec les fonctions anonymes. Tout événement DOM-2 créé avec une fonction anonyme
+est particulièrement complexe à supprimer, car il faut possèder une référence vers la fonction concernée, ce qui n'est
+généralement pas le cas avec une fonction anonyme.
+
+Attention : les versions IE antérieures à IE 9 ne supportent pas l'ajout d'événements DOM-2, du moins pas de la même 
+manière que la version standardisée.
+
+4.) Les phases de capture et de bouillonement
+a./ La théorie
+
+Ces deux phases sont deux étapes distinctes de l'exécution de l'événement. La 1re, la capture, s'exécute avec
+le déclenchement de l'événement. Tandis que le deuxième, le bouillonement, s'exécute après que l'événement a été déclenché 
+(vraiment ??). 
+Toutes deux permettent de définir le sens de propagation des événements. La distinction entre les deux est notable lorsqu'il
+s'agit d'exécution d'événements sur des balises imbriquées les unes dans les autres. En effet, la phase de capture se 
+propage de la racine du document (ie window) vers l'élément ayant déclenché l'événement, tandis que la phase de bouillonement 
+se propage en sens inverse, ie de l'élément ayant déclenché l'événement vers l'élément se trouvant au plus haut de la hiérarchie
+(c'est-à-dire window).
+
+b./ Exemple
+
+Voici deux balises :
+
+<div>
+    <span>Click-here</span>
+</div>
+
+Si l'on attribue une fonction à l'événement click de chacun de ces deux éléments et que l'on clique sur le texte, quel
+événement va se déclencher le premier ? 
+
+Eh bien, si on opte pour la phase de bouillonement, ce sera l'événement du span, et ce sera l'événement du div si l'on 
+opte pour la phase de capture.
+
+Note : la phase de bouillonement est celle qui est définie par défaut (booléen défini à false) et sera probablement celle que
+j'utiliserai la plupart du temps. 
+
+III./ L'objet Event
+
+1.) Généralités sur l'objet Event
+
+Cet objet fournit une multitude d'informations sur l'événement actuellement déclenché. Par exemple, on peut récupérer les touches
+actuellement enfoncées, les coordonnées du curseur, l'élément qui a déclenché l'événement... Les possibilités sont nombreuses.
+
+Son accès ne peut se faire que dans une fonction exécutée par un événement, cela se fait de la manière suivante pour le DOM-0 :
+
+element.onclick = function(e){          //l'argument e récupère une référence vers l'objet "Event"
+    alert(e.type);                      //Ceci affiche le type de l'événement (click, mouseover,etc.)
+}
+
+Et de cette façon-là pour le DOM-2 : 
+
+element.addEventListener('click', function(e){           //l'argument e récupère une référence vers l'objet "Event"
+    alert(e.type);                                   //Ceci affiche le type de l'événement (click, mouseover,etc.)
+});
+
+Il est important de préciser que l'objet Event peut se récupérer dans un argument autre que e. Je peux le nommer comme je veux.
+Après tout, l'objet Event est tout simplement passé en référence à l'argument de ma fonction, ce qui me permet de choisir le 
+nom que je souhaite.
+
+2.) Les foctionnalités de l'objet Event
+
+J'ai déjà vu la propriété type qui permet de savoir quel type d'événement s'est déclenché. Passons maintenant à l'essentiel
+des propriétés et méthodes que possède cet objet.
+
+a./ Récupérer l'élément de l'événement actuellement déclenché
+
+Une des plus importantes propriétés de l'objet Event se nomme target. Celle-ci permet de récupérer une référence vers
+l'élément dont l'événement a été déclenché (exactement comme le this pour les événements sans le DOM ou avec le DOM-0),
+ainsi, on peut très bien modifier le contenu d'un élément qui a déclenché l'événement : 
+
+Réf html-script
+
+b./ Récupérer l'élément à l'origine du déclenchement de l'événement
+
+Hum, ce n'est pas la même chose?
+
+Eh bien non ! Certains événements appliqués à un élément parent peuvent se transmettre automatiquement aux éléments enfants;
+c'est le cas des événements mouseover, mouseout, mousemove, click... ainsi que d'autres événements moins utilisés. 
+
+Réf html-script
+
+En effet, la propriété target renvoie toujours l'élément déclencheur de l'événement. Or, je souhaite obtenir
+uniquement l'élément sur lequel a été appliqué l'événement. Autrement dit, on veut connaître l'élément à l'origine de 
+l'événement, et non pas ses enfants qui héritent l'événement.
+
+La solution est simple : utiliser la propriété currentTarget au lieu de target. 
+
+Réf script
+
+Attention : cette propriété n'est pas supportée par les versions d'IE antérieures à la version 9. 
+
+c./ Récupérer la position du curseur
+
+Généralement, on récupère la position du curseur par rapport au coin supérieur gauche de la page Web, cela dit il est possible
+de récupérer sa position par rapport au coin supérieur gauche de l'écran. Toutefois, on va se limiter ici à la page Web (voici
+le lien pour en apprendre plus : https://developer.mozilla.org/en-US/docs/Web/API/Event).
+
+Pour récupérer la position du curseur, il existe deux propriétés :
+
+    -   clientX : pour la position horizontale
+    -   clientY : pour la position verticale
+
+Dans la majorité des cas, l'événement le plus adapté pour récupérer les coordonnées sera mousemove.
+
+Réf script
+
+Note : dans le cadre de cet exemple qui ne permet pas l'utilisation de la méthode alert(), je pourrais utiliser la méthode
+console.log().
+
+d./ Récupérer un événement en relation avec un événement de souris
+
+Cette fois, je vais étudier une propriété un peu "exotique" assez peu utilisée, mais qui peut pourtant se révéler
+très utile ! Il s'agit de relatedTarget et elle ne s'utilise qu'avec les événements mouseover et mouseout.
+
+Cette proprité remplit deux fonctions différentes selon l'événement utilisé. Avec l'événement mouseout, elle me fournira
+l'objet sur lequel le curseur vient d'entrer; avec mouseover, elle me fournira l'objet de l'élément dont le curseur vient
+de sortir.
+
+Réf script
+
+e./ Récupérer les touches frappées par l'utilisateur
+
+La récupération des touches se fait par le biais de trois événements différents. 
+
+Les événements keyup et keydown sont conçus pour capter toutes les frappes des touches. Ainsi, il est parfaitement possible
+de détecter l'appui sur la touche 'A' voire même sur la touche 'Ctrl'. La différence entre ces deux événements se situe dans
+l'ordre de déclenchement. Bref.
+
+Cependant, attention avec ces deux événements : toutes les touches retournant un caractère retourneront un caractère majuscule,
+que la touche 'Maj' soit pressée ou non.
+
+L'événement keypress, lui, est d'une toute autre utilité : il sert uniquement à capter toutes les touches qui écrivent un
+caractère (et non pas les touches comme 'Ctrl', 'Alt', etc.). Son avantage réside dans sa capacité à détecter les combinaisons
+de touches ! Ainsi, si on fait une combinaison 'Maj' + 'A', l'événement keypress détectera bien un 'A' majuscule là où les
+événements keyup et keydown se déclencheront deux fois, une fois pour la touche 'Maj' et une 2e fois pour la touche 'A'.
+
+Et quelle propriété pour récupérer le caractère du coup ?
+
+Il y a en tout trois propriétés capables de fournir une valeur (ie un code ASCII) : 
+    -   keyCode 
+    -   charCode : utilisable uniquement avec keypress
+    -   which
+
+Cependant, la propriété keyCode est amplement suffisante dans tous les cas.
+
+Réf html-script
+
+Mais comment obtenir le caracère et non le code ?
+
+Dans ce cas, il n'existe qu'une solution : la méthode fromCharCode() de l'objet String. Elle prend en paramètre une 
+infinité d'arguments. Attention, il faudra à chaque fois mettre le préfixe String, comme suit :
+
+String.fromCharCode(/*valeur*/);
+
+Cette méthode est donc conçue pour convertir les valeurs ASCII vers des caractères lisibles. 
+
+Attention : il est fortement déconseillée d'utiliser cette méthode avec un événement autre que keypress, pour éviter d'afficher,
+par exemple, le caractère d'un code correspondant à une touche comme 'Ctrl', cela ne fonctionnera pas !
+
+Pour terminer, voici un court exemple :
+
+String.fromCharCode(84, 101, 115, 116); //Affiche "Test"
+
+Réf script
+
+3.) Bloquer l'action par défaut de certains événements
+
+Sans le DOM-2, cette opération était très simple, vu qu'il suffisait d'écrire "return false;". Avec l'objet Event, c'est
+quasiment tout aussi simple, vu qu'il suffit d'appeler la méthode :
+
+preventDefault();
+
+Réf script
+
+Attention : le bloquage d'action par défaut ne fonctionne pas sur les versions d'IE antérieures à la version 9. Il est 
+cependant possible de résoudre cela simplement en faisant : e.returnValue = false;
+
+IV./ Résoudre le problème d'héritage des événements
+
+En JavaScript, il existe un problème fréquent que l'on va étudier et résoudre ici. 
+
+Parfois, un événement appliqué sur un parent se propage à ses enfants. Cet héritage des événements peut provoquer des
+comportements inattendus. 
+
+Voici le coeur du problème dans mon exemple concret (Réf html-script) : les enfants héritent des propriétés des événements
+mouseover et mouseout (mais aussi mousemove, click et d'autres moins utilisés) appliqués aux éléments parents. Alors, lorsque 
+je déplace mon curseur depuis le <div>#myDiv jusqu'à un <div> enfant, je déclenche l'événement mouseout sur #myDiv et 
+l'événement mouseover sur le <div> enfant. Et en sens inverse, pareil...
+
+La solution : On s'aide de la propriété relatedTarget afin de détecter quel est l'élément vers lequel le curseur se dirige
+ou de quel élément il provient. 
+
+Tout est de savoir si l'élément en question est un enfant direct de myDiv ou non. La solution consiste à remonter tout le
+long de ses éléments parents jusqu'à tomber sur myDiv, soit sur l'élément <body> qui désigne l'élément HTML le plus haut
+dans mon document. Il va donc falloir recourir à une boucle while.
+
+Ainsi, je retrouve dans ma variable relatedTarget (pas la propriété) le premier élément trouvé qui correspond à mes critères,
+donc soit myDiv soit <body>. Il me suffit alors d'insérer une condition qui exécutera le code de mon événement uniquement
+dans le cas où ma variable relatedTarget ne pointe pas sur l'élément myDiv.
+
+Cependant, il reste un cas de figure qui n'a pas été géré et qui peut être source de problèmes ! En fait, la balise <body>
+ne couvre pas forcément la page Web complète de mon navigateur, ce qui fait que mon curseur peut provenir d'un élément encore
+plus haut que la balise <body>. Cet élément correspond à la balise <html> - soit l'élément document en JavaScript -, il 
+me faut donc faire une petite modification dans ma boucle afin de bien préciser que si le curseur provient de document, il
+ne peut forcément pas provenir de myDiv.
+
+Réf script
+
+Ce genre de souci peut être très embêtant dans certains cas, notamment lorsqu'il s'agit de faire des animations.
+
+
+
+
+-->
+<!DOCTYPE html>
+<html>
+    
+    <head>
+        <meta charset="utf-8">
+        <title>Les événements</title>
+        <style>
+            #parent1, #parent1_rel, #parent2_rel
+            {
+                width: 200px;
+                height: 200px;
+                background-color: blue;
+                color:white;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;   
+                padding: 10px;
+                margin: 20px;
+            }
+            
+            #parent1 div, #parent1_rel div, #parent2_rel div
+            {
+                background-color: red;
+                width: 50px;
+                height: 50px;
+                margin: 10px;
+            }
+            
+            #child1
+            {
+                align-self: flex-end;
+            }
+            
+            table td
+            {
+                border: 1px solid black;
+            }
+            
+            #myDiv, #results {
+                margin: 50px;
+            }
+
+            #myDiv {
+                padding: 10px;
+                width: 200px;
+                text-align: center;
+                background-color: #000;
+            }
+
+            #myDiv div {
+                margin: 10px;
+                background-color: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <div onclick="alert('Sans DOM !');">Utilisation des événement sans le DOM, il faut le faire quand même...</div>
+        
+        <!--Le focus-->
+        <input type="text" id="input" size="50" value="Cliquez-ici !" onfocus="this.value='Appuyez maintenant sur la touche de tab';"
+                onblur="this.value='Cliquez-ici !';" />
+        <br /><br />
+        
+        <a href="#" onfocus="document.getElementById('input').value= 'Vous avez maintenant le focus sur le lien, bravo !';
+                             return false;">
+            Un lien bidon</a>
+        <hr />
+        <div>
+            <span id="clickme">Click-here</span>
+        </div>
+        <hr />
+        <div>
+            <span id="click_dom2">Click-here (DOM-2)</span>
+        </div>
+        <hr />
+        <div id="capt1">
+            <span id="capt2">Cliquez-moi pour la phase de capture.</span>
+        </div>
+        <div id="boul1">
+            <span id="boul2">Cliquez-moi pour la phase de bouillonnement.</span>
+        </div>
+        <br />
+        <div>
+            <a href="https://www.w3.org/TR/DOM-Level-3-Events/#event-flow" title="Explication des phases de capture et de 
+            bouillonnement">Un lien vers la spécification du W3C concernant ces phases</a>
+        </div>
+        <hr />
+        <div>
+            <span id="click_target">Click-here (avec objet Event) !</span>
+        </div>
+        
+        <hr />
+        <p id="result"></p>
+
+        <div id="parent1">
+            Parent
+            <div id="child1">Enfant N°1</div>
+            <div id="child2">Enfant N°2</div>
+        </div>
+        <p id="result2"></p>
+        
+        <hr />
+        <div id="position"></div>
+        
+        <hr />
+        <p id="result_rel"></p>
+
+        <div id="parent1_rel">
+            Parent N°1<br /> Mouseout sur l'enfant
+            <div id="child1_rel">Enfant N°1</div>
+        </div>
+
+        <div id="parent2_rel">
+            Parent N°2<br /> Mouseover sur l'enfant
+            <div id="child2_rel">Enfant N°2</div>
+        </div>
+        
+        <hr />
+        <p>
+            <input id="field" type="text" />
+        </p>
+
+        <table>
+            <tr>
+                <td>keydown</td>
+                <td id="down"></td>
+            </tr>
+            <tr>
+                <td>keypress</td>
+                <td id="press"></td>
+            </tr>
+            <tr>
+                <td>keyup</td>
+                <td id="up"></td>
+            </tr>
+        </table>
+        
+        <hr />
+        <div>
+            <a href="http://www.google.fr" title="Google" id="gg">Impossible d'accéder à Google via ce lien</a>
+        </div>
+        
+        <hr />
+        <div id="myDiv">
+            <div>Texte 1</div>
+            <div>Texte 2</div>
+            <div>Texte 3</div>
+            <div>Texte 4</div>
+        </div>
+
+        <div id="results"></div>
+        <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Le DOM-0
+            var span = document.getElementById('clickme');
+            span.onclick = function(){
+                alert('Utilisation via le DOM-0 !');
+            };
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Le DOM-2
+            var span2 = document.getElementById('click_dom2');
+            span2.addEventListener('click', function(){
+               alert('Utilisation via le DOM-2 !');
+            });
+            
+            var myFunction = function(){
+                alert('You got me !');
+            };
+            
+            span2.addEventListener('click', myFunction); // Tadam : création multiple d'événements identiques !
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //phases de capture / bouillonnement
+            var capt1 = document.getElementById('capt1'),
+                capt2 = document.getElementById('capt2'),
+                boul1 = document.getElementById('boul1'),
+                boul2 = document.getElementById('boul2');
+            
+            capt1.addEventListener('click', function(){
+                alert("L'événement du div vient de se déclencher.")
+            }, true);
+            capt2.addEventListener('click', function(){
+                alert("L'événement du span vient de se déclencher.")
+            }, true);
+            boul1.addEventListener('click', function(){
+                alert("L'événement du div vient de se déclencher.")
+            }, false);
+            boul2.addEventListener('click', function(){
+                alert("L'événement du span vient de se déclencher.")
+            }, false);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //objet Event
+            //target
+            var span3 = document.getElementById('click_target');
+            span3.addEventListener('click', function(e){
+                e.target.innerHTML += ". Cliqué";
+            });
+     
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Récupérer l'élément à l'origine de l'événement
+            var parent = document.getElementById('parent1'),
+                result = document.getElementById('result'),
+                result2 = document.getElementById('result2');
+            
+            parent.addEventListener('mouseover', function(e){
+                result.innerHTML = "L'élément déclencheur de l'événement \"mouseover\" possède l'ID : " + e.target.id;
+                result2.innerHTML = "L'élément à l'origine du déclenchement de cet événement possède l'ID : " 
+                    + e.currentTarget.id;
+            });
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Position du curseur
+            var position = document.getElementById('position');
+            
+            document.body.addEventListener('mousemove', function(e){
+                position.innerHTML = "Position X : " + e.clientX + "px<br />"
+                                    + "Position Y : " + e.clientY + "px";
+            });
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Récupérer un élément en relation avec un événement de souris
+            
+            var result_rel = document.getElementById('result_rel'),
+                child1_rel = document.getElementById('child1_rel'),
+                child2_rel = document.getElementById('child2_rel');
+            
+            child1_rel.addEventListener('mouseout', function(e){
+                result_rel.innerHTML = "L'élément survolé juste après que le curseur ait quitté l'enfant N°1 est : " + e.relatedTarget.id;
+            });
+            
+            child2_rel.addEventListener('mouseover', function(e){
+                result_rel.innerHTML = "L'élément quitté juste avant que le curseur n'entre sur l'enfant N°2 est : " + e.relatedTarget.id;
+            });
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Récupérer les touches frappées par l'utilisateur
+            
+            var field = document.getElementById('field'),
+                down = document.getElementById('down'),
+                up = document.getElementById('up'),
+                press = document.getElementById('press');
+            
+            document.addEventListener('keydown', function(e){
+                down.innerHTML = e.keyCode;
+            });
+            
+            document.addEventListener('keyup', function(e){
+                up.innerHTML = e.keyCode;
+            });
+            
+            document.addEventListener('keypress', function(e){
+                e.preventDefault();
+                press.innerHTML = e.charCode;
+                field.value += String.fromCharCode(e.charCode);
+            });
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Bloquer l'action par défaut
+            var gogle = document.getElementById('gg');
+            
+            gogle.addEventListener('click', function(e){
+                e.preventDefault();
+                alert('vous avez bien cliqué, oui');
+            });
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // LE GRAND PROBLEME 
+            /*
+            
+            var myDiv = document.getElementById('myDiv'),
+                results = document.getElementById('results');
+
+            myDiv.addEventListener('mouseover', function(e) {
+                var relatedTarget = e.relatedTarget;
+                
+                while(relatedTarget != myDiv && relatedTarget.nodeName != 'BODY' && relatedTarget != document)
+                    relatedTarget = relatedTarget.parentNode;
+                
+                if(relatedTarget != myDiv)
+                    results.innerHTML += "Le curseur vient d'entrer.<br />";
+            });
+
+            myDiv.addEventListener('mouseout', function(e) {
+                var relatedTarget = e.relatedTarget;
+                
+                while(relatedTarget != myDiv && relatedTarget.nodeName != 'BODY' && relatedTarget != document)
+                    relatedTarget = relatedTarget.parentNode;
+                
+                if(relatedTarget != myDiv)
+                    results.innerHTML += "Le curseur vient de sortir.<br />";
+            });
+            */
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // LE GRAND PROBLEME (double 2)
+            var res = document.getElementById("results"),
+                monDiv = document.getElementById("myDiv");
+            
+            function isNotChild(e) {
+                var related = e.relatedTarget;
+
+                while(related != monDiv && related.nodeName != 'BODY' && related != document) {
+                    related = related.parentNode;
+                }
+                if(related != monDiv)
+                    return true;
+            }
+            monDiv.addEventListener('mouseover', function(e) {
+                if(isNotChild(e))
+                     res.innerHTML += "Le curseur vient d'entrer. ";
+            });
+
+            monDiv.addEventListener('mouseout', function(e) {
+                if(isNotChild(e))
+                    res.innerHTML += "LE CURSEUR VIENT DE SORTIR. ";
+            });            
+        </script>
+    
+    </body>
+</html>

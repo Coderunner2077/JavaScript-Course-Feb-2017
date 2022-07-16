@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>XMLHttpRequest (la suite)</title>
+    </head>
+    <body>
+    <pre>				
+                                      La deuxième version de XMLHttpRequest
+
+1.) Présentation
+La deuxième version du XHR ajoute de nombreuses fonctionnalités intéressantes. Le XHR2 ne fait pas partie de la 
+spécification HTML5. Cependant, cette deuxième version utilise de nombreuses tehcnologies liées au HTML5, on va donc se
+limiter ici à ce qui est utilisable (et intéressant) et on verra le reste plus tard, dans la partie consacrée à HTML5.
+
+Tout d'abord, faisons une petite clarification :
+
+	-	L'objet utilisé pour la 2e version est le même que celui utilisé pour la 1re, à savoir XMLHttpRequest
+	-	Toutes les fonctionnalités présentes dans le 1re sont présentes dans la seconde
+
+Maintenant que tout est clair, entrons dans le vif du sujet : l'étude des nouvelles fonctionnalités.
+
+Attention : IE ne supporte que partiellement cette deuxième version du XHR, voire même pas du tout en ce qui concerne les 
+versions IE antérieure à la version 11. Pour les autres navigateurs, apparemment il n'y a plus de problèmes de compatibilité.
+
+2.) Les requêtes cross-domain
+
+Les requêtes cross-domain sont des requêtes effectuées depuis un nom de domaine A vers un nom de domaine B. Elles sont
+pratiques, mais absolument inutilisables avec la première version du XHR en raison de la présence d'une sécurité basée 
+sur le principe de la same origin policy. Cette sécurité est appliquée aux différentes langages utilisables depuis
+un navigateur Web, le JavaScript est donc concerné. Il est important de comprendre en quoi elle consiste et comment 
+elle peut être "contournée", car les requêtes cross-domain sont au coeur du XHR2.
+
+3.) Une sécurité bien restrictive
+
+Bien que la same origin policy soit une sécurité contre de nombreuses failles, elle est un véritable frein pour
+le développement du Web, car elle a pour principe de n'autoriser les requêtes XHR qu'entre les pages Web possédant 
+le même nom de domaine. Si, par exemple, je me trouve sur mon site personnel dont le nom est mon_site_perso.com et que
+je tente de faire une requête XHR vers le célèbre nom de domaine de chez Google google.com, je vais alors rencontrer
+une erreur et la requête ne sera pas exécutée, car les deux noms de domaine sont différents.
+
+Cette sécurité s'applique aussi dans d'autres cas, comme deux sous-domaines différents. Voici un tableau présentant
+rapidement et facilement les différents cas concernés ou non par cette sécurité. Il illustre différents cas où les 
+requêtes XHR sont possibles ou non. Les requêtes sont exécutées depuis la page http://www.example.com/dir/page.html :
+
+________________________________________________________________________________________________________________________________
+--------------------------------------------------------------------------------------------------------------------------------
+URL appelée									|	Résultat	|	Raison
+________________________________________________________________________________________________________________________________
+--------------------------------------------------------------------------------------------------------------------------------
+http://www.example.com/dir/page.html		|	Succès		|	Même protocole et même nom de domaine
+--------------------------------------------------------------------------------------------------------------------------------
+http://www.example.com/dir2/other.html		|	Succès		|	Même protocole et même nom de domaine, seul le dossier diffère
+--------------------------------------------------------------------------------------------------------------------------------
+http://www.example.com:81/dir/other.html	|	Echec		|	Même protocole et même nom de domaine, mais le port est 
+											|				|	différent (80 par défaut)
+--------------------------------------------------------------------------------------------------------------------------------
+https://www.example.com/dir/other.html		|	Echec		|	Protocole différent (HTTPS au lieu de HTTP)
+--------------------------------------------------------------------------------------------------------------------------------
+http://en.example.com/dir/other.html		|	Echec		|	Sous-domaine différent
+--------------------------------------------------------------------------------------------------------------------------------
+http://example.com/dir/other.html			|	Echec		|	Si l'appel est fait depuis un nom de domaine dont les "www" sont
+											|				|	spécifiés, alors il faut faire de même pour la page concernée
+________________________________________________________________________________________________________________________________
+--------------------------------------------------------------------------------------------------------------------------------
+
+Alors, certes, cette sécurité est impérative, mais il se peut que parfois l'on possède deux site Web dont les noms de domaine
+soient différents, mais dont la connexion doit se faire par le biais de requêtes XHR. La 2e version du XHR introduit donc
+un système simple et efficace permettant l'autorisation des requêtes cross-domain.
+
+4.) Autoriser les requêtes cross-domain
+
+Il existe une solution implémentée dans la 2e version du XHR, qui consiste à ajouter un simple en-tête dans la
+page appelée par la requête pour autoriser le cross-domain. Cet en-tête se nomme :
+
+Access-Control-Allow-Origin 
+
+...et permet de spécifier un ou plusieurs domaines autorisés à accéder à la page par le biais d'une requête XHR.
+
+Pour spécifier un nom de domaine, il suffit d'écrire :
+
+Access-Control-Allow-Origin: http://example.com
+
+Ainsi, le domaine example.com aura accès à la page qui retourne cet en-tête. Il est impossible de spécifier plusieurs
+noms de domaine, mais il est possible d'autoriser tous les noms de domaine à accéder à ma page, en utilisant l'astérisque * :
+
+Access-Control-Allow-Origin: *
+
+Il ne me reste ensuite plus qu'à ajouter cet en-tête aux autres en-têtes de ma page Web, comme ici en PHP : 
+
+&lt;?php
+	
+	header('Access-Control-Allow-Origin: *');
+
+?>
+
+Cependant, il faut prendre garde à l'utilisation de cet astérisque. En effet, celle-ci doit être une solution en dernier 
+recours car lorsque j'autorise un nom de domaine à faire des requêtes cross-domain sur ma page, c'est comme si je
+désactivais une sécurité contre le piratage vis-à-vis de ce domaine. 
+
+5.) Nouvelles propriétés et méthodes
+
+Le XHR2 fournit de nombreuses propriétés supplémentaires; quant aux méthodes, il n'y en a qu'une seule de nouvelle.
+
+a./ Eviter les requêtes trop longues
+
+Il se peut que, de temps en temps, certaines requêtes soient excessivement longues. Afin d'éviter ce problème, il est
+parfaitement possible d'utiliser la méthode abort() couplée à setTimeout(), cependant le XHR2 fournit une solution
+bien plus simple à mettre en place. Il s'agit de la porpriété timeout, qui prend pour valeur un temps en millisecondes. 
+Une fois ce temps écoulé, la requête se terminera : 
+
+xhr.timeout = 10000; 		// La requête se terminera si elle n'a pas abouti au bout de 10 secondes
+
+Note : ne fonctionne pas sur IE antérieur à la version 11. Pour les autres navigateurs, les vielles versions ne
+supportent pas non plus cette propriété
+
+b./ Forcer le type de contenu
+
+Dans la 1re partie de ce chapitre, il a été dit qu'il fallait bien spécifier le type MIME des documents afin d'éviter que
+les fichiers XML ne soient pas parsés. Eh bien, si je n'ai pas la possibilité de le faire (par exemple, si je n'ai pas 
+accès au code de la page que j'appelle), je peux réécrire le type MIME reçu afin de parser correctement le fichier.
+Cette astuce se réalise avec la nouvelle méthode overrideMimeType(), qui prend en paramètre un seul argument contenant le
+type MIME exigé : 
+
+var xhr = new XMLHttpRequest();
+
+xhr.open('GET', 'http://example.com');
+
+xhr.overrideMimeType('text/xml');
+//l'envoi de la requête puis le traitement des données reçues peuvent se faire.
+
+Attention : cette méthode ne peut être utilisée que lorsque la propriété readyState possède les valeurs 1 ou 2. Autrement
+dit, lorsque la méthode open() vient d'être appelée ou bien les en-têtes viennent d'être reçus, ni avant, ni après.
+
+c./ Accéder aux cookies et aux sessions avec une requête cross-domain
+
+Cela n'a pas été présenté plus tôt, mais il est effectivement possible pour une page appelée par le biais d'une requête
+XHR (versions 1 et 2) d'accéder aux cookies ou aux sessions du navigateur. Cela se fait sans contrainte, je peux, par
+exemple, accéder aux cookies comme je le fais d'habitude :
+
+&lt;?php 
+
+	echo $_COOKIE['cookie1']; //Aucun problème !
+
+?>
+
+Cependant, cette facilité d'utilisation est loin d'être présente lorsque je souhaite accéder à ces ressources avec
+une requête cross-domain, car aucune valeur ne sera retournée par les tableaux $_COOKIE et $_SESSION.
+
+Pourquoi ? Les cookies et les sessions ne sont-elles pas envoyés ?
+
+Eh bien non ! Il ne s'agit pas d'une fonctionnalité conçue pour embêter, mais bien d'une sécurité, car je vais devoir 
+autoriser le navigateur et le serveur à gérer ces données. 
+
+Quand on parle du serveur, on veut surtout parler de la page appelée par la requête. Je vais devoir y spécifier l'en-tête
+suivant pour autoriser l'envoi des cookies et des sessions :
+
+Access-Control-Allow-Credentials: true
+
+Mais, côté serveur, cela ne suffira pas si j'ai spécifié l'astérisque * pour l'en-tête Access-Control-ALlow-Origin. Il
+me faut absolument spécifier un seul nom de domaine, ce qui est malheureusement très contraignant dans certains cas 
+d'application (bien qu'ils soient rares). 
+
+Je devrai maintenant avoir une page PHP commençant un code de ce genre :
+
+&lt;?php
+	header('Access-Control-Allow-Origin: http://example.com');
+	header('Access-Control-Allow-Credentials: true');
+?>
+
+Cependant, je pourrai toujours tenter d'acccéder aux cookies et aux sessions, j'obtiendrai en permanence des
+valeurs nulles. La raison est simple : bien que le serveur soit configuré pour permettre l'accès à ces données, le
+navigateur ne les voit pas. Pour pallier ce problème, il suffit d'indiquer à ma requête que l'envoi de ces données
+est nécessaire. Cela se fait après initialisation de la requête et avant son envoi (autrement dit, entre l'utilisation
+des méthodes open() et send()) avec la propriété withCredentials :
+
+xhr.open(...);
+
+xhr.withCredentials = true; //Avec "true", l'envoi des cookies et des sessions est bien effectué
+
+xhr.send(...);
+
+Petite question technique : j'ai une page Web nommée 'client.php' située sur un nom de domaine A. Depuis cette page, 
+j'appelle la page 'serveur.php' située sur le domaine B grâce à une requête cross-domain. Les cookies et les sessions
+reçus par la page "server.php" sont-ils ceux du domaine A ou bien ceux du domaine B ? 
+
+==> Il s'agit bien sûr de ceux du domaine B. Si je fais une requête cross-domain, les cookies et les sessions envoyés
+seront constamment ceux concernant le domaine de la page appelée. Cela s'applique aussi si j'utilise la fonction PHP
+setCookie() dans la page appelée : les cookies modifiées seront ceux du domaine de cette page, et non pas ceux du
+domaine d'où provient la requête. 
+
+Note, une dernière précision : tout ce qui est étudié ici ne doit me concerner que lorsque je fais une requête 
+cross-domain. Dans le cas d'une requête dite "classique", je n'ai pas à faire ces manipulations, tout fonctionne sans
+cela, même pour une requête XHR1.
+
+6.) Quand les événements s'affolent
+
+La première version du XHR ne comportait qu'un seul événement, la deuxième en comporte maintenant huit si on compte
+l'événement readystatechange ! Pourquoi tant d'ajouts ? Parce que le XHR1 ne permettait clairement pas de faire un
+suivi correct de l'état d'une requête. 
+
+a./ Les événements classiques
+
+Commençons par trois événements bien simples : loadstart, load et loadend. Le premier se déclenche lorsque la 
+requête démarre  (lorsque j'appelle la méthode send()). Les deux derniers se déclenchent lorsque la requête se
+termine, mais avec une petite différence : si la requête s'est correctement terminée (pas d'erreur 404 ou autre), 
+alors load se déclenche, tandis que loadend se déclenche dans tous les cas. L'avantage de l'utilisation de load
+et loadend, c'est que je peux alors m'affranchir de la vérification de l'état de la requête avec la propriété
+readyState, comme je le ferais avec l'événement readystatechange.
+
+Les deux évenements suivants sont error et abort. Le premier se déclenche en cas de non-aboutissement de la requête
+(quand readyState n'atteint même pas la valeur finale : 4), tandis que le deuxième s'exécutera en cas d'abandon de la requête
+avec la méthode abort() ou bien avec le bouton "Arrêt" de l'interface du navigateur Web.
+
+Il existe également un évenement nommé timeout (tout comme la propriété), qui se déclenche quand la durée maximale 
+spécifiée dans la propriété associée est atteinte.
+
+b./ Le cas de l'événement progress
+
+Pour finir, on va voir l'utilisation d'un événement un peu plus particulier, nommé progress. Son rôle est de se déclencher
+à intervalles réguliers pendant le rapatriement du contenu exigé par ma requête. Bien entendu, son utilisation n'est
+nécessaire, au final, que dans les cas où le fichier rapatrié est assez volumineux. Cet événement a pour particularité
+de fournir un objet en paramètre à la fonction associée. Cet objet contient deux propriétés nommées loaded et 
+total. Elles indiquent, respectivement, le nombre d'octets actuellement téléchargés et le nombre d'octets total
+à télécharger. Leur utilisation se fait de cette manière :
+
+xhr.addEventListener('progress', function(e){
+	element.innerHTML = e.loaded + ' / ' + e.total;
+});
+
+Au final, l'utilité de cet événement est assez quelconque, ce dernier a bien plus d'intérêt dans le cas d'un upload 
+(mais cela sera abordé dans la partie consacrée au HTML5). Cela dit, il peut avoir son utilité dans le cas de 
+préchargements de fichiers assez lourds. Ainsi, le préchargement de plusieurs images avec une barre de progression
+peut être une utilisation qui peut commencer à avoir son intérêt (même si cela n'a rien de transcendant).
+
+7.) L'objet FormData
+
+Cet objet consiste à faciliter l'envoi des données par le biais de la méthode POST des requêts XHR. Comme on l'a dit
+plus tôt dans ce chapitre, l'envoi des données par le biais de POST est une chose assez fastidieuse, car il faut
+spécifier l'en-tête dont on ne se souvient que très rarement de tête, on perd alors du temps à chercher sur le Web.
+
+Au-delà de son côté pratique en terme de rapidité d'exécution, l'objet FormData est aussi un formidable outil
+permettant de faire un envoi de données binaires au serveur. Ce qui, concrètement, veut dire qu'il est possible de
+faire de l'upload de fichiers par le biais des requêts XHR. Cependant, l'upload de fichiers nécessite des
+connaissances approfondies sur le HTML5, cela sera donc traité plus tard. Je vais tout d'abord me contenter d'une 
+utilisation relativement simple. 
+
+Tout d'abord, l'objet FormData doit être instancié : 
+
+var form = new FormData();
+
+Une fois instancié, je peux me servir de son unique méthode : append(). Celle-ci ne retourne aucune valeur et prend
+en paramètres deux arguments obligatoires : le nom d'un champ (qui correspond à l'attribut name des éléments d'un
+formulaire) et sa valeur. Son utilisation est donc très simple : 
+
+form.append('champ1', 'valeur1');
+form.append('champ2', 'valeur2');
+
+C'est là que cet objet est intéressant : pas besoin de spécifier un en-tête en particulier pour dire que l'on envoie
+des données sous forme de formulaire. Il suffit juste de passer mon objet de type FormData à la méthode send(), ce qui 
+donne ceci sur un code complet :
+
+var xhr = new XMLHttpRequest();
+
+xhr.open('POST', 'script.php');
+
+var form = new FormData();
+form.append('champ1', 'valeur1');
+form.append('champ2', 'valeu2');
+
+xhr.send(form);
+
+Et côté serveur, je peux récupérer les données tout aussi simplement que d'habitude : 
+
+&lt;?php
+	
+	echo $_POST['champ1'] .' - '. $_POST['champ2']; // Affiche "valeur1 - valeur2"
+
+?>
+
+Revenons rapidement sur le constructeur de cet objet, car celui-ci possède un argument bien pratique : je passe
+donc en paramètre un élément de formulaire et mon objet FormData sera alors prérempli avec toutes les valeurs
+de mon formulaire. Voici un exemple simpe :
+
+&t;form id="myForm">
+	&lt;input id="myText" name="myText" type="text" value="Test ! Un, deux, un, deux !" />
+&lt;/form>
+&lt;script>
+	var xhr = XMLHttpRequest();
+	
+	xhr.open('POST', 'script.php');
+	var myForm = document.getElementById('myForm'),
+		form = new FormData(myForm);
+	xhr.send(form);
+	
+&lt;/script>
+
+Ce qui donne du côte serveur ceci : 
+
+&lt;?php
+	
+	echo $_POST['myText']; // Affiche : "Test ! Un, deux, un, deux ! "
+
+?>
+
+Voilà tout, cet objet est, mine de rien, bien pratique, même si je ne sais pas encore faire d'upload de fichiers. Il
+facilite quand même bien les choses ! 
+
+__________________________________________________________________________________________________________________________________
+
+EN RESUME : L'objet XMLHttpRequest est l'objet le plus utilisé d'AJAX. Deux versions de cet objet existent, la 2e étant
+plus complète mais pas toujours disponible au sein de tous les navigateurs. 
+Deux modes sont disponibles, synchrone et asynchrone. Une requête de mode asynchrone sera exécutée en parallèle et ne 
+bloquera pas l'exécution du script, tandis que la requête synchrone attendra la fin de la requête pour poursuivre
+l'exécution du script.
+Deux méthodes d'envoi sont utilisables : GET et POST. Dans le cas d'une méthode GET, les paramètres de l'URL doivent
+être encodés encodeURIComponent(). 
+Il faut faire attention à l'encodage, car toutes les requêtes sont envoyées en UTF-8 ! 
+La version 2 du XHR introduit les requêtes cross-domain ainsi que les objets FormData et de nouveaux événements.
+
+</pre>
+		<scritp>
+		</scritp>
+	</body>
+</html>

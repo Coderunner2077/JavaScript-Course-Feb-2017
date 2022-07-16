@@ -1,0 +1,2 @@
+<?php if(isset($_POST['inputFile'])) 
+	echo $_POST['inputFile']; ?>

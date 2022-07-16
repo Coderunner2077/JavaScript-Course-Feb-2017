@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Les objets et tableaux </title>
+    </head>
+    <body>
+        <script>
+            /*
+                                                                 Les objets et les tableaux
+                                                            
+Pourquoi JavaScript n'est pas un langage typé ? Car toutes les variables contiennt toujours la même chose : un ojbet.
+Attention, JavaScript n'est pas un langage orienté objet du même style que le C++, le C# ou le Java. JavaScript est un langage orienté objet
+par prototype. 
+
+Que contiennent les objets ? 
+==> un constructeur
+==> des propriétés : des variables contenues dans l'objet, et qui contiennent des info nécessaires au fonctionnement de celui-ci
+==> des méthodes
+
+Voici les objets natifs que j'ai déjà rencontrés :
+Number, Boolean, String
+
+Découvrons à présent l'objet Array
+
+I./ Les tableaux
+
+var tablo = [2, 'CHAINE', 4, 'mot'];
+
+Ainsi, les tableaux peuvent contenir des objets pas très ressemblants.
+
+Autre définition du tableau :
+
+var tab = new Array('true', 'bidule', 'pate', 'patate');
+
+Cette syntaxe-là serait dépréciée et il serait conseillé d'utiliser la définition avec les crochets.
+
+tab[2] = 'pipapou';
+
+On appelle les éléments du tableau des items
+
+II./ Opérations sur les tableaux
+
+1.) Ajouter et supprimer des items
+
+Pour ajouter un item en dernière position :
+
+tab.push('nouv_item');
+
+Pour ajouter au début :
+
+tab.unshift('primo_item');
+
+Pour supprimer le dernier item :
+
+tab.pop();
+
+Pour supprimer au début :
+
+tab.shift();
+
+alert(tab); ==> affichent les items séparés par des virgules (grâce à la méthode toString() )
+
+2.) Chaînes de caractères et tableaux
+
+var chaine = "Animal Poisson Pouplpe";
+
+var tablo = chaine.split(' ');
+
+==> split() permet de découper une chaîne en un tableau, en fonction d'un séparateur (en l'occurence, un espace)
+
+L'inverse de split(), c'est de créer une chaîne de caractères à partir d'un tableau ==> grâce à la méthode join() :
+
+var chaine = tablo.join('-');
+
+chaine va contenir la chaîne formée avec les éléments du tablo séparés par des tirets.
+
+Pour parcourir un tableau ==> Avec la boucle for, normale.
+
+III./ Les objets littéraux
+
+1.) Exemple
+
+Exemple d'un objet littéral :
+
+var entreprise = {
+    patron: 'Yann',
+    drh: 'Jean',
+    compta: 'David',
+    salarie_1: 'Michel',
+    salarie_2: 'Marc'    
+};
+
+Ici, à la place des indices, on a des identifiants (patron, drh, compta, etc.).
+
+2.) La syntaxe d'un objet
+
+var myArray = []; // Ceci est un tableau vide
+
+var myObject = {}; // Ceci est un objet vide
+
+var myObj = {
+    item1: 'Text_1',
+    item2: 'Text_2'
+};
+
+Les items sont donc séparés par des espaces
+
+3.) Accès aux items
+
+Les identifiants sont en réalité des propriétés. Voici comment on y accède :
+
+entreprise.patron;
+
+Ou encore :
+
+entreprise['patron']; // En spécifiant simplement le nom de la propriété
+
+var id = 'drh';
+
+alert(entreprise[id]); // affiche 'Jean'
+
+Note : Cette façon de faire convient également aux propriétés de tout objet. Ainsi, si mon tableau se nomme myArray, je peux faire myArray['lengh']
+pour récupérer le nombre d'items.
+
+4.) Ajouter des items
+
+Pas de méthode push() car elle n'existe tout simplement pas dans un objet littéral. Il faudrait pour cela un tableau. 
+En revanche, il est possible d'ajouter un item en spécifiant un identifiant qui n'est pas encore présent. Par exemple :
+
+entrerise['client_1'] = 'Gérard'; // 'Gérard' est ajouté et accessible via l'identifiant 'client_1'.
+
+5.) Parcourir un objet avec for in
+
+Voilà comment on fait :
+
+for(var id in entreprise)
+    alert(entreprise[id]);
+    
+Pourquoi ne pas appliquer le for in sur les tableaux avec index ?
+
+Parce que les tableaux se voient souvent attribuer des méthodes supplémentaires par certains navigateurs ou certains scripts tiers utilisés dans la page,
+ce qui fait que la boucle for in va me les énumérer en même temps que les items du tableau.
+
+6.) Utilisation des objets littéraux
+
+On les utilise souvent dans les fonctions, lorsqu'il est nécessaire de retourner plusieurs variables. On peut faire renvoyer un tableau (en 
+JavaScript, la fonction peut, apparemment, renvoyer un tableau), mais il est plus commode de renvoyer un objet littéral.
+
+Exemple : 
+function getCoords(){
+    //script incomplet, juste pour l'exemple
+    return {
+        x: 12,
+        y: 20
+    };
+}
+
+var coords = getCoords();
+
+alert(coords.x) // affiche 12
+alert(coords.y) // affiche 20
+
+==> l'accès à x et y en est simplifié
+            */
+            
+            var myChaine = "Ceci est une chaîne de caractères";
+            alert(myChaine.length); //length est une propriété
+            myChaine.toUpperCase(); // renvoie seulement une copie en majuscules
+            alert(myChaine); 
+            
+            var myObject = { 
+                primo: 'un',
+                secundo: 'deux',
+                tregundo: 'trois', 
+                quadrundo: 'quatre'
+            };
+            
+            for(var id in myObject)
+                alert(myObject[id]);
+            
+            //Exo 
+            var prenoms = [], prenom;
+            while(prenom = prompt('Entrez un prénom'))
+            {
+                prenoms.push(prenom);
+            }
+            if(prenoms.length > 0)
+                alert(prenoms.join(' '));
+            else
+                alert('Aucun prénom !');
+        
+            
+        </script>
+    </body>
+</html>

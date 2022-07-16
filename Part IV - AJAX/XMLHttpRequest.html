@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>XMLHttpRequest</title>
+    </head>
+    <body>
+    <pre>
+
+                                               Le XMLHttpRequest
+
+L'objet XMLHttpRequest est au coeur de l'AJAX. Il existe deux versions de cet objet, il s'agira ici d'étudier la 1re version.
+
+I./ L'objet XMLHttpRequest
+1.) Présentation
+
+L'objet XMLHttpRequest a été initialement conçu par Microsoft et implémenté dans IE et Outlook sous forme d'un contrôle
+ActiveX. Nommé à l'origine XMLHTTP par Microsoft, il a été par la suite repris par de nombreux navigateurs sous son nom
+actuel : XMLHttpRequest. Sa standardisation viendra par la suite par le biais du W3C.
+
+Le principe même de cet objet est classique : une requête HTTP envoyée à l'adresse spécifiée, une réponse est alors
+attendue en retour de la part du serveur; une fois la réponse obtenue, la requête s'arrête et peut éventuellement être
+relancée. 
+
+2.) XMLHttpRequest, version 1 et 2
+
+L'objet XMLHttpRequest possède deux versions majeures. La 1re version est celle issue de la standardisation de l'objet
+d'origine et son support est assuré par tous les navigateurs. L'utilisation de cette 1re version est extrêmement courante,
+mais les fonctionnalités paraissent désormais bien limitées, étant donné l'évolution des technologies. 
+
+La 2e version introduit de nouvelles fonctionnalités intéressantes, comme la gestion du cross-domain, ainsi que l'intro - 
+duction de l'objet FormData. 
+Cependant, il y a encore des navigateurs, notamment IE, qui ne la supportent que partiellement. 
+
+Alors, quelle version utiliser ? 
+
+Dans un cas général, la 1re version est très formetement conséillé ! Un site Web utilisant la 2e version du XMLHttpRequest 
+risque de priver une partie de ses visiteurs des fonctionnalités AJAX fournies en temps normal. D'autant plus qu'il 
+n'existe pas de polyfill pour ce genre de technologies (il ne s'agit pas d'une simple méthode ici, mais d'une technologie
+complète).
+
+II./ Première version : les bases
+
+L'utilisation de l'objet XHR (XMLHttpRequest) se fait en deux étapes bien distinctes:
+
+	-	Préparation et envoi de la requête
+	-	Réception des données
+
+On va donc étudier l'utilisation de cette technologie au travers de ces deux étapes.
+
+1.) Préparation et envoi de la requête
+
+Pour commencer à préparer ma requête, il me faut d'abord instancier un objet XHR :
+
+var xhr = new XMLHttpRequest();
+
+La préparation de la requête se fait par le biais de la méthode open(), qui prend en paramètres cinq arguments différents,
+dont trois facultatifs : 
+
+	-	Le 1er argument contient la méthode d'envoi des données, les trois méthodes principales sont GET, POST et HEAD
+	-	LE 2e argument est l'URL à laquelle je souhaite soumettre ma requête, par exemple : 'http://mon_site_web.com'
+	-	Le 3e argument est un booléen facultatif dont la valeur par défaut est true. A true, la requête sera de type 
+			asynchrone, à false elle sera synchrone 
+	-	Les deux derniers arguments sont à spécifier en cas d'identification nécessaire sur le site Web (à cause de 
+			.htaccess par exemple). Le 1er contient le nom de l'utilisateur, tandis que le 2e contient le mot de passe
+
+Voici une utilisation basique et courante de la méthode open() : 
+
+xhr.open('GET', 'http://mon_site_web.com/ajax.php');
+
+Cette ligne de code prépare une requête afin que cette dernière contacte la page ajax.php sur le nom de domaine 
+mon_site_web.com par le biais du protocole http (je peux très bien utiliser d'autres protocoles, comme HTTPS ou FTP par
+exemple). Tout paramètre spécifié à la requête sera transmis par le biais de la méthode GET.
+
+Après présentation de la requête, il ne reste plus qu'à l'envoyer avec la méthode send(). Cette dernière prend en 
+paramètre un argument obligatoire à étudier plus tard. Dans l'immédiat, je lui spécifie la valeur null :
+
+xhr.send(null);
+
+Après exécution de cette méthode, l'envoi de la requête commence. Cependant, on n'a spécifié aucun paramètre, ni aucune
+solution pour vérifier le retour des données, l'intérêt est donc quasi nul.
+
+Note : En travaillant avec des requêtes asynchrones (ce que je ferai dans 99% des cas), il peut être parfois intéressant
+de recourir à la méthode abort() permettant de stopper toute activité. La connexion au serveur est alors interrompue et
+mon instance de l'objet XHR est remise à zéro. Son utilisation est très rare, mais elle peut servir si j'ai des requêtes
+qui prennent bien trop de temps.
+
+2.) Synchrone ou asynchrone ?
+
+Une requête synchrone va bloquer mon script tant que la réponse n'aura pas été obtenue, tandis qu'une requête asynchrone
+laissera continuer l'exécution de mon script et me préviendra de l'obtention de la réponse par le biais d'un 
+événement. 
+
+La solution la plus intéressante est sans conteste la requête asynchrone. Celle-ci me permet de gérer mon interface
+pendant que j'attends la réponse du serveur, je peux donc indiquer au client de patienter ou m'occuper d'autres taches
+en attendant. 
+
+3.) Transmettre des paramètres
+a./ HEAD
+La méthode d'envoi HEAD ? => Il ne s'agit tout simplement pas d'une méthode d'envoi, mais de réception : en spécifiant
+cette méthode, je ne reçois pas le contenu du fichier dont j'ai spécifié l'URL, mais juste son en-tête (son header, d'où
+le "HEAD"). Cette utilisation est très pratique quand je souhaite simplement vérifier, par exemple, l'existence
+d'un fichier sur un serveur.
+
+b./ GET
+
+Il est possible de transmettre des paramètres par le biais de la méthode GET. La transmission de ces paramètres se
+fait de la même manière qu'avec une URL classique, il faut les spécifier avec les caractères ? et & dans l'URL que
+je passe à la méthode open() :
+
+xhr.open('GET', 'http://mon_site_web.com/ajax.php?param1=value1&param2=value2');
+
+Il est cependant conseillé, quelqe soit la méthode utilisée (GET ou POST), d'encoder toutes les valeurs que je passe
+en paramètre grâce à la fonction encodeURIComponent(), afin d'éviter d'écrire d'éventuels caractères interdits
+dans une URL : 
+
+var value1 = encodeURIComponent(value1),
+	value2 = encodeURIComponent(value2);
+
+xhr.open('GET', 'http://mon_site_web.com.ajax.php?param1=' + value1 + '&param2=' + value2);
+
+Ma requête est maintenat prête à envoyer des paramètres par le biais de la méthode GET ! 
+
+c./ POST
+
+En ce qui concerne la méthode POST, les paramètres ne sont pas à spécifier avec la méthode open() mais avec la méthode
+send() : 
+
+xhr.open('POST', 'http://mon_site_web.com.ajax.php');
+xhr.send('param1=' + value1 + '&param2=' + value2);
+
+Cependant la méthode POST consiste généralement à envoyer des valeurs contenues dans un formulaire, il faut donc modifier
+les en-têtes d'envoi des données afin de préciser qu'il s'agit de données provenant d'un formulaire (même si, à la base,
+ce n'est pas le cas) : 
+
+xhr.open('POST', 'http://mon_site_web.com.ajax.php');
+xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+xhr.send('param1=' + value1 + '&param2=' + value2);
+
+La méthode setRequestHeader() permet l'ajout et la modification d'un en-tête, elle prend en paramètres deux arguments :
+le 1er est l'en-tête concerné et le 2e est la valeur à lui attribuer.
+
+4.) Réception des données 
+
+La réception des données d'une requête se fait par le biais de nombreuses propriétés. Cependant, les propriétés à 
+utiliser diffèrent selon que la requête est synchrone ou non.
+
+a./ Requête asynchrone : spécifier la fonction de callback
+
+Dans le cas d'une requête asynchrone, il me faut préciser une fonction de callback afin de savoir quand la requête
+s'est terminée. Pour cela, l'objet XHR possède un événement nommé readystatechange auquel il suffit d'attribuer
+une fonction : 
+
+xhr.addEventListener('readystatechange', function(){
+	// mon code
+});
+
+Cependant, cet événement ne se déclenche pas seulement lorsque la requête est terminée, mais plutôt, comme son nom l'indique,
+à chaque changement d'état. Il existe cinq états différents représentés par les constantes spécifiques à l'objet
+XMLHttpRequest : 
+__________________________________________________________________________________________________________________________________
+Constante 			|	Valeur	|	Description
+----------------------------------------------------------------------------------------------------------------------------------
+UNSENT				|	0		|	L'objet XHR a été créé, mais pas initialisé (open() pas encore appelé)
+OPENED				|	1		|	La méthode open() a été appelée, mais la requête n'a pas encore été envoyée via send()
+HEADERS_RECEIVED	|	2		|	La méthode send() a été appelée et toutes les info ont été envoyées au serveur
+LOADING				|	3		|	Le serveur traite les info et a commencé à envoyer les données. Tous les en-têtes => reçus
+DONE				|	4		|	Toutes les données ont été réceptionnées
+----------------------------------------------------------------------------------------------------------------------------------
+
+L'utilisation de la propriété readyState est nécessaire pour connaître l'état de la requête. L'état qui m'intéresse est
+le 5e (la constante DONE), car je souhaite simplement savoir quand ma requête est terminée. Il existe deux manières pour
+vérifier que la propriété readyState contient bien une valeur indiquant que la requête est terminée, la 1re (que j'utiliserai
+pour une question de lisibilité) consiste à utiliser la constante elle-même : 
+
+xhr.addEventListener('readystatechange', function() {
+	if (xhr.readyState === XMLHttpRequest.DONE) { //La constante DONE n'est pas globale
+		//Mon code
+	}
+});
+
+Tandis que la 2e manière de faire consiste à utiliser directement la valeur de la constante, soit 4 pour la constante DONE : 
+xhr.addEventListener('readystatechange', function() {
+	if (xhr.readyState === 4)
+		//Mon code
+});
+
+De cette manière mon code ne s'exécutera que lorsque la requête aura terminé son travail. Toutefois, même si la requête
+a terminé son travail, cela ne veut pas forcément dire qu'elle l'a mené à bien, pour cela on va devoir consulter le statut
+de la requête grâce à la propriété status. Cette dernière renvoie le code correspondant à son statut, comme le fameux 404
+pour les fichiers non trouvé. Le statut qui m'intéresse est le 200, qui signifie que tout s'est bien passé : 
+
+xhr.addEventListener('readystatechange', function(){
+	if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200)
+		//Mon code
+});
+
+Note : il existe aussi une propriété nommé statusText contenant une version au format text du statut de la requête,
+en anglais seulement. Par exemple, le statut 404 me donnera le texte : "Not Found".
+
+Note2 : Si je souhaite tester ma requête XHR sur mon ordi sans même utiliser de serveur test (WampServeur par exemple),
+alors je n'obtiendrai jamais de statut équivalent à 200 puisque c'est normalement le rôle du serveur HTTP (Appache par
+exemple, fourni avec WampServer) de fournir cette valeur. Je vérifie alors si le statut équivaut à 0, cela suffira.
+
+b./ Requête synchrone 
+
+Pour une requête synchrone, il n'y a qu'à vérifier le statut de ma requête, tout simplement. 
+
+5.) Traitement des données
+
+Une fois la requête terminée, il me faut récupérer les données obtenues. Ici, deux possibilités s'offrent à moi : 
+
+	-	Les données sont au format XML, je peux alors utiliser la propriété responseXML, qui permet de parcourir l'arbre
+			DOM des données reçues.
+	-	Les données sont dans un format autre que XML, il me faut alors utiliser la propriété responseText, qui me fournit
+			toutes les données sous forme d'une chaîne de caractères. C'est à moi qu'incombe la tâche de faire d'éventuelles
+			conversions, par exemple avec un objet JSON => var response = JSON.parse(xhr.responseText);
+
+Les deux propriétés nécessaires à l'obtention des données sont responseText et responseXML. Cette dernière est particulière,
+dans le sens où elle contient un arbre DOM que l'on peut facilement parcourir. Par exemple, si je reçois l'arbre DOM suivant :
+
+&lt;?xml version="1.0" encoding="utf-8"?>
+&lt;table>
+
+    &lt;line>
+        &lt;cel>Ligne 1 - Colonne 1&lt;/cel>
+        &lt;cel>Ligne 1 - Colonne 2&lt;/cel>
+        &lt;cel>Ligne 1 - Colonne 3&lt;/cel>
+    &lt;/line>
+
+    &lt;line>
+        &lt;cel>Ligne 2 - Colonne 1&lt;/cel>
+        &lt;cel>Ligne 2 - Colonne 2&lt;/cel>
+        &lt;cel>Ligne 2 - Colonne 3&lt;/cel>
+    &lt;/line>
+    
+    &lt;line>
+        &lt;cel>Ligne 3 - Colonne 1&lt;/cel>
+        &lt;cel>Ligne 3 - Colonne 2&lt;/cel>
+        &lt;cel>Ligne 3 - Colonne 3&lt;/cel>
+    &lt;/line>
+
+&lt;/table>
+
+...je peux récupérer toutes les balises &lt;cel> de la manière suivante :
+
+var cels = xhr.responseXML.getElementsByTagName('cel');
+
+Note : Une petite précision est de mise concernant l'utilisation de responseXML. Sur de vieux navigateurs (notamment avec
+de vieilles versions de Firefox), celle-ci ne peut pas être utilisable si le serveur n'a pas renvoyé une réponse avec un
+en-tête spécifiant qu'il s'agit bel et bien d'un fichier XML. La propriété pourrait alors être inutilisable, bien que
+le contenu soit un fichier XML. Il faut donc penser à bien spécifier l'en-tête Content-type avec la valeur text/xml pour
+éviter de mauvaises surprises. Le JavaScript reconnaîtra alors le type MIME XML. En PHP, cela se fait de la manière suivante :
+
+<?php header('Content-type: text/xml'); ?>
+
+6.) Préparation des en-têtes de la réponse
+
+Il se peut que j'aie parfois besoin de récupérer les valeurs des en-têtes fournis avec la réponse de ma requête. Pour cela,
+je peux utiliser deux méthodes. La 1re se nomme getAllResponseHeaders() et retourne tous les en-têtes de la réponse en vrac.
+Voilà ce que cela peut donner :
+
+Date: Sat, 17 Sep 2011 20:09:46 GMT
+Server: Apache
+Vary: Accept-Encoding
+Content-Encoding: gzip
+Content-Length: 20
+Keep-Alive: timeout=2, max=100
+Connection: Keep-Alive
+Content-Type: text/html; charset=utf-8
+
+La deuxième méthode, getResponseHeader(), permet la récupération d'un seul en-tête. Il suffit d'en spécifier le nom en
+paramètre et la méthode retournera sa valeur :
+
+var xhr = new XMLHttpRequest();
+xhr.open('HEAD', 'http://mon_site_web.com', false);
+xhr.send(null);
+alert(xhr.getResponseHeader('Content-type')); //Affiche "Content-type: text/html; charset=utf-8"
+
+7.) Mise en pratique
+
+L'étude de cet objet étant assez segmentée, je n'ai pas encore eu l'occasion d'aborder un quelconque exemple. Pallions
+ce problème en créant une page qui va s'occuper de charger le contenu de deux autres fichiers selon le choix de l'utilisateur.
+
+Commençons par le plus simple et créons une page HTML qui va s'occuper de charger le contenu des deux fichiers :
+
+Réf html
+
+Je vais pouvoir maintenant commencer mon code JavaScript. Je crée tout d'abord une fonction qui sera appelée lors d'un
+clic sur un des deux boutons, elle sera chargée de s'occuper du téléchargement et de l'affichage du fichier passé
+en paramètre : 
+
+Réf script
+
+Constat : ça ne veut pas marcher. xhr.responseText ne renvoie rien.
+
+Normalement, pour que cela fonctionne en local, il faut faire un petit ajustement...
+
+8.) XHR et les tests locaux
+
+Il faut en effet utiliser status pour savoir si la requête HTTP a abouti ou pas. En ce cas, la valeur de status est 200. 
+Oui mais... si je teste en local, il n'y a pas de requête HTTP ! Et donc, status vaudra 0. Pour qu'un code XHR fonctionne
+en local, il faut donc gérer le cas où status peut valoir 0 :
+
+if(xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 0)) {}
+
+Mais attention, il faudra éviter de laisser cette condition lorsque mon script sera sur mon serveur, car la
+valeur 0 est une valeur d'erreur. Autrement dit, si une fois en ligne ma requête rencontre un problème, 0 sera peut-être
+également retourné. J'ai dit peut-être, car 0 n'est pas une valeur autorisée comme code HTTP. C'est toutefois documenté
+par le W3C comme étant une valeur retournée dans certains cas, mais c'est un peu complexe.
+
+9.) Gestion des erreurs
+
+Le code de l'exercice que l'on vient de voir ne sait pas prévenir en cas d'erreur, ce qui est assez gênant au final, 
+car l'utilisateur pourrait ne pas savoir si ce qui se passe est normal. On va donc mettre en place un petit bout de code 
+pour prévenir en cas de problème, et l'on va aussi faire en sorte de faire en sorte de provoquer une erreur pour voir
+le résultat.
+
+Commençons par fournir un moyen de générer une erreur en chargeant un fichier inexistant (on aura donc une erreur
+404) : 
+
+Réf html - script
+
+Ca marche en passant par un serveur local !
+
+II./ Résoudre les problèmes d'encodage
+
+Il s'agit ici d'un problème qui gêne bon nombre d'appentis développeurs Web : l'encodage des caractères. 
+
+1.) L'encodage pour les nuls
+
+Qu'est-ce que l'encodage des caractères ? 
+
+Il s'agit d'une manière de représenter les caractères en informatique. Lorsque je tape un caractère sur mon ordi, il
+est enregistré au format binaire dans la mémoire de l'ordinateur. Ce format binaire est un code qui représente mon
+caractère, ce code ne représente qu'un seul caractère, mais peut très bien désigner des caractères très différents selon
+les normes utilisés.
+
+2.) Une histoire de normes
+
+Ainsi, chaque caractère n'est au final qu'un simple nombre binaire. Ainsi, lorsque l'informatique a fait ses débuts,
+il a fallu attribuer un nombre à chaque caractère utilisé, ce qui donna naissance à la norme ASCII. Cette norme n'était
+pas mal au début, mais était codée sur seulement 7 bits, ce qui limitait le nombre de caractères à 128. Si cette norme
+convenait très bien aux américains, de nombreuses autres langues que l'anglais ne pouvaient pas s'en servir en raison
+de son manque de "place" pour les caractères accentués.
+
+La solution à ce problème s'est alors imposée avec l'arrivée des normes ISO 8859. Le principe est simple, la norme ASCII
+utilisait 7 bits, alors que l'informatique de nos jours stocke les info par octets; or 1 octet équivaut à 8 bits, ce qui
+fait qu'il reste 1 bit non utilisé. Les normes ISO 8859 ont pour but de l'exploiter afin de rajouter les caractères 
+nécessaires à d'autres langues. Cependant, il n'est pas possible de stocker tous les caractères de toutes les langues dans
+seulement 8 bits (qui ne font que 256 caractères après tout), c'est pourquoi il est écrit "les normes 8859" : il existe 
+une norme 8859 (voire plusieurs) pour chaque langue. Pour info, la norme française est ISO 8859-1.
+
+Avec ces normes, n'importe qui peut maintenant rédiger un document dans sa langue maternelle. Les normes sont encore
+utilisés de nos jours et rendent de fiers services. Cependant, il y a un problème majeur ! Comment faire pour utiliser
+deux langues radicalement différentes (le français et le japonais par exemple) dans un même document ? Une solution serait
+de créer une nouvelle norme utilisant plus de bits afin d'y stocker tous les caractères existant dans le monde, mais
+il y a un défaut majeur : en passant à plus de 8 bits, le stockage d'un seul caractères ne se fait plus sur 1 octet mais
+sur 2, ce qui multiplie le poids des fichiers par deux, et c'est absolument inconcevable.
+
+La solution se nomme UTF-8. Cette norme est très particulière, dans le sens où elle stocke des caractères sur un nombre
+variable de bits. Autrement dit, un caractère classique, comme le A, sera stocké sur 8 bits (1 octet), mais un caractère
+plus exotique comme le A japonais (あ) est stocké sur 24 bits (3 octets), le maximum de bits utilisables par UTF-8 
+étant 32 bits (4 octets). En clair, l'UTF-8 est une norme qui sait s'adapter aux différentes langues et est probablement
+la norme d'encodage la plus aboutie de notre époque.
+
+3.) L'encodage et le développement Web
+
+Comprendre l'encodage des caractères est une chose, mais savoir s'en servir en est une autre. On va faire simple et
+rapide, et étudier quelles sont les étapes pour bien définir son encodage des caractères sur le Web.
+
+Le monde du Web est stupide, il faut lui spécifier quel est l'encodage utilisé alors que les navigateurs pourraient
+le détecter eux-mêmes. Prenons l'exemple d'un fichier PHP contentant du HTML et listons les différentes manières pour
+définir le bon encodage sur la machine du client :
+
+	-	Une étape toujours nécessaire est de bien encoder ses fichiers. Cela se fait dans les paramètrages de l'éditeur
+			de texte que l'on utilise.
+	-	Le serveur HTTP (généralement Apache) peut indiquer quel est l'encodage utilisé par les fichiers du serveur. Cela
+			est généralement paramétré de base, mais on peut rédéfinir ce paramètrage avec un fichier .htaccess contenant
+			la ligne AddDefaultCharset UTF-8. (/!\ il faudra étudier .htaccess)
+	-	Le langage serveur (généralement PHP) peut aussi définir l'encodage qui est utilisé dans les en-têtes du fichier. Si
+			un encodage est spécifié par le PHP, alors il va remplacer celui indiqué par Apache. Cela se fait grâce à la
+			ligne : <?php header('Content-type: text/html; charset=utf-8;') ?>
+	-	Le HTML permet de spécifier l'encodage de mon fichier, mais cela n'est généralement que peu nécessaire, car les
+			encodages spécifiés par Apache ou PHP font que le navigateur ignore ce qui est spécifié par le document
+			HTML; cela dit, mieux vaut le spécifier pour le support de très vieux navigateurs. Cela se fait dans la 
+			balise &lt;head> avec la ligne suivante : &lt;meta http-equiv="Content-type" content='text/html; charset=utf-8' />
+
+Bref, bcp de manières de faire pour pas grand-chose, un bon paramètrage du serveur HTTP (Apache dans mon cas) est
+généralement suffisant, à condition d'avoir des fichiers encodés avec la norme spécifiée par le serveur, bien sûr. Alors 
+pourquoi avoir montré tout ça ? Parce que je risque d'avoir des problèmes d'encodage avec l'AJAX et ce petit récapitulatif
+des manières de faire pour la spécification d'un encodage pourra sans doute m'aider à les résoudre.
+
+Attention : dans mon éditeur de texte, lorsque je voudrais spécifier l'encodage, il se peut que j'aie deux types d'encodage
+UTF-8 proposés : un nommé "UTF-8 avec BOM" et un "UTF-8 sans BOM". Il faut toujours choisir l'encodage sans BOM ! Le BOM
+est une indication de l'ordre des octets qui est ajoutée au tout début du fichier, ce qui fait que, si je souhaite appeler
+la fonction header() en PHP, je ne pourrai pas, car des caractères auront déjà été envoyés, en l'occurence des caractères
+concernant le BOM.
+
+4.) L'AJAX et l'encodage des caractères
+
+Entrons dans le vif du sujet et voyons ce qui ne va pas.
+
+a./ Le problème
+
+Eh bien oui, il n'y a qu'un seul problème, mais il est de taille, bien que facile à régler une fois que l'on a compris 
+le concept. Le voici : lorsque je fais une requête AJAX, toutes les données sont envoyées avec un encodage UTF-8, quel
+que soit l'encodage du fichier HTML qui contient le script pour la requête AJAX ! 
+
+Mais en quoi est-ce un problème ?
+
+Eh bien, cela pose problème si je travaille autrement qu'avec un encodage UTF-8 côté serveur. Car si le fichier PHP
+appelé par la requête AJAX est encodé, par exemple, en ISO 8859-1, alors il se doit de travailler avec des données 
+ayant le même encodage, ce que ne fournira pas une requête AJAX.
+
+Le problème que cela pose, concrètement, est le suivant : je me retrouve avec des caractères étranges en lieu et place
+de certains caractères, notamment les caractères accentués, situés dans le texte d'origine.
+
+L'encodage ISO 8859-1 n'utilise que 8 bits pour l'encodage des caractères, tandis que l'UTF-8 peut aller jusqu'à 32. A 
+première vue, ces deux normes n'ont aucune ressemblance, et pourtant si ! Leurs 7 premiers bits respectifs assignent
+les mêmes valeurs aux caractères concernés, ainsi la lettre A est représentée par ces 7 bits quelle que soit la
+norme utilisée, celle de l'ISO ou l'UTF-8 : 100 0001.
+
+La différence se situe en fait pour les caractères que l'on va qualifier "d'exotiques", comme les caractères accentués. 
+Ainsi un e avec accent circonflexe (ê) a la valeur binaire suivante en ISO 8859-1 : 1110 1010, ce qui en UTF-8
+équivaut à un caractère impossible à afficher. Bref, pas très pratique.
+
+Mais les choses se corsent encore plus lorsque la conversion est faite depuis l'UTF-8 vers une autre norme, comme 
+l'ISO 8859-1, car l'UTF-8 utilisera parfois 2 octets (voire plus) pour stocker un seul caractère, ce que les autres 
+normes interpréteront comme étant deux caractères. Par exemple, la même lettre ê encodée en UTF-8 donne le code
+binaire suivant : 1100 0011 1010 1010. L'ISO 8859-1 va y voir 2 octets puisqu'il y a 16 bits, la première séquence de
+8 bits (1100 0011) va donc être traduite avec le caractère Ã, et la deuxième séquence (1010 1010) avec ª. 
+
+Bref, tout cela signifie que mon fichier HTML client est en ISO 8859-1 et qu'il envoie par AJAX le caractère ê à une
+page PHP encodée elle aussi en ISO 8859-1, alors les données qui seront lues par le serveur seront les suivantes : Ãª.
+
+5.) Comprendre la démarche de l'AJAX
+
+Afin de mieux comprendre le problème posé par l'AJAX, il est bon de savoir quelles sont les étapes d'encodage d'une 
+requête avec des fichiers en ISO 8859-1 (que j'abrégerai ISO) : 
+
+	-	La requête est envoyée, les données sont alors converties proprement de l'ISO à l'UTF-8. Ainsi, le ê en ISO
+			est toujours un ê en UTF-8, l'AJAX sait faire la conversion d'encodage sans problème.
+	-	Les données arrivent sur le serveur, c'est là que se pose le problème : elles arrivent en UTF-8, alors que
+			le serveur attend des données ISO, cette erreur d'encodage n'étant pas détectée, le caractère ê n'est plus
+			du tout le même vis-à-vis du serveur, il s'agit alors des  deux caractères Ãª.
+	-	Le seveur renvoie les données au format ISO, mais celle-ci ne subissent aucune modification d'encodage
+			lors du retour de la requête. Les données renvoyées par le serveur en ISO seront bien réceptionnées en 
+			ISO. 
+
+Donc, une requête en AJAX n'opère en UTF-8 que lors de l'envoi des données, le problème d'encodage ne survient donc que
+lorsque les données sont réceptionnées par le serveur, et non pas quand le client reçoit les données renvoyés par le 
+serveur.
+
+6.) Deux solutions
+
+Il existe deux solutions pour éviter ce problème d'encodage sur mes requêtes AJAX. 
+
+La première, qui est de loin la plus simple et la plus pérenne, consiste à ce que mon site soit entièrement encodé en
+UTF-8, comme ça les requêtes AJAX envoient des données en UTF-8 qui seront reçues par un serveur demandant à traiter
+de l'UTF-8, donc sans aucun problème. Un site en UTF-8 implique que tous mes fichiers textes soient encodés en UTF-8,
+que le serveur indique au client le bon encodage, et que mes ressources externes, comme les bases de données, soient
+aussi en UTF-8. Cette solution est vraiment la meilleure dans tous les sens du terme, mais est difficile  à mettre
+en place si sur un projet Web déjà bien entamé. Un lien pour voir comment migrer son site du latin1 à l'unicode : 
+https://openclassrooms.com/courses/passer-du-latin1-a-l-unicode
+
+La deuxième solution, encore bien souvent rencontrée, est plus adaptée si mon projet est déjà bien entamé et que je ne
+peux me permettre de faire une conversion complète de son encodage. Il s'agit de décoder les caractères reçus par
+le biais d'une requête AJAX avec la fonction PHP utf8_decode().
+
+Admettons que j'envoie une requête AJAX à la page suivante :
+
+<?php 
+	header('Content-type: text/plain; charset=iso-8859-1');  //On précise bien qu'il s'agit d'une page en ISO
+
+	echo $_GET['parameter'];
+?>
+
+Si la requête AJAX envoie en paramètre la chaîne de caractères "Drôle de tête", le serveur va alors me renvoyer ceci :
+
+DrÃ´le de tÃªte
+
+La solution consiste donc à décoder l'UTF-8 reçu pour le convertir en ISO 8859-1, la fonction utf8_decode() intervient
+donc ici :
+
+<?php
+	header('Content-type: text/plain; charset=iso-8859-1');
+	echo utf8_decode($_GET['parameter']);
+?>
+
+Et là aucun problème ==> Drôle de tête
+
+Et, quand je renvoie les données du serveur au client, dois-je encoder les données en UTF-8 ?
+
+==> Absolument pas, car l'AJAX applique une conversion UTF-8 uniquement à l'envoi des données, comme
+étudié un peu plus haut. Donc si j'affiche des données en ISO 8859-1, elles arriveront chez le client avec le même
+encodage.
+
+Note : Si je travaille dans un encodage autre que l'ISO 8859-1, j'utilise alors la fonction PHP mb_convert_encoding().
+
+</pre>
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		<p>
+			Veuillez choisir quel est le fichier dont vous souhaitez voir le contenu :
+		</p>
+		<p>
+			<!--
+			<input type="button" value="text1.txt" />
+			<input type="button" value="text2.txt" />
+			-->
+			<input type="button" value="text1.txt" />
+			<input type="button" value="text2.xml" />
+			<br /><br />
+			<input type="button" value="unknown.txt" />
+		</p>
+		<p id="fileContent">
+			<span>Aucun fichier chargé</span>
+		</p>
+		<script>
+			function loadFile(file){
+				var xhr = new XMLHttpRequest();
+				//Je souhaite juste récupérer le contenu du fichier, la méthode GET suffit amplement :
+				xhr.open('GET', file);
+				alert(file);
+				xhr.addEventListener('readystatechange', function(){ //On gère ici une requête asynchrone
+					if(xhr.readyState === XMLHttpRequest.DONE && (xhr.status === 200 || xhr.status === 0)) //Si fichier chargé sans erreur
+						//document.getElementById('fileContent').innerHTML = '<span>ouai ' + xhr.responseText+'</span>'; //On affiche !
+						alert(xhr.responseText);
+					else if(xhr.readyState === XMLHttpRequest.DONE && xhr.status != 200 && xhr.status != 0) // if error
+						alert('Une erreur est survenue ! \n\nCode : ' + xhr.status + '\nTexte : ' + xhr.statusText);
+				});
+				
+				xhr.send(null); //La requête est prête, on envoie tout !
+			}
+			
+			(function(){ //Comme d'hab, une IIFE pour éviter les variables globales
+				var butts = document.getElementsByTagName('input');
+
+				for(var i = 0; i < butts.length; i++)
+					butts[i].addEventListener('click', function(){
+						loadFile(this.value); //A chaque clique, un fichier sera chargé dans la page
+					});
+			})();
+			
+		</script>
+	</body>
+</html>

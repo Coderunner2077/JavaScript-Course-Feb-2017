@@ -1,0 +1,310 @@
+<!--
+												Les polyfills et les wrappers
+
+I./ Introduction aux polyfills
+1.) La problématique
+
+Certaines technologies récentes sont plus ou moins bien supportées par certains navigateurs, voire même pas du tout. Cela
+pose de nombreux problèmes dans le développement des projets destinés au Web. 
+
+Pour réaliser mes projets, il me faut donc ruser avec des conditions permettant de tester si le navigateur actuel
+supporte telle ou telle technologie; dans le cas contraire, il me faut alors déployer des solutions dont certaines
+sont peu pratiques. Dans certains cas, on est même obligé de se passer de ces technologies récentes et de se rabattre sur
+de vieilles solutions... Bref, un vrai casse tête.
+
+2.) La solution
+
+Il existe bien un moyen de faciliter la tâche, cela s'appelle les polyfills. Concrètement, un polyfill est un script qui
+a pour but de fournir une technologie à tous les navigateurs existants. Une fois implémenté dans mon code, un polyfill
+a deux manière de réagir :
+
+	-	le navigateur est récent et supporte la technologie souhaitée, le polyfill ne va alors strictement rien faire et
+			va me laisser utiliser cette technologie comme elle devrait l'être nativement.
+	-	la navigateur est trop vieux et ne supporte pas la technologie souhaitée, le polyfill va alors "imiter" cette
+			technologie grâce à diverses astuces et me permettra de l'utiliser comme si elle était disponible nativement
+
+Rien ne vaut un bon exemple pour comprendre le principe ! Voici un polyfill pour la méthode isArray() qui n'est pas 
+supportée par les versins d'IE antérieures à la version 9 :
+
+Réf script
+
+La méthode isArray() fonctionne maintenant sur tous les navigateurs ! Pas besoin de s'embêter à vérifier chaque fois 
+qu'elle existe, il suffit juste de s'en servir comme d'habitude et le polyfill s'occupe de tout !
+
+3.) Quelques polyfills importants
+
+Le principe des polyfills ayant été abordé, je dois savoir que je n'aurai peut-être jamais à réaliser mes propres 
+polyfills, car ils sont déjà nombreux à avoir été créés par d'autres développeurs JavaScript. Le MDN est un bon concentré
+de polyfills et les recherches Google peuvent être fructueuses (il suffit de taper le nom d'une méthode + "polyfill").
+
+Parmi les méthodes non entièrement supportées que j'ai vues, il y en a trois pour lesquelles aucune solution fonctionnelle
+n'a été fournie car les polyfills sont bien plus adaptés. Voici donc les liens pour chacune des méthodes désignées :
+
+	-	trim() de l'objet String : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim#Compatibility
+	-	isArray() de l'objet Array : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray#Compatibility
+	-	forEach() de l'objet Array : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach#Compatibility
+
+II./ Introduction aux wrappers
+
+1.) La problématique
+
+Il se peut qu'on ait besoin de créer une méthode supplémentaire pour certains objets natifs JavaScript. Pour cela, rien
+de plus simple, il me suffit de l'ajouter au prototype de l'objet souhaité. Exemple : 
+
+Array.prototype.myMethod = function(){
+	//code
+};
+
+[].myMethod(); //La méthode myMethod() disponible à présent pour toutes les instances de tableaux
+
+Mais problème, cela ne fonctionne pas pour tous les objets natifs, notamment Object, et cela fonctionne moins bien avec les
+objets natifs liés au DOM comme Node, Element ou encore HTMLELement, en particulier dans IE.
+De plus, la modification d'un objet natif est plutôt déconseillée au final, car on risque de modifier une méthode déjà 
+existante. 
+
+Bref, comment faire si on a besoin d'ajouter des méthodes et des propriétés en toute sécurité ?
+
+2.) La solution
+
+Il existe une solution nommée "wrapper". Un wrapper est un code qui a pour but d'encadrer l'utilisation de certains 
+éléments du JavaScript. Il peut ainsi contrôler la manière dont ils sont employés et réagir en conséquence pour fournir
+des fonctionnalités supplémentaires aux développeurs. 
+
+Prenons l'objet Image. Ce dernier possède une propriété complete qui a un comportement, pour le moins, hasardeux. On va
+ici essayer de permettre son support. 
+
+Tout d'abord, par quoi commence-t-on le développement d'un wrapper ? Il s'agit d'un code qui a pour but d'encadrer 
+l'utilisation de certains éléments, autrement dit il s'agit d'une surcouche par laquelle on va passer pour pouvoir 
+contrôler nos éléments. Dans l'idéal, un wrapper doit permettre à un développeur de se passer de l'élément original,
+ainsi, le travail ne s'effectuera que par le biais de la surcouche que constitue le wrapper. 
+
+Puisque mon wrapper doit servir de surcouche de A à Z, celui-ci va se présenter sous forme d'objet qui sera instancié
+à la place de l'objet Image :
+
+Réf script
+
+Mon but étant de permettre le support de la propriété complete, je vais devoir créer par défaut un événement load
+qui se chargera de modifier la propriété complete lors de son exécution. Il me faut aussi assurer le support de
+l'événement load pour les développeurs : 
+
+Réf script
+
+Note : afin de ne pas trop compléxifier ce chapitre, on utilise ici le DOM-0 pour attacher les événements, mais 
+l'utilisation du DOM-2 reste recommandée et parfaitement applicable aux exemple ci-présents.
+
+Actuellement, mon wrapper fait ce qu'on voulait qu'il fasse : assurer un support de la propriété complete. Cependant, 
+il m'est actuellement impossible de spécifier les propriétés standards de l'objet original sans passer par ma propriété
+originalImg, or ce n'est pas ce que l'on souhaite car le développeur pourrait compromettre le fonctionnement de notre 
+wrapper, par exemple en modifiant la propriété onload de l'objet original. Il va donc falloir créer une méthode 
+permettant l'accès à ces propriétés sans passer par l'objet original.
+
+Ajoutons donc deux méthodes set() et get() assurant le support des propriétés d'originie : 
+
+Img.prototype.set = function(name, value){
+	var allowed = ['width', 'height', 'src']; // On spécifie les propriétés dont on autorise la modification
+								
+	if(~allowed.indexOf(name))
+		this.originalImg[name] = value;
+};
+			
+Img.prototype.get = function(name){
+	return this.originalImg[name]; //Pas besoin de contrôle tant qu'il ne s'agit pas de modification
+};
+
+Note : Un wrapper peut me donner un avantage certain sur le contrôle de mes objets, ici en autorisant la lecture de 
+certaines propriétés mais en interdisant l'écriture.
+
+Me voici maintenant avec un wrapper relativement complet qui possède cependant une certaine absurdité : l'accès aux
+propriétés de l'objet d'origine se fait par le biais des méthodes set() et get(), tandis que l'accès aux propriétés 
+relatives au wrapper se fait sans ces méthodes. Le principe est plutôt stupide vu qu'un wrapper a pour but d'être une
+surcouche transparente. La solution pourrait donc être la suivante : faire passer les modifications/lectures par
+les méthodes set() et get() dans tous les cas, y compris lorsqu'il s'agit de propriétés appartenant au wrapper.
+
+Réf script
+
+On approche grandement le code final. Il me reste maintenant une dernière chose à mettre en place qui peut se révéler 
+pratique : pouvoir spécifier l'adresse de l'image dès l'instanciation de l'objet. La modification est simple :
+
+Réf script
+
+Et voilà, j'ai même ajouté une méthode getImage() pour retourner l'image originale. 
+
+Les wrappers sont à la base de nombreuses bibliothèques JavaScript. Ils ont l'avantage de permettre une gestion simple 
+du langage sans pour autant l'altérer.
+
+Conclusion : les polyfills sont un moyen simple de s'assurer de la prise en charge d'une méthode si celle-ci n'est pas
+supportée par le navigateur, et ce sans intervenir dans le code principal. C'est donc totalement transparent.
+Les wrappers permettent d'ajouter des propriétés et des méthodes aux objets, en particulier aux objets natifs, en
+créant un objet dérivé de l'objet en question.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les images</title>
+	</head>
+	<body>
+		<div id="overlay"></div>
+		<script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Polyfills
+			if(!Array.isArray){ 		//Si isArray n'existe pas, alors on crée notre méthode alternative
+				Array.isArray = function(element){
+				 	return Object.prototype.toString.call(element) == '[object Array]';
+				};
+			}
+			
+			alert(Array.isArray([])); // Affiche true
+			alert(Array.isArray({})); // Affiche false
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Wrappers
+function Img(src) {
+    this.originalImg = new Image();
+    this.complete = false;
+    var obj = this;
+    this.originalImg.addEventListener('load', function() {
+        obj.complete = true;
+	});
+    if(src)
+        this.originalImg.src = src;
+}
+Img.prototype.addEventListener = function(load, func) {
+    if(load === 'load') {
+        this.originalImg.addEventListener.call(this.originalImg, load, func);
+	}
+};
+
+Img.prototype.set = function(property, value) {
+	var allowedProperties = ['width', 'height', 'src'];
+	if(~allowedProperties.indexOf(property)) {
+	    this.originalImg[property] = value;
+	    if(property === 'src')
+	        this.complete = false;
+	} else if(property === 'complete')
+	    this.complete = value;
+};
+
+Img.prototype.get = function(property) {
+    return typeof this[property] != 'undefined' ? this[property] : this.originalImg[property];
+};
+
+Img.prototype.getImage = function() {
+    return this.originalImg;
+};
+
+			/*
+			// Wrapper, version DOM-0
+			function Img(src){
+				var obj = this; // je fais une petite référence vers mon objet Img. Cela me facilitera la tâche
+				
+				this.originalImg = new Image(); // On instancie l'objet original, le wrapper servira alors d'intermédiaire
+				
+				this.complete = false;
+				
+				this.onload = function(){}; //Voici l'événement que les développeurs pourront modifier
+				
+				this.originalImg.onload = function(){
+					
+					obj.complete = true; // L'image est chargée !
+					obj.onload();	// On exécute l'évenement éventuellement spécifié par le développeur
+				};
+				
+				if(src)
+					this.originalImg.src = src;	  // Si elle est spécifiée, on définit alors la propriété src		
+			}
+			
+			Img.prototype.set = function(name, value){
+				var allowed = ['width', 'height', 'src'], // On spécifie les propriétés dont on autorise la modification
+					 wrapperProperties = ['complete', 'onload'];
+				
+				if(allowed.indexOf(name) != -1)
+					this.originalImg[name] = value;
+				else if(wrapperProperties.indexOf(name) != -1)
+					this[name] = value; //Ici, la propriété appartient au wrapper, et non pas à l'objet original
+			};
+			
+			Img.prototype.get = function(name){
+				return typeof this[name] != 'undefined' ? this[name] : this.originalImg[name]; //Pas besoin de contrôle tant qu'il ne s'agit pas de modification
+			};
+			
+			Img.prototype.getImage = function(){
+				return this.originalImg;
+			};
+			*/
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Wrapper, version DOM-0 / DOM-2
+			/*
+			function Img(src){
+				var obj = this;
+				this.originalImg = new Image();
+				this.complete = false;
+				this.onload = function(){};
+				this.originalImg.addEventListener('load', function(){
+					obj.complete = true;
+					obj.onload();					
+				});
+				
+				if(src)
+					this.originalImg.src = src;
+			}
+			
+			Img.prototype.set = function(name, value){
+				var allowed = ['width', 'height', 'src'],
+					wrapperProperties = ['complete', 'onload'];
+				if(~allowed.indexOf(name))
+					this.originalImg[name] = value;
+				else if(~wrapperProperties.indexOf(name))
+					this[name] = value;
+			};
+			
+			Img.prototype.get = function(name){
+				return typeof this[name] != 'undefined' ? this[name] : this.originalImg[name];
+			};
+			
+			Img.prototype.getImage = function(){
+				return this.originalImg;
+			};
+			*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Test du wrapper
+			var myImg = new Img();
+			
+			alert('complete : ' + myImg.get('complete'));	//Vérification de la propriété complete
+			
+			/*
+			myImg.set('onload', function(){	// Affichage de diverses informations une fois l'image chargée
+				document.getElementById('overlay').appendChild(myImg.getImage());
+				
+				alert('complete : ' + myImg.get('complete') + '\n' +
+					 'width : ' + myImg.get('width') + 'px\n' +
+					 'height : ' + myImg.get('height') + 'px\n' + 
+					 'src : ' + myImg.get('src'));
+			});
+			*/
+			myImg.addEventListener('load', function(e){
+				document.getElementById('overlay').appendChild(myImg.getImage());
+				
+				alert('complete : ' + myImg.get('complete') + '\n' +
+					 'width : ' + myImg.get('width') + 'px\n' +
+					 'height : ' + myImg.get('height') + 'px\n' + 
+					 'src : ' + myImg.get('src'));
+			});
+			
+			myImg.set('src', '2.jpg');
+			setTimeout(function(){
+				myImg.set('src', '1.jpg');
+				alert('est-ce complete ? ' + myImg.get('complete'));
+			}, 5000);
+			setTimeout(function(){
+				myImg.set('src', '');
+				alert(myImg.get('complete'));
+			}, 10000);
+			setTimeout(function(){
+				myImg.set('src', '1.jpg');
+			}, 15000);
+		</script>
+	</body>
+</html>

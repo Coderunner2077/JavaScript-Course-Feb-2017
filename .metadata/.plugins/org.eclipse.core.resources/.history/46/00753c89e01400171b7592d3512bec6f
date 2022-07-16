@@ -1,0 +1,401 @@
+<!--
+                                                        L'API File
+
+Auparavant, la gestion des fichiers était extrêmement limitée avec le JavaScript, les actions possibles étaient peu
+intéressantes, à la fois pour le développeur et l'utilisateur. En revanche, le HTML5 fournit maintenant une API nommée "File".
+Il est maintenant possible de manipuler un ou plusieurs fichiers afin de les uploader ou d'obtenir des informations, comme
+leur poids par exemple.
+
+I./ Première utilisation
+
+L'API que je vais découvrir n'est pas utilisable seule. Autrement dit, elle nécessite d'être appelée par diverses technologies
+permettant son accès et lui fournissant des fichiers qu'elle peut manipuler. Cette API a été conçue de cette manière
+afin que ce ne soit pas moi, développeur, qui choisis quel fichier lire sur l'ordinateur du client. C'est une mesure de
+sécurité.
+
+Attention: l'API File ne me permet pas, actuellement, d'écrire un fichier stocké sur l'odinateur d'un client. Je ne pourrai
+que le lire ou bien l'uploader pour le modifier sur serveur, l'écriture d'un fichier sur l'ordinateur est encore en cours
+d'étude (ou pas??).
+
+Afin de pouvoir utiliser mon API, il va me falloir définir comment les fichiers vont pouvoir être choisis par l'utilisateur. La
+solution la plus simple pour commencer est l'utilisation d'une balise <input type='file" />, qui va me permettre d'accéder
+aux propriétés des fichiers sélectionnés par l'utilisateur. Ces propriétés constituent une partie de l'API File.
+
+Prenons donc une balise toute simple :
+
+<input id="file" type="file" />
+
+Et ajoutons lui un événement :
+
+document.querySelector('#file').addEventListener('change',function(){
+    // code
+});
+
+Pour accéder aux fichiers, il va me falloir passer par la propriété files de ma valise <input>. Celle-ci va me permettre
+d'accéder à une collection d'objets utilisables de la même manière qu'un tableau, chaque objet représentant un fichier.
+
+Pourquoi une collection d'objets, alors que mon <input> ne me permet de sélectionner qu'un seul fichier ?
+
+Eh bien, parce que le HTML5 a ajouté la possibilité de choisir plusieurs fichiers POur un seul et même <input> ! Il suffit
+d'ajouter l'attribut 'multiple' pour que cela soit autorisé au client :
+
+La propriété files est la même pour tous, que la sélection soit multiple ou non. Si je veux lire le fichier d'un <input>
+ne gérant qu'un seul fichier, alors j'utiliserai files[0] et non pas file.
+
+Maintenant que ce point est éclairci, essayons d'obtenr le nom du fichier sélectionné à la propriété name contenue
+dans chaque objet de type File :
+
+document.querySeleector('#file').addEventListener('change', function(){
+    alert(this.files[0].name);
+});
+
+Alors, certes, l'utilité n'est pas encore évidente. Mais il existe de nombreuses possibilités d'utilisation...
+
+II./ Les objets Blob et File
+
+Il existe bien plus d'informations grâce aux objets Blob et File, que le simple fait d'obtenir le nom du fichier.
+
+Note : sur le site du W3C, plutôt que de parler d'un "objet" File, on parle d'une "interface" (==> ensemble de propriétés et
+méthodes utilisables par l'utilisateur).
+
+1.) L'objet Blob
+
+Un objet de type Blob est une structure représentant des données binaires disponibles uniquement en lecture seule. La plupart
+du temps, je rencontrerai ces objets uniquement lorsque je manipule des fichiers, car ces objets représentent les données
+binaires du fichier ciblé.
+
+Concrètement, que peut-on faire avec un Blob ? Eh bien, pas grand-chose au final... Enfin, pas en l'utilisant seul tout du
+moins. Car, bien qu'il soit possible de créer un Blob par moi-même (avec l'objet BlobBuilder), je ne le ferai quasiment
+jamais puisque j'utiliserai ceux créés lors de la manipulation de fichiers, ce que je verrai par la suite.
+
+Les objets Blob possèdent deux propriétés nommées size et type qui permettent respectivement de récupérer la taille en octets
+des données manipulées par le Blob ainsi que leur type MIME.
+Il existe également une méthode nommée slice(), mais c'est un sujet bien trop avancé et peu utile (Pour en savoir
+plus ==> https://developer.mozilla.org/en-US/docs/Web/API/Blob).
+
+2.) L'objet File
+
+Les objets File portent bien leur nom puisqu'ils permettent de manipuler les fichiers. Leur particularité est qu'ils
+héritent des propriétés et méthodes des objets Blob, voilà pourquoi je ne créerai quasiment jamais ces derniers par
+moi-même.
+Donc, en plus des propriétés et méthodes des objets Blob, les objets File possèdent deux propriétés supplémentaires qui
+sont name pour obtenir le nom du fichier et lastModifiedDate pour obtenir la date de la dernière modification du fichier
+(sous forme d'objet Date bien évidemment).
+
+Est-ce tout ? Heureusement que non ! Bien que les objets File ne soient pas intéressants en terme d'informations, ils le
+deviennent soudainement bien plus lorsque l'on commence à aborder leur lecture, grâce aux objets de type FileReader !
+
+III./ Lire les fichiers
+
+Comme précisé précédemment, je vais aborder la lecture des fichiers grâce à l'objet FileReader. Son instanciation s'effectue
+sans aucun paramètre :
+
+var reader = new FileReader();
+
+Cet objet permet la lecture asynchrone des fichiers, et ce grâce à trois méthodes différentes :
+
+    -   readAsArrayBuffer() : Stocke les données dans un objet de type ArrayBuffer. Ces objets ont été conçus pour permettre
+                l'écriture et la lecture de données binaires directement dans leur forme native, ils sont surtout utilisés
+                dans des domaines exigeants tels que le WebGL.
+    -   readAsDataURL() : les données sont converties dans un format nommé DataURL. Ce format consiste à convertir toutes les
+                données binaires d'un fichier en base64 pour ensuite stocker le résultat dans une chaîne de caractère. Cette
+                dernière est complétée par la spécification du type MIME du fichier concerné. Les DataURL permettent donc de
+                stocker un fichier sous forme d'une URL lisible par les navigateurs récents, leur utilisation est de plus en plus
+                fréquente sur le Web.
+    -   readAsText() : Les données ne subissent aucune modification, elles sont tout simplement lues puis stockées sous forme
+                d'une chaîne de caractères.
+
+Note : si je consulte la docu MDN au sujet de FileReader, je constaterai qu'il existe une méthode supplémentaire nommée
+readAsBinaryString(). Mais celle-ci est dépréciée par le W3C.
+
+Ces trois méthodes prennent en paramètre un argument de type Blob ou File. La méthode readAsText() possède un argument
+supplémentaire et optionnel permettant de spécifier l'encodage du fichier, qui s'utilise comme ceci :
+
+reader.readAsText(file, 'UTF-8);
+reader.readAsTExt(file, 'ISO-8859-1');
+
+Avant d'utiliser l'une de ces méthodes, il faut me rappeler que la lecture d'un fichier est asynchrone ! Il faut donc partir
+du principe que je vais devoir passer par des événements qui sont mis à ma disposition. Ces événement diffèrent peu de ceux que
+l'on rencontre avec la seconde version de XMLHttpRequest :
+
+    -   loadstart : la lecture vient de commencer
+    -   progress : tout comme avec les fichiers XMLHttpRequet, l'événement progress se déclenche à intervalles réguliers durant
+                    la progression de la lecture. Il fournit, lui aussi, un objet en paramètre possédant deux propriétés,
+                    loaded et total, indiquant respectivement le nombre d'octets lus et le nombre d'octets à lire en tout
+    -   load : la lecture vient de se terminer avec succès
+    -   loadend : la lecture vient de se terminer (avec ou sans succès)
+    -   abort : se déclenche quand la lecture est interrompue (avec la méthode abort() par exemple)
+    -   error : se déclenche quand une erreur a été rencontrée. La propriété error contiendra alors un objet de type
+                FileError pouvant me fournir plus d'informations.
+
+Une fois les données lues, il ne me reste plus qu'à les récupérer dans la propriété result. Ainsi, afin de lire un fichier
+texte, on procède comme suit :
+
+<input id='file' type='file' />
+
+<script>
+    var inputFile = document.querySelector('#file');
+
+    inputFile.addEventListener('change', function(){
+        var reader = new FileReader();
+
+        reader.addEventListener('load', function(){
+            alert('Contenu du fichier "' + inputFile.files[0].name + '" : \n\n ' + reader.result);
+        });
+        reader.readAsText(inputFile.files[0]);
+
+    });
+</script>
+
+L'objet FileReader possède également une propriété readyState permettant de connaître l'état de la lecture. Il existe trois
+états différents représentés par les constantes spécifiques aux objets FileReader :
+
+Nom       |   Valeur    |   Description
+------------------------------------------------------------------------------------------------------------------------
+EMPTY     |   0         |   Aucune donnée n'a encore été chargée
+LOADING   |   1         |   Les données sont en cours de chargement
+DONE      |   2         |   Toutes les données ont été chargées
+------------------------------------------------------------------------------------------------------------------------
+
+IV./ Mise en pratique
+
+Le principal intérêt de l'API File réside en fait dans son utilisation avec d'autres ressources. En effet, il est possible
+de l'utiliser conjointement avec l'objet XMLHttpRequest afin d'effectuer des uploads; je verrai aussi, dans un chapitre ultérieur,
+comment s'en servir efficacement avec le Drag & Drop.
+
+La mise en pratique ici est la suivante : je souhaite créer un site d'hébergement d'images interactifs. Le principe est
+simple, l'utilisateur sélectionne les images qu'il souhaite uploader, ells sont alors affichées en prévisualisation
+sur la page et l'utilisateur n'a plus qu'à cliquer sur le bouton d'upload une fois qu'il aura vérifié qu'il a bien
+sélectionné les bonnes images.
+Mon objectif ici est de créer la partie concernant la sélection et la prévisualisation des images, l'upload ne m'intéresse pas.
+Afin d'obtenir le résultat escompté, je vais devoir utiliser l'API File, qui va me permettre de lire le contenu des fichiers
+avant même d'effectuer un quelconque upload.
+
+Commençons par construire la page HTML qui va accueillir mon script :
+
+<input id="file" type="file" multiple />
+
+<div id="prev"></div>
+
+La balise div, c'est pour y afficher les images. Maintenant, le JavaScript :
+
+(function(){
+    var allowedTypes = ['png', 'jpg', 'jpeg', 'gif'],
+        fileInput = document.querySelector('#file'),
+        prev = document.querySelector('#prev');
+
+    fileInput.addEventListener('change', function(){
+        // Analyse des fichiers et création des prévisualisations
+    };
+})();
+
+Sachant que j'ai autorisé la sélection multiple de fichiers, je vais devoir utiliser une boucle afin de parcourir les fichiers,
+sélectionnés. Il me faudra aussi vérifier quels sont les fichiers à autoriser :
+
+fileInput.addEventListener('change', function(){
+    var files = fileInput.files,
+        filesLen = files.length,
+        imgType;
+    for(var i = 0; i < filesLen; i++) {
+        imgType = files[i].name.split('.');
+        imgType = imgType[imgType.length - 1].toLowerCase();
+        if(~allowedTypes.indexOf(imgType))
+            // Le fichier est bien une image supportée, il ne reste plus qu'à l'afficher
+    }
+});
+
+Il me faut maintenant afficher l'image, comment vais-je m'y prendre ? L'affichage d'une image, en HTML, se fait grâce à la
+balise <img>, or celle-ci n'accepte qu'une URL en guise de valeur pour son attribut src. Je pourrai lui fournir l'adresse
+du fichier à afficher, mais je ne connais que son nom, pas son chemin. La réponse se trouve dans les DataURL ! En effet,
+DataURL permet de stocker des données dans une URL, c'est exactement ce qu'il me faut ! Tout d'abord, avant de commencer
+cet affichage, plaçons un appel vers la fonction createThumbnail() dans le if(~allowedTypes.indexOf(imgType)) :
+
+if(~allowedTypes.indexOf(imgType))
+    createThumbnail(files[i]);
+
+Je peux maintenant passer à la création de ma fonction createThumbnail() :
+
+function createThumbnail(file) {
+    var reader = new FileReader();
+
+    reader.addEventListener('load', function(){
+        // Affichage de l'image
+    }
+
+    reader.readAsDataURL(file); //Je lance la lecture du fichier pour une DataURL
+}
+
+Rien de sorcier. Il ne me reste plus qu'à afficher l'image :
+
+var image = document.createElement('img');
+image.style.maxWidth = '150px';
+image.style.maxHeight = '150px';
+image.src = this.result;
+prev.appendChild(image);
+
+Et voilà, mon script est terminé ! Réf html - script
+
+V./ Upload de fichiers avec l'objet XMLHttpRequest
+
+1.) L'upload de fichier
+Il était auparavant impossible d'uploader des données binaires avec l'objet XHR, car celui-ci ne supportait pas l'utilisation
+de l'objet FormData (qui n'exixtait même pas à l'époque). Cependant, depuis l'arrivée de ce nouvel objet ainsi que de la
+2e version du XMLHttpRequest, cette "prouesse" est maintenant facilement réalisable.
+
+AInsi, il est maintenant très simple de créer des données binaires (grâce à Blob) pour les envoyer sur un serveur. Cependant,
+au lieu de créer mes propres données, je vais faire un upload de fichiers.
+
+Donc, balise input :
+
+<input id="file" type="file" />
+
+A cela, j'ajoute un code JavaScript qui récupère le fichier spécifié et s'occupe de créer une requête XMLHttpRequest
+
+var fileInput = document.querySelector('#file');
+
+fileInput.addEventListener('change', function(){
+    var xhr = new XMLHttpRequet();
+    xhr.open('POST', 'http://example.com'); //Obligatoire d'utiliser la méthode POST quand on veut utiliser un FormData
+    xhr.addEventListener('load', function(){
+        alert('Upload terminé !');
+    });
+
+    // Upload du fichier...
+});
+
+Maintenant, que fait-on ? C'est très simple : il me suffit de passer mon objet File à un objet FormData et d'uploader ce
+dernier :
+
+var form = new FormData();
+form.append('file', fileInput.files[0]);
+
+xhr.send(form);
+
+Attention : Il faut penser à uploader un petit fichier (<100 Ko), si je souhaite ne pas avoir un résultat trop long à l'affichage
+
+L'upload de fichiers par le biais d'un objet XHR ne va pas révolutionner ma façon de coder. Il permet juste de simplifier les
+choses puisque l'on n'a plus à s'embêter à passer par le biais d'une iframe.
+
+2.) L'affichage de la progression de l'upload
+
+Etudions maintenant l'affichage de la progression de l'upload : on n'en a pas parlé, mais l'objet XHR possède une propriété
+upload donnant accès à plusieurs événements dont l'événement progress. Ce dernier fonctionne exactement de la même manière que
+le précèdent événement progress que j'ai étudié dans le chapitre sur l'objet XHR ==>
+
+xhr.upload.addEventListener('progress', function(e) {
+    e.loaded;   // Nombre d'octets uploadés
+    e.total;    // Total d'octets à uploader
+});
+
+Ainsi, il est facile de faire une barre de progression avec cet événement et la balise HTML5 <progress> :
+
+<input id="file" type="file" />
+<progress id="progress"></progress>
+
+var fileInput = document.querySelector('#file'),
+    progress = document.querySelector('#progress');
+
+fileInput.addEventListener('change', function() {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'upload.html');
+    xhr.upload.addEventListener('upload', function(e) {
+        progress.value = e.loaded;
+        progress.max = e.total;
+    });
+
+    xhr.addEventListener('load', function() {
+        alert('upload terminé avec succès !');
+    });
+
+    var form = new FormData();
+    form.append('file', fileInput.files[0]);
+
+    xhr.send(form);
+});
+
+Note : ce code est à utiliser pour un fichier de taille moyenne (2 à 3 Mo) si je souhaite voir un affichage de la progression
+
+En résumé :
+
+L'API File permet de manipuler les fichiers au travers un objet File qui hérite lui-même d'un objet Blob, conçu pour manipuler
+les données binaires.
+Il est maintenant possible de lire le contenu d'un fichier sans avoir à passer par un quelconque serveur.
+Les fichiers peuvent être utilisés au travers de plusieurs autres technologies telles que l'AJAX ou la balise <canvas>.
+
+-->
+<!DOCTYPE>
+<html>
+<head>
+    <meta charset="urf-8" />
+    <title>L'API File</title>
+</head>
+<body>
+<!--
+<input id="file" type="file" />
+<div id="prev"></div>
+<script>
+    (function(){
+        // Prévisualisation de fichiers
+        function createThumbnail(file) {
+            var reader = new FileReader();
+            reader.addEventListener('load', function(){
+                var image = document.createElement('img');
+                image.style.maxWidth = '150px';
+                image.style.maxHeight = '150px';
+                image.src = this.result;
+                document.querySelector('#prev').appendChild(image);
+                console.log('ok : ' + this.result);
+            });
+
+            reader.readAsDataURL(file);
+        }
+
+        var inputFile = document.querySelector('#file'),
+            prev = document.querySelector('#prev'),
+            allowedTypes = ['png', 'jpg', 'jpeg', 'gig'];
+
+        inputFile.addEventListener('change', function(){
+            var files = inputFile.files,
+                len = files.length,
+                imgType;
+
+            for(var i = 0; i < len; i++) {
+                imgType = files[i].name.split('.');     // name !!!
+                imgType = imgType[imgType.length - 1].toLowerCase();
+                if(~allowedTypes.indexOf(imgType))
+                    createThumbnail(files[i]);
+            }
+
+        });
+    })();
+</script>
+-->
+<!--/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Upload de fichiers et affichage de la progression de l'upload-->
+<input id="file" type="file" />
+<progress id="progress"></progress>
+<script>
+    (function(){
+        var inputFile = document.querySelector('#file'),
+            progress = document.querySelector('#progress');
+        inputFile.addEventListener('change', function(){
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'xhr_files_request.php');
+            xhr.addEventListener('load', function(){
+                alert('upload terminé');
+                alert(xhr.responseText);
+            });
+            xhr.upload.addEventListener('progress', function(e){
+                console.log(e.total);
+                progress.value = e.loaded;
+                progress.max = e.total;
+            });
+            var form = new FormData();
+            form.append('file', inputFile.files[0]);
+            xhr.send(form);
+        });
+    })();
+</script>
+
+</body>
+</html>

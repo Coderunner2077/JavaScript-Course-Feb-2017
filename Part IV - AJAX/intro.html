@@ -1,0 +1,170 @@
+<!--
+												Qu'est-ce qu'est AJAX ?
+
+I./ Introduction au concept
+1.) Présentation
+
+AJAX est l'acronyme d'Asynchronous JavaScript And XML ("JavaScript et XML asynchrones").
+
+Derrière ce nom se cache un ensemble de techonologies destinées à réaliser de rapides mises à jour du contenu d'une
+page Web, sans qu'elles nécessitent le moindre rechargement visible par l'utilisateur de la page Web. Les technologies 
+employées sont diverses et dépendent du type de requêtes que l'on souhaite utiliser, mais d'une manière générale le 
+JavaScript est constamment présent. D'autres langages sont bien entendu pris en compte, comme le HTML et le CSS, qui
+servent à l'affichage, mais ceux-ci ne sont pas inclus dans le processus de communication. Le transfert de données est
+gérée exclusivement par le JavaScript, et utilise certaines technologies de formatage de données comme le XML ou le 
+JSON. 
+
+L'AJAX est un vaste domaine.
+
+2.) Fonctionnement
+
+L'AJAX sert à plein de choses, comme par exemple :
+
+	-	L'auto-complétion : lorsque je recherche un membre par exemple et que je tape les premières lettres de son
+			pseudo dans le formulaire prévu à cet effet, j'obtiens une liste des membres dont le pseudo commence par
+			les caractères que j'ai spécifiés. Ce système requiert de l'AJAX pour la simple et bonne raison qu'il faut
+			demander au serveur de chercher les membres correspondant à la recherche, et ce sans recharger la page.
+	-	La sauvegarde automatique des textes : tout texte entré par l'utilisateur, comme par exemple un simple message 
+			sur le forum, peut être sauvegardé à intervalles réguliers dans une sorte de bloc-notes. Cette sauvegarde
+			doit se faire de manière transparente afin de ne pas gêner le rédacteur. Le rechargement complet de la 
+			page Web n'est donc pas envisageable. C'est donc là qu'intervient encore l'AJAX en permettant à mon
+			navigateur d'envoyer mon texte au serveur sans me gêner. 
+
+Dans ces deux cas, les requêtes ne sont pas superflues, elles contiennent juste les données à faire transiter, rien 
+de plus. Et c'est là que réside l'intérêt de l'AJAX : les requêtes doivent être rapides, et elles le sont car l'AJAX fonctionne
+de telle manière que le navigateur reçoit exactement ce qu'il lui faut, comme une liste des membres par exemple.
+
+II./ Les formats des données
+1.) Présentation
+
+L'AJAX est donc un ensemble de technologies visant à effectuer des transferts de données. Dans ce cas, il faut savoir 
+structurer ses données. Il existe de nombreux formats pour transférer des données. Voici les quatre principaux :
+
+	-	Le format texte : c'est le plus simple, et pour cause => il ne possède aucune structure prédéfinie. Il sert
+				essentiellement à transmettre une phrase à afficher à l'utilisateur, comme un message d'erreur ou 
+				autre. Bref, il s'agit d'une chaîne de caractères, rien de plus.
+	-	Le HTML est aussi une manière facile de transférer des données. Généralement, il a pour but d'acheminer des
+				données qui sont déjà formatées par le serveur puis affichées directement dans la page sans aucun
+				traitement préalable de la part du JavaScript.
+	-	Le XML (eXtensible Markup Language) : un format do données proche du HTML. Il permet de stocker de nombreuses 
+				données dans un langage de balisage proche du HTML. Il est très pratique pour stocker de nombreuses
+				données ayant besoin d'être formatées, tout en fournissant un moyen simple d'y accéder.
+	-	Le plus courant est le JSON : acronyme de JavaScript Object Notation, il a pour particularité de segmenter
+				des données dans un objet JavaScript, il est très avantageux pour de petits transferts de données
+				segmentées et est de plus en plus utilisé dans de très nombreux langages.
+
+2.) Utilisation
+a./ Le format classique
+
+Pour le format texte et le HTML, il n'y a aucun traitement à faire, à part l'affichage au bon endroit. Ils sont prêts à 
+l'emploi en quelque sorte
+
+b./ Le XML
+
+Le format XML est déjà autrement plus intéressant, car il permet de structurer des données de la même manière qu'en 
+HTML, mais avec des balises personnalisées. 
+
+Le XML me permet de structurer un document comme bon me semble, tout comme en HTML, mais avec des noms de balises 
+personnalisées. Il est donc possible de réduire drastiquement le poids d'un transfert simplement grâce à l'utilisation 
+de noms de balises plutôt courts. Par exemple, j'ai ici la représentation d'un tableau grâce au XML :
+
+<?xml version="1.0" encoding="utf-8"?>
+<table>
+
+    <line>
+        <cel>Ligne 1 - Colonne 1</cel>
+        <cel>Ligne 1 - Colonne 2</cel>
+        <cel>Ligne 1 - Colonne 3</cel>
+    </line>
+
+    <line>
+        <cel>Ligne 2 - Colonne 1</cel>
+        <cel>Ligne 2 - Colonne 2</cel>
+        <cel>Ligne 2 - Colonne 3</cel>
+    </line>
+
+    <line>
+        <cel>Ligne 3 - Colonne 1</cel>
+        <cel>Ligne 3 - Colonne 2</cel>
+        <cel>Ligne 3 - Colonne 3</cel>
+    </line>
+
+</table>
+
+Là où l'utilisation du XML est intéressante, c'est que, en utilisant la requête appropriée, je peux parcourir ce code
+XML avec les mêmes méthodes que j'utilise pour le DOM HTML, comme le getElementsByTagName() par exemple !
+
+Comment cela se fait ? Eh bien, suite à ma requête, mon code JavaScript va recevoir une chaîne de caractères contenant
+un code comme celui de ce tableau. A ce stade là, il n'est pas encore possible de parcourir ce code, car il ne s'agit
+que d'une chaîne de caractères. Cependant, une fois le requête terminée et toutes les données reçues, un parseur (ou
+analyseur syntaxique) va se mettre en route pour analyser le code reçu, le décomposer et enfin le reconstituer sous
+forme d'arbre DOM qu'il sera possible de parcourir. 
+
+Ainsi, je peux très bien compter le nomre de cellules (balises <cel>) qui existent et voir leur contenu grâce 
+aux méthodes habituelles que j'utilise pour le DOM HTML. 
+
+c./ Le JSON 
+
+Le JSON est le format le plus utilisé et le plus pratique pour tous. COmme indique son nom (JavaScript Object Notation),
+il s'agit d'une représentation des données sous forme d'objet JavaScript. Essayons, par exemple, de représenter
+une liste de membres ainsi que leurs informations : 
+
+{
+
+	Membre1: {
+		posts: 6230,
+		inscription: '22/08/2003'
+	},
+	Membre2: {
+		posts: 200,
+		inscription: '17/12/2002'
+	}
+
+}
+
+Il s'agit là d'un objet classique, comme ceux auxquels je suis habitué. Tout comme avec le XML, je reçois ce code sous
+forme de chaîne de caractères; cependant, le parseur ne se déclenche pas automatiquement pour ce format. Il faut utiliser
+l'objet nommé JSON, qui possède deux méthods bien pratiques : 
+	-	parse() : prend en paramètre la chaîne de caractères à analyser et retourne le résultat sous forme d'objet JSON
+	-	stringify() : permet de faire l'inverse, en prenant en paramètre un objet JSON pour retourner son équivalent 
+				sous forme de chaîne de caractères.
+
+Voici un exemple d'utilisation de ces deux méthodes :
+
+Réf script
+
+Le JSON est très pratique pour recevoir des données, mais aussi pour en envoyer, surtout depuis que le PHP 5.2 permet
+le support des fonctions json_decode() et json_encode().
+
+Conclusion : Les données reçues au format XML ont l'avantage d'être traitées avec des méthodes DOM. L'inconvénient est
+que le XML peut se révéler assez verbeux, ce qui alourdit la taille du fichier. 
+
+Les données reçues au format JSON ont l'avantage d'être concises, mais ne sont pas toujours très lisibles pour un
+humain. Un autre avantage est que les données sont accessibles en tant qu'objets littéraux.
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Introduction à l'AJAX</title>
+    </head>
+    <body>
+		voila
+		<script>	
+			var obj = {
+				index: 'contenu'
+				},
+				string;
+			string = JSON.stringify(obj);
+			
+			alert(typeof string + ' : ' + string); // Affiche string : {"index":"contenu"}
+			
+			obj = JSON.parse(string);
+			
+			alert(typeof obj + ' : ' + obj); // Affiche object : [object Object]
+					
+			
+		</script>
+	</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les données numériques</title>
+    </head>
+    <body>
+        <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //L'objet Number
+            var myNumber = new Number('3'); //La chaîne de caractère "3" est convertie en un nombre 3
+            /* On ne sait pas si on obtiendra un nombre entier ou un nombre flottant... */
+            
+            //Les propriétés de l'objet Number
+            /*Les propriétés de l'objet Number sont au nombre de cinq :
+                -   NaN : Not a Number, également disponible dans l'espace global
+                -   MAX_VALUE : nombre maximum pouvant être stocké dans une variable (change selon version JS)
+                -   MIN_VALUE : identique à la constante MAX_VALUE, sauf qu'il s'agit de la constante minimale
+                -   POSITIVE_INFINITY : constante représentant l'infini positif
+                -   NEGATIVE_INFINITY : constante représentant l'infini négatif (s'obient => nombre/0)
+                
+            L'utilisation de ces propriété est déconseillée fortement.
+            */
+            
+            var max = Number.MAX_VALUE;
+            var inf = Number.POSITIVE_INFINITY;
+            
+            if(max < inf)
+                alert('max value est: ' + max);
+            alert(Number.MIN_VALUE);
+            
+            //Les méthodes de Number sont toutes supportées par l'objet Math. 
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //L'objet Math
+            
+            /*Méthodes et propriétés accessibles directement sans instanciation ==> méthodes et propriétés statiques. 
+            Docu complète : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math*/
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les propriétés
+            alert(Math.PI); //Affiche la valeur du nombre pi
+            alert(Math.E);  //Affiche la valeur du nombre d'Euler (exponentielle);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les méthodes
+            //Arrondir et tronquer
+            Math.floor(33.45); // floor() retourne le plus grand entier inférieur ou égal à la valeur passée en paramètre
+            alert(Math.floor(34.34)); // 34
+            Math.floor(34.99); // 34
+            
+            Math.ceil(34.45); //ceil() retourne le plus petit entier supérieur ou égal à la valeur passée en paramètre
+            Math.ceil(34.23); // 35
+            
+            var round = Math.round(34.49);
+            
+            alert(round + ' ' + Math.round(34.51) + ' ' + Math.round(34.5)); // 34 35 35
+            //round() arrondit comme on le fait d'habitude
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Calcul de puissance et racine carré
+            alert('3^2 : ' + Math.pow(3, 2));
+            alert('racine carrée de 25 : ' + Math.sqrt(25));
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les cosinus et sinus
+            
+            alert('cosinus de 45 : ' + Math.cos(45)); 
+            alert('sinus de 45 : ' + Math.sin(45));
+            
+            /* Les résultats obtenus sont exprimés en radians */
+            /* il existe aussi les méthodes acos() et asin() */
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Retrouver les valeurs maximum ou minimum
+            
+            Math.max(43, 34, 10, 134); //retourne 134
+            Math.min(20, 49, 23, 19, 222); //retourne 19
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Choisir un nombre aléatoire
+            
+            alert(Math.random()); //Retourne un nombre aléatoire compris entre 0 et 1
+            
+            //Je crée ma propre fonction pour corriger l'imperfection de la fonction random()
+            function rand(max, min, integer){
+                if(!integer)
+                    return Math.random() * (max - min) + min;
+                else
+                    return Math.floor(Math.random() * (max - min + 1) + min); 
+            }
+            
+            /* Note : il n'est pas vraiment possible sur un ordinateur de renvoyer un nombre aléatoire*/
+            
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les inclassables
+            //Les fonctions de conversion
+            var nombre = parseInt('23 patati patata', 10); //Ne pas oublier d'indiquer la base en 2d paramètre
+            var decim = parseFloat('23.234 tant que c\'est pas au début de la chaîne, ça va'); // pas de 2nd param pour float
+            
+            alert(nombre + ' ' + decim);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les fonctions de contrôle
+            var content = 8999;
+            alert(isNaN(content)); //affiche false car ce n'est pas un non-nombre
+            alert(isFinite(content)); // affiche true car c'est un nombre fini
+            
+            var myVar = 'test';
+            if(myVar == NaN)
+                alert('Selon NaN, cette variable ne contient pas de nombre');
+            else
+                alert('Selon NaN, cette variable contient un nombre'); //bizarre...
+            
+             if(myVar == Number.NaN)
+                alert('Selon Number.NaN, cette variable ne contient pas de nombre');
+            else
+                alert('Selon Number.NaN, cette variable contient un nombre'); //bizarre...
+            
+            /*Cela est dû au fait que l'on ne fait que tester la présence de la valeur NaN. Or elle n'est présente que si 
+            la tentative d'écriture d'un nombre a échoué (une conversion loupée par exemple), elle ne sera jamais présente si
+            la variable était destinée à contenir autre chose qu'un nombre */
+            
+            //Autre facteur important, c'est que la valeur NaN n'est pas égale à elle-même ! : 
+            alert('NaN is equal to Nan ? : ' + (NaN == NaN));
+            
+            //Concernant isFinite(), un nombre peut tendre soit vers +l'infini, soit vers -l'infini.
+            //Une condition de ce genre ne peut donc pas fonctionner :
+            var myNumber = -1 / 0;
+            if(myNumber == Number.POSITIVE_INFINITY) //aurait fallu un NEGATIVE_INFINITY, ou encore mieux : isFinite()
+                alert('Ce nombre tend vers l\'infini');
+            else
+                alert('Ce nombre ne tend pas vers l\'infini');
+
+            if (myNumber == Number.NEGATIVE_INFINITY)
+                alert("Ce nombre tend vers moins l'infini");
+            
+        </script>
+    </body>
+</html>

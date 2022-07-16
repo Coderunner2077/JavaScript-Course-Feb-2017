@@ -1,0 +1,443 @@
+<!--
+                                                    Les expressions régulières (2/2)
+
+En JavaScript, les expressions régulières utilisent l'objet RegExp et permettent de faire tout ce que l'on attend d'une
+regex : rechercher un terme, le capturer, le remplacer, etc.
+
+I./ Construire une regex
+
+On va partir d'un exemple relativement simple : vérifier si une chaîne de caractères correspond à une adresse e-mail.
+Rappel de la forme d'une adresse e-mail : partie_locale@label.com
+
+Donc trois parties distinctes : 
+    -   partie locale (avant l'arobase)
+    -   l'arobase @
+    -   le domaine, lui-même composé du label et de l'extension
+
+Pour construire une regex, il suffit de procéder par étapes. 
+
+/^[a-zA-Z0-9._-]+$/     ==> partie locale (on peut auss n'accepter que les minuscules...)
+
+/^[a-zA-Z0-9._-]+\.$/       ==> label
+
+/^[a-z]{2,6}$/          ==> extension
+
+En effet, une extension ne contient que des lettres, au minimum deux, au maximum 6.
+
+La regex complète :
+
+/^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-z]{2,6}$/
+
+Réf script
+
+II./ L'objet RegExp
+
+1.) Définition de la regex
+
+L'objet RegExp est l'objet qui gère les regex. Il y a donc deux façons de déclarer une regex : via RegExp ou via
+son type primitif.
+
+Exemple :
+
+var regex1 = /^Raclette$/i;                       //type primitif
+var regex2 = new RegExp("^Raclette$", "i");         //instanciation de l'objet RegExp
+
+Le constructeur RegExp reçoit deux paramètres : le 1er est la regex sous la forme d'une chaîne de caractères; et le 2e est
+l'option de recherche, ici i. L'intérêt d'utiliser RegExp est qu'il est possible d'inclure des variables dans la regex,
+chose impossible en passant par le type primitif.
+
+Exemple :
+
+var nickname = "Sébastien";
+var myRegex = new RegExp("Mon prénom est " + nickname, "i");
+
+Ce n'est pas spécialement fréquent, mais cela peut se révéler particulièrement utile. Il est cependant conséillé d'utiliser
+la notation littérale (le type primitif) quand l'utilisation du constructeur RegExp n'est pas nécessaire.
+
+2.) Méthodes
+
+RegExp ne possède que deux méthodes : test() et exec(). La méthode exec() applique également une expression régulière,
+mais renvoie un tableau dont le 1er élément contient la portion de texte trouvée dans la chaîne de caractères. Si rien n'est
+trouvé, null est renvoyé.
+
+Réf script
+
+3.) Propriétés
+
+L'objet RegExp contient neuf propriétés, appelés $1, $2, $3... jusqu'à $9. Comme on va le voir dans la partie suivante, il est
+possible d'utiliser une regex pour extraire des portions de texte, et ces portions sont accessibles via les propriétés 
+$1 à $9.
+
+III./ Les parenthèses
+
+1.) Les parenthèses capturantes
+
+Les regex permettent d'extraire des informations. Pour définir les informations à extraire, on utilise des parenthèses,
+que l'on appelle parenthèses capturantes, car leur utilité est de capturer une portion de texte, que la regex va extraire.
+
+Considérons cette chaîne de caractères : "Je suis né en mars". On va maintenant extraire, au moyen des parenthèses 
+capturantes, le mois de naissance, pour pouvoir le réutiliser.
+
+Réf script
+
+En effet, entre les parenthèses, comme les mois sont faits de caractères qui peuvent être accentués, on a mis le type générique
+\S. Et \S+ indique que l'on recherche plusieurs caractères, jusqu'à la fin de la chaîne. Les parenthèses sont là pour signaler
+à JavaScript que leur contenu devra être extrait. 
+
+Que l'on exécute test() ou exec(), le contenu des parenthèses capturantes est sauvegardée temporairement au sein de l'objet
+RegExp. Le contenu de la première paire de parenthèses sera enregistré dans $1, le 2e dans $2 et ainsi de suite, jusqu'au 
+neuvième, dans $9. Cela veut donc dire qu'il ne peut y avoir au maximum que 9 couples de parenthèses. Les couples sont 
+numérotées suivant le sens de lecture, de gauche à droite. 
+
+Et pour accéder aux propriétés,il suffit de faire RegExp.$1, RegExp.$2, etc.
+
+Réf script (décomposer l'adresse e-mail pour en récupérer le contenu)
+
+Remarque : le résultat d'une précédente capture est vite effacé du RegExp ==> il suffit de procéder à une nouvelle extraction
+avec les parenthèses et chercher directement le nouveau résultat dans RegExp.$1 (et non pas dans RegExp.$2).
+
+2.) Les parenthèses non capturantes
+
+Il se peut que dans de long et complexes regex, on ait besoin d'utiliser beaucoup de parenthèses, plus de neuf par exemple,
+ce qui peut poser problème puisqu'il ne peut y avoir que neuf parenthèses capturantes exploitables. Mais il se peut aussi que
+toutes ces parenthèses n'aient pas besoin de capturer quelque chose, elles peuvent juste être là pour proposer un choix.
+Par exemple, si l'on vérifie une URL, on peut commencer la regex comme ceci :
+
+/(https|http|ftp|steam):\/\//
+
+Mais on n'a pas besoin que ce soit une parenthèses capturante et qu'elle soit accessible via RegExp.$1. 
+
+Pour la rendre non capturante, il suffit d'ajouter ?: au début de la parenthèse, comme ceci :
+
+/(?:https|http|ftp|steam):\/\//
+
+De cette manière, cette parenthèse n'a aucune incidence sur les propriétés $ de RegExp !
+
+IV./ Les recherches non-greedy
+
+Le mot anglais greedy signifie "gourmand". En JavaScript, les regex sont généralement gourmandes, ce qui veut dire que 
+lorsqu'on utilise un quantificateur comme le +, le maximum de caractères est recherché, alors que ce n'est pas toujours
+le comportement espéré. 
+
+Petite illustration : on va construire une regex qui va extraire l'adresse Web à partir de cette portion HTML sous
+forme de chaîne de caractère : 
+
+var html = '<a href="www.mon-adresse.be">Mon site</a>'
+
+Voici la regex qui peut être construite :
+
+/<a href="(.+)">/
+
+Et ça marche quand on teste.
+
+Maintenant, supposons que la chaîne de caractères ressemble à ceci :
+
+var html = '<a href="www.mon-adresse.be"><strong class="web">Mon site</strong></a>
+
+Et là, c'est le drame, car le résultat de ma regex sera : www.mon-adresse.be"><strong class="web
+
+En effet, en spécifiant .+ comme quantificateur, on demande de rechercher le plus possible de caractères jusqu'à 
+rencontrer les caractères : ">, et c'est ce que le JavaScript a fait.
+
+Pour pallier ce problème, on va écrire le quantificateur directement suivi du point d'interrogation, comme ceci :
+
+/<a href="(.+?)">/.exec(html);
+
+Le point d'interrogation va faire en sorte que la recherche soit moins gourmande et s'arrête une fois que le minimum 
+requis est trouvé, d'où l'appellation non-greedy ("non-gourmande").
+
+V./ Rechercher et remplacer
+
+1.) Utilisation de la méthode replace() avec regex
+
+Une fonctionnalité intéressante des regex est de pouvoir effectuer des "rechercher-remplacer". Rechercher-remplacer signifie
+qu'on rechercher une portion de texte dans une chaîne de caractères et qu'on remplace ces portions par d'autres. C'est
+relativement pratique pour modifier une chaîne rapidement, ou pour convertir des données. Une utilisation fréquente est
+la conversion des balises BBCode en HTML pour prévisualiser le contenu d'une zone de texte. 
+
+Un rechercher-remplacer se fait au moyen de la méthode replace() de l'objet String. Elle reçoit deux arguments :
+
+    -   la regex
+    -   une chaîne de caractères qui sera le texte de remplacement. 
+
+Exemple : Réf script
+
+2.) Utilisation replace() sans regex
+
+A la place de regex, il est aussi possible de fournir une simple chaîne de caractères. C'est utile pour remplacer
+un mot ou un groupe de mots. Mais généralement on utilise une regex. 
+
+Un exemple quand même : réf script
+
+3.) L'option g
+
+On a vu l'option i. Mais il existe une autre option, g, qui signifie "rechercher plusieurs fois". Par défaut, lorsqu'on
+fait une recherche-remplacer, la recherche s'arrête dès la première occurence du mot recherché. Donc si le mot recherché 
+est présent deux fois dans le texte, il sera remplacé seulement la 1re fois. Pour éviter cela, on utilise l'option g qui
+sert à forcer la recherche jusqu'au bout du texte.
+
+Exemple : réf script
+
+Ainsi, toutes les occurences de "Pierre" sont correctement remplacés par "Richard". Le mot occurence est nouveau ici, et
+il est grand temps de l'employer. A chaque fois que la regex trouve la portion de texte qu'elle recherche, on parle
+d'occurence. 
+
+4.) Rechercher et capturer
+
+Il est possible d'utiliser les parenthèses capturantes pour extraire des informations et les réutiliser au sein de la 
+chaîne de remplacement. Par exemple, on a une date au format américain : 05/26/2011, et on souhaite la convertir au 
+format jour/mois/année. Rien de plus simple :
+
+var date = '05/26/2011';
+var result = date.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, 'Le $2/$1/$3');
+
+Chaque nombre est capturé avec une parenthèse, et pour récupérer chaque parenthèse, il suffit d'utiliser '$1', '$2' et
+'$3' (directement dans la chaîne de caractères), exactement comme on l'aurait fait avec RegExp.$1.
+
+Et si on veut juste remplacer un caractère par le signe dollar, faut-il l'échapper ?
+
+Pour placer un simple caractère $ dans la chaîne de remplacement, il suffit de le doubler, comme ceci :
+
+var prix = 'Cela vous coûte 5 dollars';
+result = prix.replace(/dollars?/, '$$'); //==> Cel vous coûte 5 $
+
+Voici un autre exemple illustrant ce principe. L'idée est de convertir une balise BBCode de mise en gras([b]un peu de texte[/b])
+en un formatage HTML de ce type : <strong>un peu de texte</strong>
+
+Réf script
+
+Pourquoi avoir utilise [\s\S] et pas juste le point ?
+
+==>Il s'agit ici de trouver tous les caractères qui se trouvent entre les balises. Or, le point ne trouve que des caractères
+et des espaces blancs hormis le retour à la ligne. C'est la raison pour laquelle on utilisera souvent \s et \S pour trouver
+du texte comportant des retours à la ligne.
+
+Cette petite regex de remplacement est la base d'un système de prévisualisation du BBCode. Il suffit d'écrire une
+regex de ce type pour chaque balise, et le tour est joué :
+
+Réf html-script
+
+5.) Utiliser une fonction de remplacement
+
+A la place d'une chaîne de caractères, il est possible d'utiliser une fonction pour gérer le ou les remplacements. Cela
+permet, par exemple, de réaliser des opérations sur les portions capturées ($1, $2 et $3...).
+
+Les paramètres de la fonction sont soumis à une petite règle, car ils doivent respecter un certain ordre (mais leurs noms
+peuvent bien évidemment varier) :
+
+function(str, p1, p2, p3 /* ... */, offset, s);
+
+Les paramètres p1, p2, p3... représentent ces fameux $1, $2, $3... S'il n'y a que trois parenthèses capturantes, il n'y aura
+que trois "p". S'il y en a cinq, y aura cinq "p". Voici les explications des paramètres :
+
+    -   Le paramètres str : contient la portion de texte trouvée par la regex;
+    -   les paramètres p* contiennent les portions capturées par les parenthèses;
+    -   Le paramètre offset contient la position de la portion de texte trouvée
+    -   le paramètre s contient la totalité de la chaîne
+
+Note : si on n'a besoin que de p1 et p2 et pas des deux derniers paramètres, ces deux derniers peuvent être omis
+
+Pour illustrer cela, on va réaliser un petit script tout simple, qui recherchera des nombres dans une chaîne et les 
+transformera en toutes lettres. La transformation se fera au moyen de la fonction num2Letters() qui a été codée (ou pas)
+lors du 1er TP :
+
+Réf script
+
+VI./ Autres recherches
+
+Il reste deux méthodes de String à voir, search() et match(), plus un petit retour sur la méthode split().
+
+1.) Rechercher la position d'une occurence
+
+La méthode search(), toujours de l'objet String, ressemble à indexOf() mis à part le fait que le paramètre est une
+regex. search() retourne la position de la 1re occurence trouvée. Si aucune occurence n'est trouvée, la méthode retourne
+-1. Exactement comme indexOf() :
+
+Réf script
+
+2.) Récupérer toutes les occurences
+
+La méthode match() de l'objet String fonctionne comme search(), à la diffèrence qu'elle retourne un tableau de toutes
+les occurences trouvées. C'est pratique pour compter le nombre de fois qu'une portion de texte est présente par exemple :
+
+Réf script
+
+3.) Couper avec une regex
+
+On a vu que la méthode split() recevait une chaîne de caractères en paramètre. Mais il est également possible de 
+transmettre une regex. C'est très pratique pour découper une chaîne à l'aide, par exemple, de plusieurs caractères
+distincts :
+
+var friends = 'Guillaume,Pauline;Clarisse:Arnaud;Benoît;Maxime';
+
+friends = friends.split(/[;,:]/);
+
+alert(friends);
+
+L'alerte affiche donc un tableau contenant des prénoms, car il a été demandé à split() de couper la chaîne dès qu'une 
+virgule, un deux-points ou un point-virgule est rencontré.
+
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les expressions régulière (2/2)</title>
+    </head>
+    <body>
+        <form>
+            <textarea id="text"></textarea><br />
+            <button type="button" onclick="preview()">Prévisualiser</button>
+            <div id="output"></div>
+        </form>
+        
+        <script>
+            var mail = prompt('Entrez une adresse mail');
+            if(/^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-z]{2,6}$/.test(mail))
+                alert('L\adresse mail entrée est valide');
+            else
+                alert('Adresse mail invalide !');
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Objet RegExp
+            //Déclaration / définition
+            var savoy = "savoyarde";
+            var regex = new RegExp("^Raclette " + savoy, "i");
+            
+            if(regex.test('Raclette savoyarde pardi !'))
+                alert('savoyarde oui !');
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Méthodes
+            var sentence = 'Si ton tonton';
+            
+            var result = /\bton\b/.exec(sentence);      //On cherche à récupérer le mot "ton"
+            
+            if(result)
+                alert(result[0] + ', dont le type est : ' + typeof result);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les parenthèses
+            //Les parenthèses capturantes
+            
+            var birth = "Je suis né en mars";
+            
+            /^Je suis né en (\S+)$/.exec(birth);
+            alert(RegExp.$1);
+            
+            if(/^([a-zA-Z0-9._-]+)@([a-zA-Z0-9._-]+)\.([a-z]{2,6})$/.test(mail)){
+                var text = 'Voici comment se décompose votre e-mail : \n';
+                text += 'Partie locale : ' + RegExp.$1; // pas RegExp.$2 apparemment
+                text += '\Domaine  : ' + RegExp.$2;
+                text += '\nExtension : ' + RegExp.$3;
+                alert(text);
+            } else {
+                alert('E-mail invalide ! ');
+            }
+            
+            //Les parenthèses non-capturantes
+            
+            result = /(?:https|http|ftp|steam):\/\//.exec('http://google.fr')
+                alert(result);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Rechercher-remplacer
+            
+            text = 'Je m\'appelle Pierre';
+            result  = text.replace(/Pierre/, 'Richard');
+            alert(result);
+            
+            //replace() sans regex
+            result = text.replace('Pierre', 'Jean');
+            alert(result);
+               
+            //Option g
+            
+            text = 'Je m\'appelle Pierre. Pierre viendrait-il de pierre ?';
+            result = text.replace(/Pierre/, 'Richard');
+            alert(result);
+            result = text.replace(/Pierre/g, 'Richard');
+            alert(result);
+            result = text.replace(/Pierre/ig, 'Richard'); //remplace les trois occurences
+                
+            //Rechercher et capturer
+            var date = '05/26/2011';
+            result = date.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, 'Le $2/$1/$3');
+            alert(result);
+            
+            var prix = '5 dollars';
+            result = prix.replace(/dollars?/, '$$');
+            alert(result);
+            
+            text = 'bla bla [b]un peu de texte[/b] bla [b]bla bla en gras[/b] bla bla';
+            
+            text = text.replace(/\[b\]([\s\S]*?)\[\/b\]/g, '<strong>$1</strong>');
+            alert(text);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Système de prévisualisation convertissant BBCode en HTML
+            
+            function preview(){
+                var value = document.getElementById('text').value;
+                
+                value = value.replace(/\[b\]([\s\S]*?)\[\/b\]/g, '<strong>$1</strong>'); //GRAS
+                value = value.replace(/\[i\]([\s\S]*?)\[\/i\]/g, '<em>$1</em>'); //Italique
+                value = value.replace(/\[s\]([\s\S]*?)\[\/s\]/g, '<del>$1</del>'); //Barré
+                value = value.replace(/\[u\]([\s\S]*?)\[\/u\]/g, '<span style="text-decoration: underline">$1</span>'); //Souligné
+                
+                document.getElementById('output').innerHTML = value;
+            }
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Remplacer les nombres par du texte
+            sentence = 'Dans 22 jours, j\aurai 24 ans';
+            /*
+            result = sentence.replace(/(\d+)/g, function(str, p1){
+                p1 = parseInt(p1);
+                if(!isNaN(p1))
+                    return num2Letters(p1);
+            });
+            
+            //alert(result);
+            */
+            //Variante :
+            /*
+            function convertNumbers(str) {
+                str = parseInt(str);
+
+                if (!isNaN(str)) {
+                    return num2Letters(str);
+                }    
+            }
+
+            var sentence = 'Dans 22 jours, j\'aurai 24 ans';
+
+            var result = sentence.replace(/(\d+)/g, convertNumbers);
+            */
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Autres recherches
+            //search()
+            sentence = 'Si ton tonton';
+            var pos = sentence.search(/\bton\b/);
+            
+            if(~result)
+                alert('La position est : ' + pos);
+            
+            //match()
+            sentence = 'Si ton tonton tond ton tonton, ton tonton tondu sera tondu';
+            var tablo = sentence.match(/\btonton\b/g);
+            alert('Il y a ' + tablo.length + ' "' + tablo[0] + '" : \n\n' + tablo);
+            
+            //split()
+            
+            var friends = 'Guillaume,Pauline;Clarisse:Arnaud;Benoît;Maxime';
+            friends = friends.split(/[,;:]/);
+            alert(friends);
+         </script>
+    </body>
+</html>

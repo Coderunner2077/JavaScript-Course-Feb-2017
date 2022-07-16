@@ -1,0 +1,477 @@
+<!--
+                                                Manipuler le code HTML
+
+Il s'agira ici de créer, supprimer et déplacer des éléments HTML. Pourquoi ne pas s'arrêter sur innerHTML au lieu de s'embêter
+avec le DOM ? Tout simplement parce que le DOM est plus puissant et nécessaire pour traiter le XML.
+
+I./ Naviguer entre les noeuds
+
+Une fois que l'on a atteint un élément (que ce soit avec getElementById() ou autre), il est possible de se déplacer de façon 
+un peu plus précise, avec toute une série de méthodes et de propriétés que l'on va étudier ici.
+
+1.) La propriété parentNode
+
+La propriété parentNode permet d'accéder à l'élément parent d'un élément. 
+
+Réf html + script
+
+2.) nodeType et nodeName
+
+nodeType et nodeName servent respectivement à vérifier le type d'un noeud et le nom d'un noeud. nodeType retourne un nombre,
+qui correspond à un type de noeud. Voici un tableau qui liste les types possibles, ainsi que leurs numéros (les types courants
+sont mis en majuscules) :
+
+Numéro     Type de noeud
+-------------------------------------------------------------
+1           NOEUD ELEMENT                                   |             
+2           NOEUD ATTRIBUT                                  |
+3           NOEUD TEXTE                                     |
+4           Noeud pour passage CDATA (relatif au XML)       |
+5           Noeud pour référence d'entité                   |
+6           Noeud pour entité                               |
+7           Noeud pour instruction de traitement            |
+8           NOEUD POUR COMMENTAIRE                          |
+9           Noeud document                                  |
+10          Noeud type de document                          |
+11          Noeud de fragment de document                   |
+12          Noeud pour notation                             |
+-------------------------------------------------------------
+
+nodeName, quant à lui, retourne simplement le nom de l'élément, en majuscule. Il est toutefois conséillé d'utiliser toLowerCase()
+(ou toUpperCase()) pour forcer un format de casse et ainsi éviter les mauvaises surprises.
+
+3.) Lister et parcourir des noeuds enfants
+a./ firstChild et lastChild
+
+Comme leur nom le laisse présager, firstChild et lastChild servent respectivement à accéder au 1er et dernier enfant d'un 
+noeud.
+
+Réf script.
+Le 1er enfant de <p> est un noeud textuel, alors que le dernier enfant est un élément <strong>.
+
+Note : dans le cas où je ne voudrais récupérer que les enfants qui sont considérés comme élément HTML (et donc éviter les
+noeuds #text par exemple), il existe des propriétés firstElementChild et lastElementChild. Ainsi, dans l'exemple précédent, 
+la propriété firstElementChild renverrait l'élément <a>. Malheureusement, ces deux propriétés ne sont supportées qu'à partir
+de la version 9 d'IE. 
+
+b./ nodeValue et data
+
+Changeons de problème : il faut récupérer le texte du 1er enfant, et le texte contenu dans l'élément <strong>, mais comment
+faire ? 
+
+Il faut soit utiliser la propriété nodeValue, soit la propriété data. Si on récode le code précédent, on obtient ceci :
+
+Réf script
+
+first (nom de variable) contient le 1er noeud, un noeud textuel. Il suffit de lui appliquer la propriété nodeValue (ou data) 
+pour récupérer son contenu; pas de difficulté ici. En revanche, il y a une petite différence avec l'élément <strong> : vu que
+les propriétés nodeValue et data ne s'appliquent QUE sur des noeuds textuels, il me faut d'abord accéder au noeud textuel
+que contient l'élément <strong>, ie son noeud enfant. Pour cela, on utilise firstChild (et non pas firstElementChild), et 
+ensuite on récupère le contenu avec nodeValue ou data.
+
+c./ childNodes
+
+La propriété childNodes retourne un tableau contenant la liste des enfants d'un élément. 
+
+Réf script
+
+Note : je n'ai pas comparé la propriété nodeType à 1 ou à 3 mais à, respectivement, Node.ELEMENT_NODE et Node.TEXT_NODE, il
+s'agit en fait de constantes contenant les valeurs 1 et 3, c'est en effet plus facile à lire que le chiffre seul. Il 
+existe une constante pour chaque type de noeud ==> https://developer.mozilla.org/fr/docs/Web/API/Node/nodeType
+
+4.) nextSibling et previousSibling
+
+nextSibling et previousSibling sont deux propriétés qui permettent d'accéder respectivement au noeud suivant  et au noeud
+précédent. 
+
+Réf script
+
+Note : Tout comme pour firstChild et lastChild, il existe les propriétés nextElementSibling et previousElementSibling qui
+permettent, elles aussi, de ne récupérer que les éléments HTML. Ces deux propriétés ont les mêmes problèmes de compatibilité
+que firstElementChild et lastElementChild.
+
+5.) Attention aux noeuds vides
+
+En considérant le code HTML suivant, on peut penser que l'élément <div> ne contient que 3 enfants <p> :
+
+<div>
+    <p>Paragraphe 1</p> 
+    <p>Paragraphe 2</p>
+    <p>Paragraphe 3</p>
+</div>
+
+Mais attention, car de code est radicalement différent de celui-ci :
+
+<div><p>Paragraphe 1</p><p>Paragraphe 2</p><p>Paragraphe 3</p></div>
+
+En fait, les espaces entre les éléments tout comme les retours à la ligne  sont considérés comme des noeuds textuels (enfin,
+cela dépend des navigateurs) ! 
+
+Heureusement, il existe une solution à ce problème ! Les attributs firstElementChild, lastElementChild, nextElementSibling et
+previousElementSibling ne retournent que des éléments HTML et permettent donc d'ignorer les noeuds textuels. Ils s'utilisent
+exactement de la même manière que les attributs de base (firstChild, lastChild...). Attention, ces attributs ne sont pas
+supportés par les versions IE antérieures à la version 9.
+
+II./ Créer et insérer des éléments
+
+1.) Ajouter des éléments HTML
+
+Avec le DOM, l'ajout d'un élément se fait en trois temps : 
+    1.On crée l'élément
+    2.On lui affecte des attributs
+    3.On l'insère dans le document, et ce n'est qu'à ce moment-là qu'il sera "ajouté"
+
+2.) Création de l'élément
+
+La création d'un élément se fait avec la méthode createElement(), un sous-objet de l'objet racine, c'est-à-dire document
+dans la majorité des cas :
+
+var newLink = document.createElement('a');
+
+On crée ici un nouvel élément <a>. Cet élément est créé, mais n'est pas inséré dans le document, il n'est donc pas visible. 
+Cela dit, on peut déjà travailler dessus, en lui ajoutant des attributs ou même des événements.
+
+Note : si je travaille sur une page Web, l'élément racine sera toujours document, sauf dans le cas des frames. La création 
+d'éléments au sein des fichiers XML sera abordée plus tard. 
+
+3.) Affectation des attributs
+
+Ici, c'est comme on a vu précédemment : on définit des attributs soit avec setAttribute(), soit directement avec les
+propriétés adéquates : 
+
+Réf script
+
+4.) Insertion de l'élément
+
+On utilise la méthode appendChild() pour insérer l'élément. Append child signifie "ajouter un enfant", ce qui veut dire qu'il
+me faut absolument connaître l'élément auquel on va ajouter l'élément créé. Considérons donc le code suivant 
+<div>
+    <p id="myP">Un peu de texte <a>et un lien</a></p>
+</div>
+
+Je vais ajouter mon élément <a> dans l'élément <p> possédant l'ID myP. Pour ce faire, il suffit de récupérer cet élément, et
+d'ajouter mon élément <a> via appendChild() : 
+
+document.getElementById('myP').appendChild(newLink);
+
+Si on résume : avant son insertion, l'élément <a> (newLink) existe, mais il n'est pas lié. Un peu comme s'il était libre
+dans le document : il n'est pas encore placé. Le but est de le placer comme enfant de l'élément myP. La méthode appendChild()
+va alors déplacer mon élément <a> pour le placer en tant que dernier enfant de myP.
+
+Cela veut dire qu'appendChild() insérera toujours l'élément en tant que dernier enfant, ce qui n'est pas toujours très pratique.
+Je verrai plus loin comment insérer avant ou après un enfant donné.
+
+5.) Ajouter des noeuds textuels
+
+L'élément a été inséré, seulement il manque quelque chose : le contenu textuel ! La méthode createTextNode() sert à créer
+un noeud textuel (de type #text) qu'il me suffira d'ajouter à mon élément fraîchement ajouté, comme ceci :
+
+var newLinkText = document.createTextNode('Le moteur Google');
+newLink.appendChild()
+
+L'insertion se fait ici aussi avec appendChild(), sur l'élément newLink. 
+
+Il y a quelque chose à savoir : le fait d'insérer via appendChild() n'a aucune incidence sur l'ordre d'exécution des instructions.
+Cela veut donc dire que l'on peut travailler sur les éléments HTML et les noeuds textuels sans qu'ils soient au préalable 
+insérés dans le document. Par exemple, on pourrait ordonner le code comme ceci : 
+
+var newLink = document.createElement('a');
+newLink.id = 'gg_link';
+newLink.href = http://www.google.fr;
+newLink.title = 'Moteur de recherche';
+newLink.setAttribute('tabIndex', '10');
+var newLinkText = document.createTextNode('Le moteur de recherche Google');
+newLink.appendChild(newLinkText);
+document.getElementById('myP').appendChild(newLink);
+
+Ici, on commence par créer deux éléments (le lien et le noeud de texte), puis on affecte les variables au lien et on lui ajoute
+le noeud textuel. A ce stade-ci, l'élément HTML contient le noeud textuel, mais cet élément n'est pas encore inséré dans
+le document. La dernière instruction insère alors le tout. 
+
+Note : il est conseillé d'organiser le code comme le dernier exemple, ie avec la création de tous les éléments au début, puis
+les différentes opérations d'affectation. Enfin, l'insertion des éléments les uns dans les autres et, pour terminer, 
+l'insertion dans le document. Au moins comme ça c'est structuré, clair et surtout  bien plus performant. 
+
+appendChild() retourne une référence pointant sur l'objet qui vien d'être inséré. Cela peut servir dans le cas où je n'ai pas
+déclaré de variable intermédiaire lors du processus de création de mon élément. Par exemple, le code suivant ne pose pas 
+de problème :
+
+var span = document.createElement('span');
+document.body.appendChild(span);
+
+span.innerHTML = 'Du texte en plus !';
+
+En revanche, si je retire l'étape intermédiaire (la 1re ligne), alors je suis embêté pour modifier le contenu :
+document.body.appendChild(document.createElement('span'));
+
+span.innerHTML ='Du texte en plus !';  // la variable "span" n'existe pas... le code plante !
+
+La solution à ce probème est d'utiliser la référence retournée par appendChild() de la façon suivante :
+
+var ref = document.body.appenChild(document.createElement('span'));
+ref.innerHTML = 'Du texte en plus !'; //Là, tout fonctionne !
+
+III./ Notions sur les références
+
+En JavaScript, comme dans bcp d'autres langages, lorsqu'on affecte à une variable la valeur d'une autre variable, le contenu des
+variables est "passé par valeur" (ie not by reference). 
+
+1.) Les références
+
+Le JavaScript possède également un "passage par référence". 
+Remarque : Les références en JavaScript ne sont pas des const references comme en C++. S'agit-il de pointeurs déguisés en 
+références ?? 
+
+2.) Les références avec le DOM
+
+Schématiser le concept de références avec le DOM est assez simple : deux variables peuvent accéder au même élément. 
+
+Réf script
+
+La varialbe newLink contient en réalité une référence vers l'élément <a> qui a été créé. newLink ne contient pas l'élément, 
+il contient une adresse qui pointe vers ce fameux <a>. Une fois que l'élément HTML est inséré dans la paga, on peut y accéder
+de nombreuses autres façons, comme avec getElementById(). Quand on accède à un élément via getElementById(), on le fait aussi
+au moyen d'une référence. 
+
+Ce qu'il faut retenir de tout ça, c'est que les objets du DOM sont TOUJOURS accessibles par référence, et c'est la raison 
+pour laquelle ce code ne donnera pas le résultat voulu par certains idiots :
+
+var newDiv = document.createElement('div');
+var newDiv2 = newDiv; // on tente lamentablement de copier le <div>
+
+Evidemment, on n'a fait que créer une nouvelle référence, sans pour autant créer un nouvel élément <div>.
+Mais comment dupliquer un élément alors ? Eh bien, il faut le cloner !
+
+IV./ Cloner, remplacer, supprimer
+
+1.) Cloner un élément
+
+Pour cloner un élément, rien de plus simple : cloneNode(). Cette méthode requiert un paramètre booléen (true ou false) : si
+l'on désire cloner le noeud avec (true) ou sans (false) ses enfants et différentes attributs. 
+
+Petit exemple, on crée un élément <hr />, et on en veut un deuxième, donc on clone le premier :
+
+Réf script
+
+Attention : une chose très importante à retenir, bien qu'elle ne me concernera qu'au chapitre suivant, est que la méthode
+cloneNode() ne copie malheureusement pas les événements associés et créés avec le DOM (avec addEventListener()), même avec
+un paramètre à true ! 
+
+2.) Remplacer un élément par un autre
+
+Pour remplacer un élément par un autre, rien de plus simple ==> replaceChild(). Cette méthode accepte deux paramètres :
+    -   1.le nouvel élément
+    -   2.L'élément à remplacer
+
+Tout comme cloneNode(), cette méthode s'utilise sur tous les types de noeuds (éléments, noeuds textuels, etc.).
+
+Dans l'exemple suivant, le contenu textuel (il s'agit du premier enfant de <a>) va être remplacé par un autre. Le méthode
+replaceChild() est exécutée sur l'élément <a>, c'est-à-dire le noeud parent du noeud à remplacer. 
+
+Réf script
+
+3.) Supprimer un élément
+
+Pour insérer un élément, on utilise appendChild(), et pour en supprimer un, on utilise removeChild(). Cette méthode prend
+en paramètre le noeud enfant à retirer. Si on se calque sur le code HTML de l'exemple précédent, le script ressemble à ceci :
+var link = document.querySelector('#fc a');
+link.parentNode.removeChild(link);
+
+Note : Il n'y a pas besoin de récupérer fc (l'élément parent <p>) avec getElementById(), autant le faire directement avec
+parentNode.
+
+Note2 : la méthode removeChild() retourne l'élément supprimé, ce qui veut dire qu'il est parfaitement possible de supprimer 
+un élément HTML pour ensuite le réintégrer où on le souhaite dans le DOM : 
+
+Réf script
+
+V./ Autres actions
+
+1.) Vérifier la présence d'éléments enfants
+
+Rien de plus facile que de vérifier la présence d'éléments enfants ==> hasChildNodes(). Il suffit d'utiliser cette méthode
+sur l'élément de mon choix; si cet élément possède au moins un enfant, la méthode renverra true. 
+
+2.) Insérer à la bonne place
+
+La méthode insertBefore() permet d'insérer un élément avant un autre. Elle reçoit deux paramètres : le 1er est l'élément à
+insérer, tandis que le deuxième est l'élément avant lequel l'élément va être inséré. 
+Exemple :
+Réf script
+
+Attention, comme pour appendChild(), cette méthode s'applique sur l'élément parent. 
+
+3.) Une bonne astuce : insertAfter()
+
+La JS met à disposition insertBefore(), mais pas insertAfter(). C'est dommage, car même si l'on peut s'en passer, cela 
+est parfois utile. Je vais donc la créer moi-même cette fonction.
+
+Malheureusement, ce ne sera pas une méthode (je suis encore trop ignorant pour ce genre de chose), mais une bonne vielle 
+fonction, qui va s'utiliser comme ceci :
+
+insertAfter(newElement, afterElement);
+
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>MODIFIER LE CODE HTML 2/2</title>
+    </head>
+    <body>
+        <blockquote>
+            <p id="myP">Ceci est un paragraphe !</p>
+        </blockquote>
+        <div>
+            <p id="fc">Un peu de texte, <a>un lien</a> et <strong>une portion en emphase</strong></p>
+        </div>
+        <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //parentNode
+            
+            var paragraph = document.getElementById('myP');
+            var blockquote = paragraph.parentNode;
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //nodeType et nodeName
+            alert(paragraph.nodeName + ' : type => ' + paragraph.nodeType + '\n'+ blockquote.nodeName + ' : type => ' 
+                 + blockquote.nodeType);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //firstChild et lastChild
+            var paragr = document.getElementById('fc');
+            var first = paragr.firstChild;
+            alert(first.nodeName.toLowerCase());
+            var last = paragr.lastChild;
+            alert(last.nodeName.toLowerCase());
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //nodeValue et data
+            alert('nodeVelue : ' + first.nodeValue);
+            alert('data : ' + last.firstChild.data);
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //childNodes
+            var children = paragr.childNodes;
+            for(var i = 0, c = children.length; i < c; ++i){
+                if(children[i].nodeType === Node.ELEMENT_NODE)
+                    alert(children[i].firstChild.nodeValue);
+                else if(children[i].nodeType === Node.TEXT_NODE)
+                    alert(children[i].nodeValue);
+            }
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //nextSibling et previousSibling
+            last = paragr.lastChild;
+            
+            while(last){
+                if(last.nodeType === Node.ELEMENT_NODE)
+                    alert('last.firstChild.data : ' + last.firstChild.data);
+                else
+                    alert(last.data);
+                
+                last = last.previousSibling; // à chaque tour de boucle, on prend l'enfant précédent
+            }
+         
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //createElement()
+            var newLink = document.createElement('a');
+            var nLink = document.createElement('a');
+            nLink.appendChild(document.createTextNode('Voila un lien'));
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Affectation des attributs
+            newLink.id = 'gg_link';
+            newLink.href = 'http://www.google.fr';
+            newLink.title = 'Moteur de recherche Google';
+            newLink.setAttribute('tabIndex', '10');
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //ajouter des noeuds textuels
+            var newLinkText = document.createTextNode('Moteur de recherche Google');
+            newLink.appendChild(newLinkText);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Insertion de l'élément
+            document.getElementById('myP').appendChild(newLink);
+            alert(paragraph.lastChild.firstChild.data);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Références
+            var ref = document.getElementById('myP').appendChild(document.createTextNode('.'));
+            ref = document.getElementById('fc').appendChild(document.createElement('em'));
+            ref.appendChild(document.createTextNode('. Du contenu en plus.'));
+            alert(ref.parentNode.innerHTML); // la référence peut donc être réassigné.
+           
+            document.getElementById('myP').appendChild(document.createElement('i')).appendChild(document.createTextNode(' Et sbim texte'));
+            alert(document.querySelector('#myP i').innerHTML);
+
+            //on récupère, via son ID, l'élément précédemment créé
+            var ggLink = document.getElementById('gg_link');
+            gg_link.href = 'http://www.youtube.com';
+            
+            //newLink affiche bien la nouvelle URL
+            alert(newLink.href);
+            newLink.href = 'http://www.google.fr';
+            alert(gg_link.href); 
+            var newRef = newLink;
+            alert(newRef.href);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Cloner un élément
+            var hr1 = document.createElement('hr');
+            var hr2 = hr1.cloneNode(false); //il n'y a pas d'enfants à cloner
+            
+            //Ici, on clone un élément existant
+            var paragraph2 = paragraph.cloneNode(true); //clone les attributs et éléments enfants (car true)
+            
+            //attention, les éléments sont clonés, mais pas encore "insérés" tant qu'on n'a pas appelé appendChild() :
+            paragraph2.appendChild(hr2);
+            paragraph2.appendChild(document.createTextNode("La balise <hr> donc..."));
+            paragraph.parentNode.appendChild(paragraph2);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Remplacer un élément
+            var link = document.querySelector('#fc a');
+            var newLien = document.createTextNode('un hyperlien');
+            link.replaceChild(newLien, link.firstChild);
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Supprimer un élément
+            var oldLink = link.parentNode.removeChild(link);
+            paragraph2.appendChild(oldLink);//on réintègre ensuite l'élément supprimé où on veut et quand on veut
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Vérifier la présence d'éléments enfants
+            alert(paragraph.hasChildNodes()); //affiche true
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Insérer à la bonne place
+            var newText = document.createTextNode('Et voici un lien inutile : ');
+            paragraph2.insertBefore(newText, paragraph2.lastChild);
+            alert(paragraph2.innerHTML);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //insertAfter() : fait maison
+            function insertAfter(newElement, afterElement){
+                var parent = afterElement.parentNode;
+                if(afterElement === parent.lastChild) // si le dernier élément = l'élément après lequel on veut insérer
+                    parent.appendChild(newElement); //il suffit alors de faire appendChild()
+                else //dans le cas contraire, on fait un insertBefore() sur l'élément suivant
+                    parent.insertBefore(newElement, afterElement.nextSibling);
+            }
+            
+            //Exemple : 
+            //hr2 ==> document.querySelector('hr') (rappel)
+            // insertAfter(hr1, hr2);
+            Node.prototype.insertAfter = function(newElement, afterElement){
+                var parent = afterElement.parentNode;
+                if(afterElement === parent.lastChild)
+                    Node.prototype.appendChild.call(parent, newElement); // pas appendChild.call... ??
+                else
+                    Node.prototype.insertBefore.call(parent, newElement, afterElement.nextSibling);
+            };
+
+            hr2.parentNode.insertAfter(hr1, hr2);
+            hr1.parentNode.insertAfter(document.createTextNode("J'ai réussi à ajouter la méthode insertAfter à l'objet Node"), hr1);
+        </script>
+    </body>
+</html>

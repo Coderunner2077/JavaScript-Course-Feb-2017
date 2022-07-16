@@ -1,0 +1,237 @@
+<!--
+                                                    Les formulaires
+
+I./ Les propriétés
+
+Il est possible d'accéder à n'importe quelle propriété d'un élément HTML juste en tapant son nom, il en va de même pour
+les propriétés spéciques aux éléments d'un formulaire comme value, disabled, checked, etc. 
+
+1.) Une propriété classique : value
+
+Son fonctionnement est très simple : on lui assigne une valeur (une chaîne de caractères ou un nombre qui sera alors converti
+implicitement) et elle est immédiatement affichée sur mon élément HTML.
+
+Réf html - script
+
+Une petite précision s'impose : Cette propriété s'utilse aussi avec un élément <textarea>. En effet, en HTML, on prend
+souvent l'habitude de mettre du texte entre les balises <textarea></textarea>.
+Du coup, en JavaScript, on est souvent tenté d'utilser innerHTML pour récupérer le contenu du <textarea>, cependant, cela 
+ne fonctionne pas  : il faut là aussi utiliser la propriété value !
+
+Réf script
+
+2.) Les booléens avec disabled, checked et readonly
+
+Contrairement à la propriété value, les trois propriétés disabled, checked et readonly ne s'utilisent pas de la même manière
+qu'en HTML où il me suffit d'écrire, par exemple : <input type="text" disabled="disabled" /> pour désactiver un champ de 
+texte. 
+En JavaScript, ces trois propriétés deviennent booléennes. Ainsi, il me suffit de faire comme ceci pour désactiver un
+champ de texte : Réf script
+
+Chaque bouton radio (ou case à cocher) coché se voit attribuer la valeur true à sa propriété checked, il va donc falloir 
+utiliser une boucle for pour vérifier quel bouton radio a été sélectionné :
+
+Réf html-script
+
+L'intérêt de cet exemple est de me présenter l'utilisation de la propriété checked. Mais il est possible de simplifier
+ce code avec querySelectorAll() : Réf script
+
+3.) Les listes déroulantes avec selectedIndex et options
+
+Les listes déroulantes possèdent elles aussi leurs propres propriétés. On va en retenir seulement deux parmi toutes celles
+qui existent : 
+    -   selectedIndex : donne l'index (l'identifiant) de la valeur sélectionnée
+    -   options : qui liste dans un tableau les éléments <option> de ma liste déroulante.
+
+Réf script
+
+Note : dans le cadre d'un <select> multiple, la propriété selectedIndex retourne l'index du 1er élément sélectionné. 
+
+II./ Les méthodes et un retour sur quelques événements
+
+Les formulaires possèdent en plus des propriétés, eh bien, des méthodes dont certaines sont très pratiques ! 
+
+1.) Les méthodes spécifiques à l'élément <form>
+
+Un formulaire, ou plus exactement l'élément <form> possède deux méthodes intéressantes. La 1re, submit(), permet d'effectuer
+l'envoi d'un formulaire sans l'intervention de l'utilisateur. La 2e, reset(), permet de réinitialiser tous les champs de 
+formulaire.
+En effet, ces deux méthodes ont le même rôle que les éléments <input> de type 'submit' ou 'reset'.
+
+Leur utilisation est très simple :
+
+var element = document.getElementById('id_du_formulaire');
+
+element.submit();   //Le formulaire est expédié
+element.reset();    //Le formulaire est réinitialisé
+
+Maintenant, revenons sur deux événements : submit et reset (oui, encore les mêmes noms). Il est important de préciser une
+chose : envoyer un formulaire avec la méthode submit() du JavaScript ne déclenchera jamais l'événement submit ! 
+
+Réf script
+
+2.) La gestion du focus et de la sélection
+
+En plus des événements, il existe aussi deux méthodes : focus() et blur(), permettant respectivement de donner et annuler 
+le focus à un élément.
+
+Dans le même genre, il existe la méthode select() qui, en plus de donner le focus à un élément, séléctionne le texte de
+celui-ci si cela est possible :
+
+Réf script
+
+Bien sûr, cette méthode ne fonctionne que sur des champs de texte comme un <input> de type "text" ou bien un <textarea>.
+
+3.) Explications sur l'événement change
+
+Il est important de revenir sur cet événement afin de clarifier quelques petits problèmes que je pourrai rencontrer en
+l'utilisant :
+    -   Tout d'abord, cet événement attend que l'actuel élément auquel il est attaché perde le focus avant de se déclencher (s'il
+            y a eu modification du contenu de l'élément). Donc, si je veux vérifier l'état d'un <input> à chacune de ces
+            modifications sans attendre la perte de focus, il vaut mieux utiliser d'autres événements de type keyup (et
+            ses variantes) ou click, en fonction du type d'élément visé.
+    -   Cet événement est utilisable sur n'importe quel <input> dont l'état peut changer, par exemple un checkbox ou un
+            <input type="file" /> (cet événement n'est pas réservé seulement aux champs de texte !!).
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les formulaires</title>
+    </head>
+    <body>
+        <div>
+            <input type="text" name="text" id="text" size="50" maxlength="25" value="Vous n'avez pas le focus" />
+            <br />
+            <textarea id="area" name="area" rows="3" cols="40">Vous n'avez pas le focus</textarea>
+            <br />
+            <input type="text" id="disbld" value="Champ désactivé"/>
+            <hr />
+            <label><input type="radio" name="check" value="1" /> Case n°1</label><br />
+            <label><input type="radio" name="check" value="2" /> Case n°2</label><br />
+            <label><input type="radio" name="check" value="3" /> Case n°3</label><br />
+            <label><input type="radio" name="check" value="4" /> Case n°4</label>
+            <br /><br />
+            <input type="button" value="Afficher la case à cocher" onclick="check();" />
+            
+            <hr />
+            <select id="list">
+                <option>Sélectionnez votre sexe</option>
+                <option value="hom" id="un">Homme</option>
+                <option>Femme</option>
+            </select>
+        </div>
+        <hr />
+        <form id="myForm" action="bidon.php">
+            <input type="text" value="Entrez un texte" />
+            <br /><br />
+            <input type="button" value="submit()" id="soumet" />
+            <input type="submit" value="Submit !" />
+            <input type="reset" value="Reset !" />
+        </form>
+        <hr />
+        <!--
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //focus() et blue() 
+-->
+        <div>
+            <input type="text" id="myText" value="Entrer un phrase" />
+            <br /><br />
+            <input type="text" value="Donner le focus ..." 
+                   onclick="document.getElementById('myText').focus();" />
+            <input type="text" value="Retirer le focus..." 
+                   onclick="document.getElementById('myText').blur();" />
+        </div>
+        <hr />
+        <!--
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //select()
+-->
+        <div>
+            <input type="text" id="myT" value="Entrer un phrase" />
+            <br /><br />
+            <input type="text" value="Donner le focus ..." 
+                   onclick="document.getElementById('myT').select();" />
+        </div>
+    </body>
+    <script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        var text = document.getElementById('text');
+        text.addEventListener('focus', function(e){
+            e.target.value = 'Vous avez le focus';
+        });
+        
+        text.addEventListener('blur', function(e){
+            e.target.value = 'Vous avez perdu le focus';
+        });
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //textarea et value
+        var area = document.getElementById('area');
+        area.addEventListener('focus', function(e){
+            e.target.value = 'You got it !';
+        });
+        
+        area.addEventListener('blur', function(e){
+            e.target.value = 'Vous avez perdu le focus';
+        });
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //disabled
+        var dis = document.getElementById('disbld');
+        dis.addEventListener('focus', function(e){
+            e.target.disabled = true;
+        });
+        dis.addEventListener('blur', function(e){
+            e.target.disabled = false;
+        });
+        //ou alors juste : dis.disabled = true;
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //checked
+        function check(){
+            /*
+            var radios = document.getElementsByName('check'),
+            length = radios.length;
+            
+            for(var i = 0; i < length; ++i){
+                if(radios[i].type === 'radio' && radios[i].checked)
+                    alert('La case cochée est : ' + radios[i].value);
+            }
+            */
+            var inputs = document.querySelectorAll("input[type=radio]:checked"),
+                length = inputs.length;
+            for(var i = 0; i < length; ++i)
+                alert('La case cochée est : ' + inputs[i].value);
+        }
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Listes déroulantes
+        var list = document.getElementById('list');
+        
+        list.addEventListener('change', function(e){
+            //On affiche le contenu de l'élément <option> ciblé par la propriété selectedIndex
+            if(list.selectedIndex) {
+                alert('Vous avez choisi (index ' + list.selectedIndex + ') : ' + list.options[list.selectedIndex].innerHTML);
+                console.log(list.options);
+            }
+            //on aurait aussi pu se servir de la propriété value (ça revient au même quand value n'est pas définie)
+        });
+        
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //submit() et reset() / submit et reset
+        var form = document.getElementById('myForm');
+        form.addEventListener('submit', function(e){
+            alert('Vous avez envoyé le formulaire !\n\nMais celui-ci a été bloqué pour que vous ne changiez pas de page.');
+            e.preventDefault();
+        });
+        form.addEventListener('reset', function(){
+            alert('Vous avez réinitialisé le formulaire');
+        });
+        var soum = document.getElementById('soumet');
+        soum.addEventListener('click', function(){
+            alert('Vous avez envoyé le formulaire !\n\n...Et, aucune interdépendance avec l\'événement submit.');
+            form.submit();
+        });
+    </script>
+</html>

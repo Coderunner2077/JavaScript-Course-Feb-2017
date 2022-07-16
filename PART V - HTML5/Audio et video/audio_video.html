@@ -1,0 +1,410 @@
+<!--
+                                                    Audio et video
+
+I./ L'audio
+
+1.) Présentation
+
+Les éléments <audio> et <video> se ressemblent beaucoup.  D'ailleurs, ils héritent du même objet : HTMLMediaElement. Ils
+ possèdent donc les mêmes propriétés et méthodes.
+
+ L'insertion d'un élément <audio> est très simple :
+
+ <audio id="audioPlayer" src="hype_home.mp3></audio>
+
+ Ce bout de code suffit à insérer un lecteur audio qui lira le son hype_home.mp3.
+ Ou encore mieux :
+
+ <audio id="audioPlayer">
+    <source src="hype_home.ogg>
+    <source src="hype_home.mp3>
+ </audio>
+
+ De cette manière, si le navigateur est capable de lire le format .ogg, il le fera. Sans quoi, il lira le format .mp3. Ca
+ permet une plus grande interopérabilité (compatibilité entre les navigateurs et les plate-formes).
+
+ Pour afficher un contrôleur de lecteur, il faut utiliser l'attribut booléen controls, comme ceci :
+
+ <audio controls="controls"></audio>
+
+ Mais, ici, je vais créer mon propre contrôleur de lecture !
+
+ 2.) Contrôles simples
+
+ Je commence par recréer les boutons "Play", "Pause" et "Stop". On commence par accéder à l'élément :
+
+ var player = document.querySelector('#audioPlayer');
+
+ Si on veut lancer la lecture, on utilise la méthode play() :
+
+ player.play();
+
+ Si on veut faire une pause, c'est la méthode pause() :
+
+ player.pause();
+
+ Par contre, il n'y a pas de méthode stop(). C'est pourquoi, il est nécessaire de faire "Pause" et d'indiquer que la
+ lecture doit se remettre au début, avec la propriété currentTime, exprimée en secondes :
+
+ player.pause();
+ player.currentTime = 0;
+
+ Je crée un petit lecteur, dont voici le code HTML de base :
+
+ <audio id="audioPlayer">
+    <source src="hype_home.ogg">
+    <source src="hype_home.mp3">
+ </audio>
+
+ <button class="control" onclick="play('audioPlayer', this)">Play</button>
+ <button class="control" onclick="stop('audioPlayer')">Stop</button>
+
+ Deux boutons ont été placés : le premier est un bouton "Play" et "Pause" en même temps, et le second permet de
+ stopper et de rembobiner la lecture. Voici les fonctions play() et stop() :
+
+Réf script
+
+Le fonctionnement du bouton "Play" est simple : avec la propriété paused, on vérifie si la lecture est en pause. etc.
+
+3.) Contrôle du volume
+
+L'intensité sonore se règle avec la propriété volume sur une échelle allant de 0 à 1. Si le volume est à 0, il est
+muet, et à 1 il est à fond. Pour le diminuer de moitié, on met 0,5. On fait un système très simple : cinq barres
+verticales cliquables qui permettent de choisir un niveau sonore prédéfini :
+
+<span class="volume">
+    <a class="stick1" onclick="volume('audioPlayer', 0)"></a>
+    <a class="stick2" onclick="volume('audioPlayer', 0.3)"></a>
+    <a class="stick3 onclick="volume('audioPlayer', 0.5)"></a>
+    <a class="stick4 onclick="volume('audioPlayer', 0.7)"></a>
+    <a class="stick5 onclick="volume('audioPlayer', 1)"</a>
+</span>
+
+Et la fonction associée :
+
+function volume(idPlayer, vol) {
+    var player = document.querySelector('#' + idPlayer);
+
+    player.volume = vol;
+}
+
+4.) Barre de progression et timer
+
+Un lecteur sans une barre de progression n'est pas un lecteur ! Le HTML5 introduit un nouvel élément destiné à
+afficher une progression : l"élément <progress>. Il n'est toutefois utilisable qu'avec Firefox et Chrome. Mais je ne
+vais pas l'utiliser ici, car cet élément n'est pas facilement personnalisable avec du CSS. On l'utilisera plus tard
+dans le chapitre sur API File.
+
+Je vais donc créer une barre de progression "à la main", avec des <div> et quelques calculs de pourcentages !
+
+J'ajoute ce code HTML après l'élément <audio> :
+
+<div>
+    <div id="progressBarControl">
+        <div id="progressBar">Pas de lecture</div>
+    </div>
+</div>
+
+5.) Analyser la lecture
+
+Un élément HTMLMediaElement possède toute une série d'événements qui permettent d'analyser et agir sur le lecteur.
+
+L'événement ontimeupdate va m'être utile pour détecter quand le média est en train d'être joué par le lecteur.
+
+Cet événement est déclenché continuellement pendant la lecture :
+
+J'ajoute donc cet événement sur mon élément <audio> :
+
+<audio id="audioPlayer" ontimeupdate="update(this)">
+
+Et le fonction :
+
+function update(player) {
+    var duration = player.duration;     //Durée totale
+    var time = player.currentTime;      //Durée écoulée
+    var fraction = time / duration;
+    var percent = Math.ceil(fraction * 100);
+
+    var progress = document.querySelector('#progressBar');
+
+    progress.style.width = percent + '%';
+    progress.textContent =percent + '%';
+}
+
+II./ Améliorations
+
+Voici les deux principals améliorations possibles :
+    -   Afficher le temps écoulé
+    -   Rendre la barre de progression cliquable.
+
+1.) Afficher le temps écoulé
+
+Voici la fonction formatTime() qui prendra en paramètre la propriété currentTime de l'élément <audio> :
+
+function formatTime(time) {
+    var hours = Math.floor(time / 3600);
+    var minutes = Math.floor((time % 3600) / 60);
+    var seconds = Math.floor(time % 60);
+
+    if(seconds < 10) {
+        seconds = '0' + seconds;
+    }
+    if(minutes < 10)
+        minutes = '0' + minutes;
+    if(hours)
+         return hours + ':' + minutes + ':' + seconds;
+    else
+        return minutes + ':' + seconds;
+}
+
+Je peux donc ajouter ceci à ma fonction update() :
+
+document.querySelector('#progressTime').textContent = formatTime(time);
+
+Et modifier la barre de progression pour y ajouter un <span> dans lequel s'affichera le temps écoulé :
+
+<div id="progressBarControl">
+    <div id="progressBar">Pas de lecture</div>
+</div>
+<span id="progressTime">00:00</span>
+
+2.) Rendre la barre de progression cliquable
+
+Ici, ça corse un peu. Si on clique sur la barre de progression, le comportement attendu est la lecture du fichier audio
+à partir de cet endroit. Il va donc falloir calculer l'endroit où on a cliqué et positionner la lecture en conséquence,
+avec la propriété currentTime.
+
+Pour savoir où l'on a cliqué au sein de l'élément, il faut connaître deux choses : les coordonnées de la souris et les
+coordonnées de l'élément. Ces coordonnées sont calculées à partir du coin supérieur gauche de la page.
+
+Note : l'exemple ici est bidon, car seule la barre visible de progression est cliquable (donc impossible d'avancer dans
+la lecture...)
+
+3.) Récupérer les coordonnées du curseur de la souris
+
+Je crée la fonction getMousePosition() qui recevra comme paramètre un événement et qui retournera les position X et Y
+du curseur :
+
+function getMousePosition(event) {
+    return {
+        x: event.pageX;
+        y: event.pageY
+    }
+}
+
+4.) Récupérer les coordonnées d'un élément
+
+Comme l'élément n'est pas en position de façon absolue, il n'est pas possible de connaître les coordonnées de son coin
+supérieur gauche via le CSS. Il va donc falloir calculer le décalage entre lui et son élément parent, puis le décalage
+entre cet élément parent et son parent... et ainsi de suite, jusqu'à arriver à l'élément racine, ie <html> :
+
+function getPosition(element) {
+    var top = 0,
+        left = 0;
+    do {
+        top += element.offsetTop;
+        left += element.offsetLeft;
+
+    }while(element=element.offsetParent);
+
+    return {
+        x: left;
+        y: top;
+    }
+}
+
+5.) On clique !
+
+Maintenant que j'ai mes deux fonctions getMousePosition() et getPosition(), on peut écrire la fonction clickProgress(),
+qui sera exécutée dès que l'internaute cliquera sur la barre de progression :
+
+function clickProgress(idPlayer, control, event) {
+    var parent = getPosition(control);      //Calcule la position absolue de la progressBar
+    var target = getMousePosition(event);   //L'endroit de la progressBar où l'on a cliqué
+    var player = document.querySelector('#' + idPlayer);
+
+    var x = target.x - parent.x;
+    var wrapperWidth = document.querySelector('#progressBarControl').offsetWidth;
+
+    var parcent = Math.ceil((x / wrapperWidth) * 100);
+    var duration = player.duration;
+
+    player.currentTime = (duration * percent) / 100;
+}
+
+Et la modif du code HTML :
+
+<div id="progressBar" onclick="clickProgress('audioPlayer', this, event)">Pas de lecture</div>
+
+III./ La video
+
+Le principe de fonctionnement est exactement le même que pour les lectures audio. L'élément video possède toutefois
+quelques propriétés en plus :
+
+    -   height : Hauteur de la zone de lecture
+    -   width : Largeur de la zone de lecture
+    -   poster : Récupère l'attribut poster
+    -   videoHeight : La hauteur de la video
+    -   videoWidth : La largeur de la video
+
+En dehors de ça, la création et la personnalisation de la lecture d'une video est rigoureusement identique à celle
+d'une piste audio.
+
+Il peut être utile d'utiliser un framework JavaScript destiné à la lecture d'élément <audio> et <video> afin de
+se faciliter la vie. De plus, ce genre de framework propose généralement une solution en Flash si le navigateur
+n'est pas à la hauteur du HTML5.
+
+Voici quelques frameworks qu'il peut être intéressant de considérer :
+
+    -   Popcorn.js : https://github.com/mozilla/popcorn-js/
+    -   Video.js : http://videojs.com/
+    -   Projekktor : http://www.projekktor.com/
+
+Contrairement à Flash, la protection du contenu n'existe pas (encore) avec ces deux éléments (audio et video), ce qui
+donne matière à réfléchir avant d'écarter définitivement toute solution avec Flash !
+
+
+
+
+
+
+
+
+
+
+
+
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Audio et video</title>
+    <style>
+        #player {
+            padding: 10px;
+            border: 2px solid black;
+            background-color: lightgray;
+            height: 60px;
+            width: 200px;
+        }
+        #myDiv {
+            background-color: blue;
+            width: 200px;
+            height: 5px;
+        }
+
+        #progressBar {
+            background-color: red;
+            height: 5px;
+            width: 0px;
+        }
+
+        #volumeDiv {
+            display: inline-block;
+            margin-left: 20px;
+            background-color: white;
+            border: 2px solid blue;
+            width: 50px;
+            height: 10px;
+        }
+
+        #volume {
+            background-color: #0000ff;
+            height: 10px;
+            width: 50px;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="player">
+        <audio id="audioPlayer" ontimeupdate="updateProgress(this, 'progressBar', 'duration')">
+           <source src="wish_you_were_here.mp3">
+        </audio>
+        <div id="myDiv" onclick="clickProgress('audioPlayer', this, event)">
+            <div id="progressBar"></div>
+        </div>
+        <div id="duration">00:00</div>
+        <button id="play" onclick="play('audioPlayer', this)">Play</button>
+        <button id="stop" onclick="stop('audioPlayer')">Stop</button>
+        <div id="volumeDiv" onclick="updateVolume('audioPlayer', this, event)"><div id="volume"></div></div>
+    </div>
+    <script>
+        function play(idPlayer, control) {
+            var player = document.querySelector('#' + idPlayer);
+            if(player.paused) {
+                control.textContent = 'Pause';
+                player.play();
+            }
+            else {
+                control.textContent = 'Play';
+                player.pause();
+            }
+        }
+
+        function stop(idPlayer) {
+            var player = document.querySelector('#' + idPlayer);
+            player.pause();
+            player.currentTime = 0;
+            document.querySelector('#play').textContent = 'Play';
+        }
+
+        function getPosition(element) {
+            var top = 0,
+                left = 0;
+
+            do {
+                top += element.offsetTop;
+                left += element.offsetLeft;
+
+            } while(element = element.offsetParent);
+
+            return {
+                x: left,
+                y: top
+            };
+        }
+
+        function getMousePosition(event) {
+            return {
+                x: event.pageX,
+                y: event.pageY
+            };
+        }
+
+        function clickProgress(idPlayer, control, event) {
+            var player = document.querySelector('#' + idPlayer);
+            var coeff = (getMousePosition(event).x - getPosition(control).x) / control.offsetWidth;
+            player.currentTime = Math.ceil(coeff * player.duration);
+        }
+
+        function updateTime(time) {
+            var hour = Math.floor(time / 3600);
+            var minutes = Math.floor((time % 3600) / 60);
+            var secs = Math.floor(time % 60);
+            if(secs < 10)
+                secs = '0' + secs;
+            if(minutes < 10)
+                minutes = '0' + minutes;
+            return hour ? (hour + ':' + minutes + ':'+secs) : (minutes + ':' + secs);
+
+        }
+        function updateProgress(player, idBar, idTime) {
+            var bar = document.querySelector('#' + idBar),
+                time = document.querySelector('#' + idTime);
+            time.textContent = updateTime(player.currentTime);
+            bar.style.width = Math.floor((player.currentTime / player.duration) * bar.parentNode.offsetWidth) + 'px';
+        }
+
+        function updateVolume(idPlayer, control, event) {
+            var player = document.querySelector('#' + idPlayer),
+                volumeBar = control.firstChild;
+            var volume = (getMousePosition(event).x - getPosition(control).x) / control.offsetWidth;
+            player.volume = volume;
+            volumeBar.style.width = Math.floor(volume * control.offsetWidth) + 'px';
+        }
+    </script>
+</body>
+</html>

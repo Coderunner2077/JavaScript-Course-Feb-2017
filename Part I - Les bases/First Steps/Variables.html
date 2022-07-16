@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>PREMIERS PAS AVEC BRACKETS</title>
+    </head>
+    <body>
+        <script>
+            alert('Hello the World !')
+            //En JavaScript, les variables sont typées dynamiquement
+            var un_nombre = 10;
+            var un_string = 'voila';
+            var mot = " c'est cela même";
+            var newWord = un_string + mot + ' !';
+            un_string = 'autre mot';
+            alert(newWord);
+            
+            var nombretexte = '5';
+            var result = un_nombre + parseInt(nombretexte);
+            var chaine = un_nombre + '' + result; // conversion de nombres en chaînes de caractrères (par addition d'une chaîne vide)
+            
+            alert(result);
+            
+            //les booleans
+            
+            var iTrue = true, iFalse = false;
+            
+            alert(typeof result); // va afficher number
+            alert(typeof nombretexte); // va afficher string
+            alert(typeof iTrue); // va afficher boolean
+
+            var isBool = true;
+            alert('type de isBool: ' + typeof isBool);
+            
+            var declared_not_def;
+            
+            alert(typeof declared_not_def); // va afficher undefined, car variable déclarée mais non définie. La variable n'a donc pas pu être typée.
+            var un_mot = prompt('Saisissez un nombre');
+            alert("Voici ce qui a été saisi : " + un_mot);
+            
+            
+            //Par ailleurs, il y a les mêmes opérations arithmétiques.
+        </script> 
+    </body>
+</html>

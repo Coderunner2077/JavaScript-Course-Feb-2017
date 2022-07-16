@@ -1,0 +1,5 @@
+<?php if(isset($_POST['inputFile'])) 
+	echo 'ok'; 
+elseif(isset($_FILES['inputFile']))
+	echo $_FILES['inputFile']['name'];
+?>

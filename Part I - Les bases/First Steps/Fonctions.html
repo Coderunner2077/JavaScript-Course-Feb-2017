@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Fonctions </title>
+    </head>
+    <body>
+        <script>
+            /*
+            function maFonction(arg_bidule) {
+                alert(arg_bidule);
+            }
+            maFonction(prompt('Entrez un truc'));
+            //Comme il n'y a pas de types à proprement parler en JavaScript, on peut directement écrire le nom de la variable pour le paramètre
+            
+            //La portée des arguments d'une fonction se fait comme en C++, Java...
+            // Mais, à ce que je vois, on écrit pas le type de retour lors de la déclaration ou de la définition de la fonction
+            
+            */
+            //Les arguments facultatifs
+            function myFunction(text, allowCancel) {
+                if(allowCancel)
+                   alert(text);
+                else
+                    alert(typeof allowCancel);
+            }
+            
+            var texto = 'le monde de bruteS';
+            myFunction(texto); // Là, je n'ai pas rentré le second argument ==> valeur du second argument est undefined
+           
+            //Voici comment faire pour donner une valeur par défaut à un argument
+            function defArgFunc(text, allowCancel) {
+                if(typeof allowCancel === 'undefined')
+                    allowCancel = false;
+                if(allowCancel)
+                    alert(text);
+                else
+                    alert(typeof allowCancel);
+                return 'banzai';
+            }
+            
+            defArgFunc("Voila voilà ! ");
+            //Tout comme en C++, les paramètres optionnels doivent se placer à la fin
+            
+            //Par ailleurs, la portée des variables locales (des fonctions) et des variables globales est pareille qu'en C++
+            
+            //Autre chose : on écrit pas le type de retour non plus apparemment
+            
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Les fonctions anonymes
+            /*
+            Voici comment on déclare une fonction anonyme :
+            function(arguments) {
+                //Le code de ma fonction anonyme
+            }
+            Donc, sans déclarer de nom de fonction
+            */
+            //On peut même faire ceci :
+            var variable = function(nbre){
+                return nbre * 2;
+            };
+            alert(variable(10));
+            alert(variable('une chaîne'));
+            //la variable 'variable' n'est pas pour autant devenue une fonction, mais une référence à une fonction.
+            
+            //Grâce aux fonctions anonymes, on peut isoler le code, du moins partiellement
+            
+            //Définition ET appel d'une fonction anonyme
+            (function() {
+                alert('Fonction anonyme déclarée, définie et appelée simultanément !');
+            })();
+            
+            //Autre exemple :
+            var sayHello = (function() {
+                return 'yop !';
+            })();
+            var sayBye = function() {
+                return 'bye bye !';
+            };
+            
+            alert(sayHello);
+            //alert(sayHello()); ==> ERREUR 
+            alert(sayBye());
+            //alert(sayBye) ==> ERREUR
+            
+            //Le mot-clé let
+            if(true) {
+                let chiffre = 3;
+            }
+            if(typeof chiffre !== 'undefined')
+                alert('voilààà: ' + chiffre); //le mot-clé let fait que la variable déclarée au sein d'un if/else ou d'une boucle reste une variable locale au scope
+            //dans lequel elle a été créée.
+            if (true) {
+                let var_locale = 990;
+            }
+            alert('type de var_locale: ' + typeof var_locale);
+        </script>
+    </body>
+</html>

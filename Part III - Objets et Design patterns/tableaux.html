@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Les tableaux</title>
+    </head>
+    <body>
+		<script>
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//L'objet Array
+			//Instanciation sans arguments
+			var myArray1 = new Array(); //tableau vide
+			//Instanciation en spécifiant chaque valeur à attribuer			
+			var myArray2 = new Array('valeur1', 'valeur2', 'valeur3');
+			//Instanciation en spécifiant la longueur du tableau
+			var myArray3 = new Array(10); //ici tableau de 10 cases
+			
+			/* Note : Ce dernier constructeur est inutile, car le JavaScript redéfinit la taille des tableaux quand on
+			ajoute ou supprime des éléments.
+			D'une manière générale, il vaut mieux privilégier l'utilisation du type primitif au détriment de l'instanciation
+			de l'objet Array */
+			
+			//Une seule propriété : length
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les méthodes
+			//Concaténer deux tableaux
+			/* Pour ajouter les valeurs d'un tableau à celles d'un premier tableau, il faut utiliser la méthode concat(). 
+			La méthode concat() prend en argument unique le second tableau que l'on concatène à celui qui appelle cette méthode.
+			Mais, il faut aussi savoir que concat() n'altère aucun des deux tableaux et renvoie une copie de la concaténation. */
+			var myArray = ['test1', 'test2'].concat(['test3', 'test4']);
+			alert(myArray); // affiche : test1,test2,test3,test4
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Parcourir un tableau
+			for(var i = 0, c = myArray.length; i < c; ++i)
+				alert('Index : ' + i + '\nValeur : ' + myArray[i]);
+			
+			/*Ce code est un peu contraignant, car on doit créer deux variables et tout */
+			
+			//Parcours du tableau avec la méthode forEach() 
+			
+			/* la méthode forEach() prend deux paramètres, dont un facultatif : 
+				-	la fonction à exécuter pour chaque index existant
+				-	un objet qui sera pointé par le mot-clé this dans la fonction à exécuter
+			
+			Attention : méthode non-supportée par IE avant IE9
+			
+			En ce qui concerne la fonction passée en param, elle sera exécutée pour chaque index existant (dans l'ordre
+			croissant bien entendu) et recevra en paramètres trois arguments :
+				-	la valeur contenue à l'index actuel
+				-	l'index actuel
+				-	une référence au tableau actuellement parcouru (param facultatif) */
+			myArray.forEach(function(value, index, array){
+				alert('Index : ' + index + '\nValeur : ' + value);
+			});
+			
+			/* Attention : cette méthode ne fonctionnera qu'avec des tableaux, ie elle ne fonctionnera pas avec les collections
+			d'éléments retournées dans le DOM (pour classList et tableaux retournés par querySelectorAll et getElementsByTagName,
+			c'est mort) */
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Rechercher un élément dans un tableau
+			/* Et c'est encore les méthode indexOf() et lastIndexOf(). Mais elles cherchent n'importe quel type de valeur et
+			retournent l'index de l'élément recherché au sein du tableau, en cas d'échéc, la fonction retourne la valeur -1. */
+			var element = ['test'];
+			myArray = ['test', element, 'pam', 10];
+			alert(myArray.indexOf(element)); // c'est bien le tableau ['test'] qui a été trouvé, et non la chaîne de carac 'test'
+			alert('faut-il nécessairement mettre une variable en argument de indexOf() quand on recherche ' 
+				+'tableau: ' + myArray.indexOf(['test']));
+			//indexOf() et lastIndexOf() possèdent un 2nd paramètre pour spécifier à partir de quel index débuter la recherche
+			
+			//Atention : .. version antérieurs à la IE 9
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Trier un tableau
+			//La méthode reverse() d'abord
+			var myArr = [1, 2, 3, 4, 5];
+			myArr.reverse();
+			alert(myArr); // Affiche 5,4,3,2,1
+			//inverse juste l'ordre des valeurs, c'est tout
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//La méthode sort()
+			/* La méthode sort() trie le tableau par ordre alphabétique uniquement. Mais cette méthode possède aussi un 
+			argument facultatif permettant de spécifier l'ordre à définir. 
+			Cet argument facultatif est une référence à une fonction que l'on crée soi-même, lorsqu'il s'agit d'éléments
+			autres qu'alphabétiques. Cette fonction doit possèder deux arguments qu'elle compare et dont elle retourne
+			le résultat de la comparaison.
+			Voici une illustration assez représentative : 														*/
+			
+			myArr.sort(function(a,b){
+				if(a < b)
+					return -1; 		// On retourne -1 lorsque a est inférieur à b
+				else if(a > b)
+					return 1;		// On retourne 1 lorsque a est supérieur à b
+				else 
+					return 0;		// On retourne 0 lorsque a et b sont égaux
+			});
+			alert(myArr); 
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Extraire une partie d'un tableau
+			/* La méthode slice() : elle prend en paramètres deux arguments dont le 2e est facultatif :
+				-	l'index (inclus) à partir duquel on souhaite commencer l'extraction du tableau
+				-	l'index (non inclus) auquel l'extraction doit se terminer. 
+			
+			Si ce 2e argument n'est pas spécifié, alors l'extraction se poursuit jusqu'à la fin du tableau */
+			
+			// myArr = [1, 2, 3, 4, 5];
+			alert(myArr.slice(1, 3));	// Affiche : 2,3
+			alert(myArr.slice(2)); 		// Affiche : 3,4,5
+			
+			/* Note : on peut aussi spécifier un argument négatif pour le 2nd param ==> l'extraction se teminera alors 
+			à l'index de fin moins la valeur que l'on a spécifiée. Et cette fois, le 2nd index qui en résulte sera inclus */
+			
+			alert(myArr.slice(2, -1)); // Affiche : 3,4
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Remplacer une partie d'un tableau
+			/* La méthode splice() : reçoit 2 arguments obligatoires et une infinité d'arguments facultatifs :
+				-	l'index à partir duquel je souhaite effectuer mes opérations
+				-	le nombre d'éléments que l'on souhaite supprimer à partir de cet index */
+			
+			//myArr = [1, 2, 3, 4, 5];
+			var result = myArr.splice(1, 2);  //On retire deux éléments à partir de l'index 1
+			
+			alert(myArr); 	// Affiche : 1,4,5
+			alert(result); 	// Affiche : 2,3
+			
+			/* Note : la méthode splice() modifie directement le tableau à partir duquel elle a été exécutée; 
+					  et elle renvoie un tableau d'éléments qui ont été supprimées.
+					  
+			Les arguments qui suivent les deux premiers contiennent les éléments qui doivent être ajoutés en remplacement
+			de ceux effacés. On peut aussi très bien spécifier plus d'éléments à ajouter que d'éléments qui ont été 
+			supprimés, ce n'est pas un problème. Essayons donc l'ajout d'éléments : */
+			
+			myArray = [1, null, 4, 5];
+			myArr.splice(1, 1, 2, 3);
+			alert(myArr); // Affiche 1,2,3,4,5
+			
+			/* Note : la méthode splice() peut aussi servir uniquement de méthode d'insertion, si l'on met un 0 pour le 
+			deuxième argument. */
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			// Tester l'existence d'un tableau
+			var res = /\bou\b/.exec('Tableau ou pas'); 
+			alert(Array.isArray(res)); 	// Affiche : true
+			
+			/* Note : Cette méthode propre à l'objet constructeur Array n'est pas supportée par IE avant IE9 */
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les piles et les files
+			/*
+			Rappel des méthodes d'insertion et de suppression d'éléments du tableau :
+			
+			push() : ajoute un ou plusieurs éléments à la fin du tableau et renvoie la nouvelle taille de ce dernier
+			pop() : retire et retourne le dernier élément du tableau
+			unshift() : ajoute un ou plusieurs éléments au début du tableau (un argument par élément ajouté) et retourne
+							la nouvelle taille de ce dernier
+			shift() : retire et retourne le premier élément du tableau
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les piles 
+			// ==> Last In First Out
+			/* Les méthodes à utiliser sont : push()/pop() ou bien unshift()/shift(). La seule différence entre les deux 
+			façons de procéder est l'endroit où les opérations se font (...à la fin, ou au début).    */
+			myArray = ['Livre 1'];
+			var length = myArray.push('Livre 2', 'Livre 3');
+			
+			alert(myArray); // Affiche : "Livre 1,Livre 2,Livre 3"
+			alert(length);  // Affiche : 3
+			
+			var del = myArray.pop();
+			
+			alert(myArray); // Affiche : "Livre 1,Livre2"
+			alert(del); 	// Affiche : "Livre 3"
+			
+			//Analogique  avec unshift()/shift()
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Les files
+			// ==> FIRST IN FIRST OUT
+			/* Les méthodes ==> push()/shift() ou encore unshift()/pop()
+			(...) */
+			
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+			//Pourquoi piles, c'est mieux, en JavaScript
+			/* Tout simplement parce que les files sont dépendantes des méthodes unshift() et shift(). Et ces dernières
+			souffrent d'un manque de performance. En effet, ces deux méthodes utilisent un algorithme qui fait qu'en retirant
+			ou en ajoutant un élément en début du tableau, elles vont devoir réécrire tous les index des éléments qui
+			suivent.
+			Mais bon, il faut relativiser : la perte de performance n'est pas dramatique, on peut s'en servir tant que le
+			tableau ne dépasse pas 10000 entrées, en gros. Mais au-dessus, il faut songer à utiliser les piles ou bien
+			à utiliser des scripts qui résolvent ce genre de problèmes.
+			*/
+			
+		</script>
+	</body>
+</html>

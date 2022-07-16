@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>TP upload avec API File et drag'n'drop</title>
+<style>
+	.dropper {
+		background-color: #ddd;
+		width: 600px;
+		height: 400px;
+		border: 2px solid black;
+		transition: all 200ms linear;
+	}
+	
+	.drop_hover {
+		background-color: rgb(200, 200, 255);
+		transition-duration: 1s;
+		border: 2px ridge black;
+		box-shadow: 0 0 30px #ccc inset;
+	}
+	
+	.draggable {
+		mouse-cursor: move;
+	}
+</style>
+</head>
+<body>
+<form method="post" action="do_upload.php" id="myForm">
+<input type="file" id="inputFile" name="inputFile" multiple /><br />
+<progress id="progressBar"></progress><br />
+<input type="submit" value="Send" />
+</form>
+<div id="toUpload" class="dropper"></div>
+<div class="dropper">
+<div class="draggable"></div>
+<img src="em.jpg" alt="elle" class="draggable"/>
+</div>
+
+<script>
+(function(){
+	function createThumbnail(file) {
+		var reader = new FileReader();
+		reader.addEventListener('load', function() {
+			var img = document.createElement('img');
+			img.style.maxWidth = '150px';
+			img.style.maxHeight = '150px';
+			img.src = reader.result;
+			img.className = 'draggable';
+			document.querySelector('#toUpload').appendChild(img);
+		});
+		reader.readAsDataURL(file);
+	}
+
+	var	bar = document.querySelector('#progressBar'),
+		index = 0;
+	
+	inputFile.addEventListener('change', function(e) {
+		var inputFile = document.querySelector('#inputFile'),
+		files = inputFile.files,
+		filesLen = files.length;
+		bar.value = 0;
+		bar.max = 0;
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', "do_upload.php");
+		xhr.upload.addEventListener('progress', function(e) {
+			bar.value = e.loaded;
+			bar.max = e.total;			
+		});
+		xhr.addEventListener('load', function(e) {
+			alert(xhr.responseText);
+		});
+		var form = new FormData();
+		form.append(('file ' + index++), files[0]);
+		xhr.send(form);
+		for(var i = 0; i < filesLen; i++) {
+			var allowedTypes = ['jpg', 'png', 'jpeg', 'gif'],
+				extension = files[i].name.split('.');
+				extension = extension[extension.length - 1].toLowerCase();
+				if(~allowedTypes.indexOf(extension))
+					createThumbnail(files[i]);
+				else
+					console.log(extension);
+			
+		}
+	});
+	
+	var dndHandler = {
+			draggedElement: null,
+			applyDropEvents: function(dropper) {
+				var dndHandler = this;
+				dropper.addEventListener('drop', function(e) {
+					e.preventDefault();
+					var target,
+						draggedElement = dndHandler.draggedElement,
+						clonedElement = draggedElement.cloneNode(true);
+					
+					while(target.className.indexOf('dropper') == -1)
+						target = target.parentNode;
+					target.className = 'dropper';
+					clonedElement = target.appendChild(clonedElement);
+					applyDragEvents(clonedElement);
+					draggedElement.parentNode.removeChild(draggedElement);
+				});
+				
+				dropper.addEventListener('dragleave', function(e) {
+					dropper.className = 'dropper';
+				});
+				
+				dropper.addEventListener('dragover', function(e) {
+					e.preventDefault();
+					dropper.className = 'dropper drop_hover';
+				});
+			},
+			
+			applyDragEvents: function(element) {
+				var dndHandler = this;
+				element.draggable = true;
+				element.addEventListener('dragstart', function(e) {
+					e.preventDefault();
+					dndHandler.draggedElement = e.target;
+				});
+			}
+		
+	};
+	
+	var droppers = document.querySelectorAll('.dropper'),
+		dropLen = droppers.length;
+	for(var i = 0; i < dropLen; i++) {
+		dndHandler.applyDropEvents(droppers[i]);
+	}
+	
+	var elements = document.querySelectorAll('.draggable'),
+		elemLen = elements.length;
+	
+	for(i = 0; i < elemLen; i++)
+		dndHandler.applyDragEvents(elements[i]);
+	
+	document.addEventListener('dragend', function() {
+		console.log('un drag terminé, mais comment ?');
+	});
+	
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Uploader un fichier via iframe</title>
+</head>
+<body>
+    <!--
+    <iframe src="file.php" name="myFrame" id="myFrame"></iframe>
+    <script>
+        function trigger(obj) {
+            var frame = document.getElementById('myFrame').contentDocument; //bof
+
+            alert(obj);
+        }
+    </script>
+    -->
+    <!--
+    <form method="post" action="nick.php" id="myForm" target="myFrame">
+        <label for="nick">Pseudo : </label>
+        <input type="text" id="nick" name="nick" />
+        <input type="button" value="Uploader" onclick="sendData();" />
+    </form>
+    <iframe src="#" id="myFrame" name="myFrame"></iframe>
+
+    <script>
+        function sendData() {
+            var nick = document.getElementById('nick').value;
+            if(nick)
+                document.getElementById('myForm').submit();
+        }
+
+        function receiveData(data) {
+            alert('Votre pseudo est : "' + data + '"');
+        }
+    </script>
+    -->
+    <form method="post" action="requestUpload.php" id="myForm" target="uploadFrame">
+        <input type="file" id="uploadFile" name="uploadFile" />
+        <br />
+        <input type="submit" id="submitUpload" value="Upload !"/>
+    </form>
+
+    <div id="uploadInfos">
+        <div id="uploadStatus">Aucun upload en cours</div>
+        <iframe id="uploadFrame" name="uploadFrame"></iframe>
+    </div>
+
+    <script>
+        function uploadEnd(error, path) {
+            if(error === 'OK')
+                document.getElementById('uploadStatus').innerHTML = '<a href="' + path + '">Upload done !</a><br /><br />'
+                       + '<a href="' + path +'"><img src="' + path + '" /></a>';
+            else
+                document.getElementById('uploadStatus').innerHTML = error;
+        }
+
+        document.getElementById('myForm').addEventListener('submit', function(){
+            document.getElementById('uploadStatus').innerHTML = '<span>Loading...</span>';
+        });
+    </script>
+</body>
+</html>
